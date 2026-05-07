@@ -1,11 +1,18 @@
 <?php
 
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../data/recipes.php';
 
 startSession();
 
 $isGuest = !empty($_SESSION['guest_mode']) && empty($_SESSION['user']);
 $userName = $isGuest ? 'Guest' : ($_SESSION['user']['name'] ?? 'Nayaka');
+$recipes = recipe_catalog();
+$recipes = $recipes !== [] ? $recipes : [recipe_fallback()];
+$featured = recipe_find(1) ?? ($recipes[0] ?? null);
+$topRecipes = array_slice($recipes, 0, 4);
+$bottomRecipes = array_slice($recipes, 4, 4);
+$sideRecipes = $featured ? recipe_related($featured, 2) : [];
 
 ?>
 <!DOCTYPE html>
@@ -78,70 +85,73 @@ $userName = $isGuest ? 'Guest' : ($_SESSION['user']['name'] ?? 'Nayaka');
         </section>
 
         <section class="recipe-grid" aria-label="Daftar resep">
-            <?php for ($i = 0; $i < 4; $i++): ?>
+            <?php foreach ($topRecipes as $recipe): ?>
                 <article class="recipe-card" data-node-id="16:155">
+                    <a class="recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
+                        <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
+                    </a>
                     <div class="recipe-card__panel"></div>
-                    <img class="recipe-card__image" src="../assets/img/recipe-salad-card.png" alt="Special Salad Chicken">
+                    <img class="recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
                     <button class="recipe-card__bookmark" type="button" aria-label="Simpan resep">
                         <img src="../assets/img/icon-bookmark.svg" alt="">
                     </button>
-                    <h2>Special Salad Chiken</h2>
+                    <h2><?= e($recipe['title']) ?></h2>
                     <div class="recipe-card__line"></div>
                     <div class="recipe-card__meta">
                         <span class="recipe-card__stars">★ ★ ☆ ☆</span>
-                        <span>20 mins</span>
+                        <span><?= e($recipe['cook_time']) ?></span>
                     </div>
                 </article>
-            <?php endfor; ?>
+            <?php endforeach; ?>
         </section>
 
         <section class="home-content-row">
+            <?php if ($featured): ?>
             <article class="feature-card" data-node-id="16:163">
-                <img class="feature-card__image" src="../assets/img/recipe-salad-card.png" alt="Special Salad Chicken">
+                <img class="feature-card__image" src="<?= e($featured['image']) ?>" alt="<?= e($featured['title']) ?>">
                 <div class="feature-card__body">
-                    <h2>Special Salad<br>Chicken</h2>
-                    <p>Enjoy the perfect combination of protein-rich grilled chicken breast and a selection of fresh vegetables (such as romaine lettuce, cherry tomatoes, cucumbers, and purple cabbage). Served with a light and appetizing special dressing, this dish is not only delicious, but also healthy and filling. The perfect choice for your healthy lifestyle.</p>
+                    <h2><?= e($featured['title']) ?></h2>
+                    <p><?= e($featured['summary']) ?></p>
                     <div class="feature-card__footer">
-                        <a href="#">Get the recipe</a>
-                        <span>Cook Time : 20mins</span>
+                        <a href="../resep/detail.php?id=<?= e((string) $featured['id']) ?>">Get the recipe</a>
+                        <span>Cook Time : <?= e($featured['cook_time']) ?></span>
                     </div>
                 </div>
             </article>
+            <?php endif; ?>
 
             <aside class="side-recipes" aria-label="Resep rekomendasi">
-                <article>
-                    <img src="../assets/img/recipe-salad-card.png" alt="">
-                    <div>
-                        <h3>Japanese Macha</h3>
-                        <a href="#">Get the recipe</a>
-                    </div>
-                </article>
-                <article>
-                    <img src="../assets/img/recipe-salad-card.png" alt="">
-                    <div>
-                        <h3>Sweet Strawberry Cake</h3>
-                        <a href="#">Get the recipe</a>
-                    </div>
-                </article>
+                <?php foreach ($sideRecipes as $recipe): ?>
+                    <article>
+                        <img src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                        <div>
+                            <h3><?= e($recipe['title']) ?></h3>
+                            <a href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">Get the recipe</a>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
             </aside>
         </section>
 
         <section class="recipe-grid recipe-grid--bottom" aria-label="Resep lainnya">
-            <?php for ($i = 0; $i < 4; $i++): ?>
+            <?php foreach ($bottomRecipes as $recipe): ?>
                 <article class="recipe-card" data-node-id="16:155">
+                    <a class="recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
+                        <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
+                    </a>
                     <div class="recipe-card__panel"></div>
-                    <img class="recipe-card__image" src="../assets/img/recipe-salad-card.png" alt="Special Salad Chicken">
+                    <img class="recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
                     <button class="recipe-card__bookmark" type="button" aria-label="Simpan resep">
                         <img src="../assets/img/icon-bookmark.svg" alt="">
                     </button>
-                    <h2>Special Salad Chiken</h2>
+                    <h2><?= e($recipe['title']) ?></h2>
                     <div class="recipe-card__line"></div>
                     <div class="recipe-card__meta">
                         <span class="recipe-card__stars">★ ★ ☆ ☆</span>
-                        <span>20 mins</span>
+                        <span><?= e($recipe['cook_time']) ?></span>
                     </div>
                 </article>
-            <?php endfor; ?>
+            <?php endforeach; ?>
         </section>
     </main>
 </body>
