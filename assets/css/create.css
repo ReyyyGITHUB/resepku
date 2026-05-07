@@ -1,0 +1,229 @@
+.recipe-create {
+    display: grid;
+    gap: 24px;
+}
+
+.recipe-create__hero {
+    align-items: stretch;
+}
+
+.recipe-create__preview {
+    display: grid;
+    gap: 16px;
+}
+
+.recipe-create__preview-frame {
+    position: relative;
+    padding: 18px;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.detail-hero__media .recipe-create__preview-image {
+    display: block;
+    width: 100%;
+    height: 360px;
+    object-fit: contain;
+    object-position: center;
+}
+
+.recipe-create__preview-badge {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #fb9b00;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.recipe-create__upload {
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+    border: 1px dashed #d4af37;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.75);
+}
+
+.recipe-create__upload span {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.recipe-create__upload strong {
+    font-size: 12px;
+    font-weight: 400;
+    color: #464646;
+}
+
+.recipe-create__upload input {
+    width: 100%;
+}
+
+.recipe-create__preview-text {
+    margin: 14px 0 0;
+    font-size: 15px;
+    line-height: 1.55;
+    color: #464646;
+}
+
+.recipe-create__lede {
+    max-width: 650px;
+    margin: 8px 0 0;
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.recipe-create__meta {
+    margin-top: 16px;
+}
+
+.recipe-create__grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.recipe-create__grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.recipe-create__grid label,
+.recipe-create__full {
+    display: grid;
+    gap: 8px;
+}
+
+.recipe-create__grid span,
+.recipe-create__full span {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.recipe-create__grid input,
+.recipe-create__grid select,
+.recipe-create__full input,
+.recipe-create__full textarea,
+.recipe-create__row input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d4af37;
+    border-radius: 12px;
+    background: #fffdf7;
+    color: #000000;
+    font: inherit;
+    outline: none;
+}
+
+.recipe-create__full {
+    margin-top: 16px;
+}
+
+.recipe-create__section {
+    display: grid;
+    gap: 0;
+}
+
+.recipe-create__section h2 {
+    margin-bottom: 0;
+}
+
+.recipe-create__section-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.recipe-create__rows {
+    display: grid;
+    gap: 12px;
+}
+
+.recipe-create__row {
+    display: grid;
+    gap: 12px;
+}
+
+.recipe-create__row--ingredient {
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+}
+
+.recipe-create__row--tool {
+    grid-template-columns: 1fr;
+}
+
+.recipe-create__ghost,
+.recipe-create__primary,
+.recipe-create__secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: 1px solid #000000;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.recipe-create__ghost {
+    background: #ffffff;
+}
+
+.recipe-create__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.recipe-create__secondary {
+    color: #000000;
+    background: #ffffff;
+}
+
+.recipe-create__primary {
+    background: #fb9b00;
+    color: #000000;
+}
+
+.recipe-create__alert {
+    display: grid;
+    gap: 6px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    margin-top: 16px;
+}
+
+.recipe-create__alert--error {
+    background: rgba(255, 75, 75, 0.1);
+    border: 1px solid rgba(255, 75, 75, 0.3);
+}
+
+.recipe-create__alert--success {
+    background: rgba(51, 163, 85, 0.1);
+    border: 1px solid rgba(51, 163, 85, 0.3);
+}
+
+.recipe-create__alert p {
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    .recipe-create__grid--two,
+    .recipe-create__row--ingredient {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-hero__media .recipe-create__preview-image {
+        height: 280px;
+    }
+}

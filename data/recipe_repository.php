@@ -151,6 +151,131 @@ function recipe_catalog_from_db(int $limit = 8): array
     return $recipes;
 }
 
+function recipe_catalog_filtered_db(array $filters = [], int $limit = 24): array
+{
+    $where = [];
+    $params = [];
+    $joins = '';
+    $orderBy = 'ORDER BY r.dibuat_pada DESC, r.resep_id DESC';
+
+    $query = trim((string) ($filters['q'] ?? ''));
+    $category = trim((string) ($filters['category'] ?? ''));
+    $difficulty = trim((string) ($filters['difficulty'] ?? ''));
+    $maxTime = trim((string) ($filters['max_time'] ?? ''));
+    $sort = trim((string) ($filters['sort'] ?? 'newest'));
+    $categoryMap = [
+        'food' => ['ayam', 'vegetarian', 'seafood'],
+        'salad' => ['salad'],
+        'dessert' => ['dessert'],
+        'drinks' => ['drinks'],
+    ];
+
+    if ($query !== '') {
+        $where[] = 'r.nama_resep LIKE :query';
+        $params[':query'] = '%' . $query . '%';
+    }
+
+    if ($category !== '') {
+        $normalizedCategory = mb_strtolower($category);
+
+        if (isset($categoryMap[$normalizedCategory])) {
+            $placeholders = [];
+            foreach ($categoryMap[$normalizedCategory] as $index => $value) {
+                $placeholder = ':kategori_' . $index;
+                $placeholders[] = $placeholder;
+                $params[$placeholder] = $value;
+            }
+
+            $where[] = 'LOWER(r.kategori) IN (' . implode(', ', $placeholders) . ')';
+        } else {
+            $where[] = 'LOWER(r.kategori) = :kategori';
+            $params[':kategori'] = $normalizedCategory;
+        }
+    }
+
+    if ($difficulty !== '') {
+        $where[] = 'r.tingkat_kesulitan = :difficulty';
+        $params[':difficulty'] = $difficulty;
+    }
+
+    if ($maxTime !== '' && ctype_digit($maxTime)) {
+        $where[] = 'r.waktu_memasak <= :max_time';
+        $params[':max_time'] = (int) $maxTime;
+    }
+
+    if ($sort === 'popular') {
+        $joins = <<<SQL
+            LEFT JOIN (
+                SELECT resep_id, COUNT(*) AS like_count
+                FROM likes
+                GROUP BY resep_id
+            ) l ON l.resep_id = r.resep_id
+            LEFT JOIN (
+                SELECT resep_id, AVG(rating_value) AS avg_rating
+                FROM ratings
+                GROUP BY resep_id
+            ) rt ON rt.resep_id = r.resep_id
+        SQL;
+
+        $orderBy = 'ORDER BY COALESCE(l.like_count, 0) DESC, COALESCE(rt.avg_rating, 0) DESC, r.dibuat_pada DESC, r.resep_id DESC';
+    } elseif ($sort === 'oldest') {
+        $orderBy = 'ORDER BY r.dibuat_pada ASC, r.resep_id ASC';
+    }
+
+    $sql = <<<SQL
+        SELECT
+            r.resep_id,
+            r.nama_resep,
+            r.foto_resep,
+            r.waktu_memasak,
+            r.porsi,
+            r.tingkat_kesulitan,
+            r.kategori,
+            r.deskripsi,
+            r.langkah_resep,
+            p.nama_pengguna AS author_name,
+            p.foto_profil AS author_avatar
+        FROM recipes r
+        INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
+        $joins
+    SQL;
+
+    if ($where !== []) {
+        $sql .= ' WHERE ' . implode(' AND ', $where);
+    }
+
+    $sql .= ' ' . $orderBy . ' LIMIT :limit';
+
+    $stmt = db()->prepare($sql);
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+    }
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $recipes = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $recipes[] = recipe_row_to_card([
+            'resep_id' => $row['resep_id'],
+            'nama_resep' => $row['nama_resep'],
+            'foto_resep' => $row['foto_resep'],
+            'waktu_memasak' => $row['waktu_memasak'],
+            'porsi' => $row['porsi'],
+            'tingkat_kesulitan' => $row['tingkat_kesulitan'],
+            'kategori' => $row['kategori'],
+            'summary' => $row['deskripsi'] ?? '',
+            'deskripsi' => $row['deskripsi'] ?? '',
+            'author' => $row['author_name'] ?? 'ResepKu Team',
+            'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+            'ingredients' => [],
+            'tools' => [],
+            'steps' => recipe_parse_list($row['langkah_resep'] ?? ''),
+        ]);
+    }
+
+    return $recipes;
+}
+
 function recipe_find_db(int $id): ?array
 {
     $sql = <<<SQL
