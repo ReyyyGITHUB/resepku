@@ -1,134 +1,156 @@
 <?php
 
-require_once __DIR__ . '/../config/helpers.php';
-require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . "/../config/helpers.php";
+require_once __DIR__ . "/../config/db.php";
 
 startSession();
 
-if (empty($_SESSION['user'])) {
-    redirectTo('../auth/login.php');
+if (empty($_SESSION["user"])) {
+    redirectTo("../auth/login.php");
 }
 
-$user = $_SESSION['user'];
+$user = $_SESSION["user"];
 $errors = [];
 $success = null;
 
 $old = [
-    'nama_resep' => '',
-    'deskripsi' => '',
-    'langkah_resep' => '',
-    'waktu_memasak' => '',
-    'porsi' => '',
-    'kategori' => '',
-    'tingkat_kesulitan' => 'sedang',
+    "nama_resep" => "",
+    "deskripsi" => "",
+    "langkah_resep" => "",
+    "waktu_memasak" => "",
+    "porsi" => "",
+    "kategori" => "",
+    "tingkat_kesulitan" => "sedang",
 ];
 
-$ingredients = array_fill(0, 3, ['nama_bahan' => '', 'jumlah' => '', 'satuan' => '', 'keterangan' => '']);
-$tools = array_fill(0, 3, ['nama_peralatan' => '']);
+$ingredients = array_fill(0, 3, [
+    "nama_bahan" => "",
+    "jumlah" => "",
+    "satuan" => "",
+    "keterangan" => "",
+]);
+$tools = array_fill(0, 3, ["nama_peralatan" => ""]);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCsrf($_POST['_token'] ?? null)) {
-        $errors[] = 'Token form tidak valid. Silakan muat ulang halaman.';
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    if (!verifyCsrf($_POST["_token"] ?? null)) {
+        $errors[] = "Token form tidak valid. Silakan muat ulang halaman.";
     }
 
-    $old['nama_resep'] = trim((string) ($_POST['nama_resep'] ?? ''));
-    $old['deskripsi'] = trim((string) ($_POST['deskripsi'] ?? ''));
-    $old['langkah_resep'] = trim((string) ($_POST['langkah_resep'] ?? ''));
-    $old['waktu_memasak'] = trim((string) ($_POST['waktu_memasak'] ?? ''));
-    $old['porsi'] = trim((string) ($_POST['porsi'] ?? ''));
-    $old['kategori'] = trim((string) ($_POST['kategori'] ?? ''));
-    $old['tingkat_kesulitan'] = (string) ($_POST['tingkat_kesulitan'] ?? 'sedang');
+    $old["nama_resep"] = trim((string) ($_POST["nama_resep"] ?? ""));
+    $old["deskripsi"] = trim((string) ($_POST["deskripsi"] ?? ""));
+    $old["langkah_resep"] = trim((string) ($_POST["langkah_resep"] ?? ""));
+    $old["waktu_memasak"] = trim((string) ($_POST["waktu_memasak"] ?? ""));
+    $old["porsi"] = trim((string) ($_POST["porsi"] ?? ""));
+    $old["kategori"] = trim((string) ($_POST["kategori"] ?? ""));
+    $old["tingkat_kesulitan"] =
+        (string) ($_POST["tingkat_kesulitan"] ?? "sedang");
 
-    $ingredientRows = $_POST['ingredients'] ?? [];
-    $toolRows = $_POST['tools'] ?? [];
+    $ingredientRows = $_POST["ingredients"] ?? [];
+    $toolRows = $_POST["tools"] ?? [];
 
-    if ($old['nama_resep'] === '') {
-        $errors[] = 'Nama resep wajib diisi.';
+    if ($old["nama_resep"] === "") {
+        $errors[] = "Nama resep wajib diisi.";
     }
 
-    if ($old['deskripsi'] === '') {
-        $errors[] = 'Deskripsi resep wajib diisi.';
+    if ($old["deskripsi"] === "") {
+        $errors[] = "Deskripsi resep wajib diisi.";
     }
 
-    if ($old['langkah_resep'] === '') {
-        $errors[] = 'Langkah memasak wajib diisi.';
+    if ($old["langkah_resep"] === "") {
+        $errors[] = "Langkah memasak wajib diisi.";
     }
 
-    if ($old['kategori'] === '') {
-        $errors[] = 'Kategori resep wajib diisi.';
+    if ($old["kategori"] === "") {
+        $errors[] = "Kategori resep wajib diisi.";
     }
 
-    if (!in_array($old['tingkat_kesulitan'], ['mudah', 'sedang', 'sulit'], true)) {
-        $errors[] = 'Tingkat kesulitan tidak valid.';
+    if (
+        !in_array($old["tingkat_kesulitan"], ["mudah", "sedang", "sulit"], true)
+    ) {
+        $errors[] = "Tingkat kesulitan tidak valid.";
     }
 
-    if ($old['waktu_memasak'] === '' || !ctype_digit($old['waktu_memasak']) || (int) $old['waktu_memasak'] <= 0) {
-        $errors[] = 'Waktu memasak harus berupa angka menit yang valid.';
+    if (
+        $old["waktu_memasak"] === "" ||
+        !ctype_digit($old["waktu_memasak"]) ||
+        (int) $old["waktu_memasak"] <= 0
+    ) {
+        $errors[] = "Waktu memasak harus berupa angka menit yang valid.";
     }
 
-    if ($old['porsi'] === '' || !ctype_digit($old['porsi']) || (int) $old['porsi'] <= 0) {
-        $errors[] = 'Porsi harus berupa angka yang valid.';
+    if (
+        $old["porsi"] === "" ||
+        !ctype_digit($old["porsi"]) ||
+        (int) $old["porsi"] <= 0
+    ) {
+        $errors[] = "Porsi harus berupa angka yang valid.";
     }
 
     $normalizedIngredients = [];
     foreach ($ingredientRows as $row) {
-        $name = trim((string) ($row['nama_bahan'] ?? ''));
-        if ($name === '') {
+        $name = trim((string) ($row["nama_bahan"] ?? ""));
+        if ($name === "") {
             continue;
         }
 
         $normalizedIngredients[] = [
-            'nama_bahan' => $name,
-            'jumlah' => trim((string) ($row['jumlah'] ?? '')),
-            'satuan' => trim((string) ($row['satuan'] ?? '')),
-            'keterangan' => trim((string) ($row['keterangan'] ?? '')),
+            "nama_bahan" => $name,
+            "jumlah" => trim((string) ($row["jumlah"] ?? "")),
+            "satuan" => trim((string) ($row["satuan"] ?? "")),
+            "keterangan" => trim((string) ($row["keterangan"] ?? "")),
         ];
     }
 
     $normalizedTools = [];
     foreach ($toolRows as $row) {
-        $name = trim((string) ($row['nama_peralatan'] ?? ''));
-        if ($name !== '') {
+        $name = trim((string) ($row["nama_peralatan"] ?? ""));
+        if ($name !== "") {
             $normalizedTools[] = $name;
         }
     }
 
     if ($normalizedIngredients === []) {
-        $errors[] = 'Minimal satu bahan wajib diisi.';
+        $errors[] = "Minimal satu bahan wajib diisi.";
     }
 
     if ($normalizedTools === []) {
-        $errors[] = 'Minimal satu peralatan wajib diisi.';
+        $errors[] = "Minimal satu peralatan wajib diisi.";
     }
 
     $imagePath = null;
-    if (!empty($_FILES['foto_resep']['name'])) {
-        $upload = $_FILES['foto_resep'];
+    if (!empty($_FILES["foto_resep"]["name"])) {
+        $upload = $_FILES["foto_resep"];
         $allowedTypes = [
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/webp' => 'webp',
+            "image/jpeg" => "jpg",
+            "image/png" => "png",
+            "image/webp" => "webp",
         ];
 
-        if (($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-            $errors[] = 'Upload foto resep gagal.';
+        if (($upload["error"] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            $errors[] = "Upload foto resep gagal.";
         } else {
-            $mimeType = mime_content_type($upload['tmp_name']);
+            $mimeType = mime_content_type($upload["tmp_name"]);
             if (!isset($allowedTypes[$mimeType])) {
-                $errors[] = 'Foto resep harus berformat JPG, PNG, atau WEBP.';
+                $errors[] = "Foto resep harus berformat JPG, PNG, atau WEBP.";
             } else {
-                $uploadDir = __DIR__ . '/../uploads/recipes';
+                $uploadDir = __DIR__ . "/../uploads/recipes";
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0775, true);
                 }
 
-                $fileName = 'recipe-' . time() . '-' . bin2hex(random_bytes(4)) . '.' . $allowedTypes[$mimeType];
-                $target = $uploadDir . '/' . $fileName;
+                $fileName =
+                    "recipe-" .
+                    time() .
+                    "-" .
+                    bin2hex(random_bytes(4)) .
+                    "." .
+                    $allowedTypes[$mimeType];
+                $target = $uploadDir . "/" . $fileName;
 
-                if (!move_uploaded_file($upload['tmp_name'], $target)) {
-                    $errors[] = 'Foto resep tidak bisa disimpan.';
+                if (!move_uploaded_file($upload["tmp_name"], $target)) {
+                    $errors[] = "Foto resep tidak bisa disimpan.";
                 } else {
-                    $imagePath = 'uploads/recipes/' . $fileName;
+                    $imagePath = "uploads/recipes/" . $fileName;
                 }
             }
         }
@@ -141,64 +163,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $pdo->prepare(
                 'INSERT INTO recipes (pengguna_id, nama_resep, deskripsi, langkah_resep, waktu_memasak, porsi, foto_resep, kategori, tingkat_kesulitan)
-                 VALUES (:pengguna_id, :nama_resep, :deskripsi, :langkah_resep, :waktu_memasak, :porsi, :foto_resep, :kategori, :tingkat_kesulitan)'
+                 VALUES (:pengguna_id, :nama_resep, :deskripsi, :langkah_resep, :waktu_memasak, :porsi, :foto_resep, :kategori, :tingkat_kesulitan)',
             );
             $stmt->execute([
-                ':pengguna_id' => (int) $user['id'],
-                ':nama_resep' => $old['nama_resep'],
-                ':deskripsi' => $old['deskripsi'],
-                ':langkah_resep' => $old['langkah_resep'],
-                ':waktu_memasak' => (int) $old['waktu_memasak'],
-                ':porsi' => (int) $old['porsi'],
-                ':foto_resep' => $imagePath,
-                ':kategori' => $old['kategori'],
-                ':tingkat_kesulitan' => $old['tingkat_kesulitan'],
+                ":pengguna_id" => (int) $user["id"],
+                ":nama_resep" => $old["nama_resep"],
+                ":deskripsi" => $old["deskripsi"],
+                ":langkah_resep" => $old["langkah_resep"],
+                ":waktu_memasak" => (int) $old["waktu_memasak"],
+                ":porsi" => (int) $old["porsi"],
+                ":foto_resep" => $imagePath,
+                ":kategori" => $old["kategori"],
+                ":tingkat_kesulitan" => $old["tingkat_kesulitan"],
             ]);
 
             $recipeId = (int) $pdo->lastInsertId();
 
             $ingredientStmt = $pdo->prepare(
                 'INSERT INTO bahan_resep (resep_id, nama_bahan, jumlah, satuan, keterangan)
-                 VALUES (:resep_id, :nama_bahan, :jumlah, :satuan, :keterangan)'
+                 VALUES (:resep_id, :nama_bahan, :jumlah, :satuan, :keterangan)',
             );
             foreach ($normalizedIngredients as $ingredient) {
-                $amount = $ingredient['jumlah'] === '' ? null : $ingredient['jumlah'];
-                $unit = $ingredient['satuan'] === '' ? null : $ingredient['satuan'];
-                $note = $ingredient['keterangan'] === '' ? null : $ingredient['keterangan'];
+                $amount =
+                    $ingredient["jumlah"] === "" ? null : $ingredient["jumlah"];
+                $unit =
+                    $ingredient["satuan"] === "" ? null : $ingredient["satuan"];
+                $note =
+                    $ingredient["keterangan"] === ""
+                        ? null
+                        : $ingredient["keterangan"];
 
                 $ingredientStmt->execute([
-                    ':resep_id' => $recipeId,
-                    ':nama_bahan' => $ingredient['nama_bahan'],
-                    ':jumlah' => $amount,
-                    ':satuan' => $unit,
-                    ':keterangan' => $note,
+                    ":resep_id" => $recipeId,
+                    ":nama_bahan" => $ingredient["nama_bahan"],
+                    ":jumlah" => $amount,
+                    ":satuan" => $unit,
+                    ":keterangan" => $note,
                 ]);
             }
 
             $toolStmt = $pdo->prepare(
-                'INSERT INTO peralatan_resep (resep_id, nama_peralatan) VALUES (:resep_id, :nama_peralatan)'
+                "INSERT INTO peralatan_resep (resep_id, nama_peralatan) VALUES (:resep_id, :nama_peralatan)",
             );
             foreach ($normalizedTools as $tool) {
                 $toolStmt->execute([
-                    ':resep_id' => $recipeId,
-                    ':nama_peralatan' => $tool,
+                    ":resep_id" => $recipeId,
+                    ":nama_peralatan" => $tool,
                 ]);
             }
 
             $pdo->commit();
-            redirectTo('../resep/detail.php?id=' . $recipeId);
+            redirectTo("../resep/detail.php?id=" . $recipeId);
         } catch (Throwable $throwable) {
             $pdo->rollBack();
-            $errors[] = 'Gagal menyimpan resep. Coba lagi.';
+            $errors[] = "Gagal menyimpan resep. Coba lagi.";
         }
     }
 }
 
 function old(string $key, array $old): string
 {
-    return e($old[$key] ?? '');
+    return e($old[$key] ?? "");
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -213,9 +239,13 @@ function old(string $key, array $old): string
         <div class="home-sidebar__brand">
             <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
             <p class="home-sidebar__name">Resepku</p>
-            <p class="home-sidebar__user"><?= e((string) ($user['name'] ?? 'User')) ?></p>
+            <p class="home-sidebar__user"><?= e(
+                (string) ($user["name"] ?? "User"),
+            ) ?></p>
             <img src="../assets/img/home-profile.png" alt="" class="home-sidebar__avatar">
-            <p class="home-sidebar__welcome">welcome back!<br><?= e((string) ($user['name'] ?? 'User')) ?></p>
+            <p class="home-sidebar__welcome">welcome back!<br><?= e(
+                (string) ($user["name"] ?? "User"),
+            ) ?></p>
             <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
         </div>
 
@@ -271,39 +301,73 @@ function old(string $key, array $old): string
                     <?php endif; ?>
 
                     <?php if ($success !== null): ?>
-                        <div class="recipe-create__alert recipe-create__alert--success"><?= e($success) ?></div>
+                        <div class="recipe-create__alert recipe-create__alert--success"><?= e(
+                            $success,
+                        ) ?></div>
                     <?php endif; ?>
 
                     <div class="detail-meta recipe-create__meta">
-                        <span data-preview-time><?= $old['waktu_memasak'] !== '' ? e($old['waktu_memasak']) . ' mins' : 'Cook time' ?></span>
-                        <span data-preview-porsi><?= $old['porsi'] !== '' ? e($old['porsi']) . ' servings' : 'Servings' ?></span>
-                        <span data-preview-difficulty><?= e(ucfirst($old['tingkat_kesulitan'])) ?></span>
-                        <span data-preview-category><?= $old['kategori'] !== '' ? e($old['kategori']) : 'Category' ?></span>
+                        <span data-preview-time><?= $old["waktu_memasak"] !== ""
+                            ? e($old["waktu_memasak"]) . " mins"
+                            : "Cook time" ?></span>
+                        <span data-preview-porsi><?= $old["porsi"] !== ""
+                            ? e($old["porsi"]) . " servings"
+                            : "Servings" ?></span>
+                        <span data-preview-difficulty><?= e(
+                            ucfirst($old["tingkat_kesulitan"]),
+                        ) ?></span>
+                        <span data-preview-category><?= $old["kategori"] !== ""
+                            ? e($old["kategori"])
+                            : "Category" ?></span>
                     </div>
 
                     <div class="recipe-create__grid recipe-create__grid--two">
                         <label>
                             <span>Nama resep</span>
-                            <input type="text" name="nama_resep" value="<?= old('nama_resep', $old) ?>" placeholder="Contoh: Chicken Salad" required data-preview-input="title">
+                            <input type="text" name="nama_resep" value="<?= old(
+                                "nama_resep",
+                                $old,
+                            ) ?>" placeholder="Contoh: Chicken Salad" required data-preview-input="title">
                         </label>
                         <label>
                             <span>Kategori</span>
-                            <input type="text" name="kategori" value="<?= old('kategori', $old) ?>" placeholder="salad, dessert, ayam" required data-preview-input="category">
+                            <input type="text" name="kategori" value="<?= old(
+                                "kategori",
+                                $old,
+                            ) ?>" placeholder="salad, dessert, ayam" required data-preview-input="category">
                         </label>
                         <label>
                             <span>Waktu memasak (menit)</span>
-                            <input type="number" name="waktu_memasak" min="1" step="1" value="<?= old('waktu_memasak', $old) ?>" required data-preview-input="time">
+                            <input type="number" name="waktu_memasak" min="1" step="1" value="<?= old(
+                                "waktu_memasak",
+                                $old,
+                            ) ?>" required data-preview-input="time">
                         </label>
                         <label>
                             <span>Porsi</span>
-                            <input type="number" name="porsi" min="1" step="1" value="<?= old('porsi', $old) ?>" required data-preview-input="porsi">
+                            <input type="number" name="porsi" min="1" step="1" value="<?= old(
+                                "porsi",
+                                $old,
+                            ) ?>" required data-preview-input="porsi">
                         </label>
                         <label>
                             <span>Tingkat kesulitan</span>
                             <select name="tingkat_kesulitan" required data-preview-input="difficulty">
-                                <option value="mudah" <?= $old['tingkat_kesulitan'] === 'mudah' ? 'selected' : '' ?>>Mudah</option>
-                                <option value="sedang" <?= $old['tingkat_kesulitan'] === 'sedang' ? 'selected' : '' ?>>Sedang</option>
-                                <option value="sulit" <?= $old['tingkat_kesulitan'] === 'sulit' ? 'selected' : '' ?>>Sulit</option>
+                                <option value="mudah" <?= $old[
+                                    "tingkat_kesulitan"
+                                ] === "mudah"
+                                    ? "selected"
+                                    : "" ?>>Mudah</option>
+                                <option value="sedang" <?= $old[
+                                    "tingkat_kesulitan"
+                                ] === "sedang"
+                                    ? "selected"
+                                    : "" ?>>Sedang</option>
+                                <option value="sulit" <?= $old[
+                                    "tingkat_kesulitan"
+                                ] === "sulit"
+                                    ? "selected"
+                                    : "" ?>>Sulit</option>
                             </select>
                         </label>
                     </div>
@@ -315,12 +379,15 @@ function old(string $key, array $old): string
                     <h2>Deskripsi</h2>
                     <label class="recipe-create__full">
                         <span>Jelaskan rasa, isi, atau karakter resep</span>
-                        <textarea name="deskripsi" rows="5" required data-preview-input="description"><?= old('deskripsi', $old) ?></textarea>
+                        <textarea name="deskripsi" rows="5" required data-preview-input="description"><?= old(
+                            "deskripsi",
+                            $old,
+                        ) ?></textarea>
                     </label>
                     <p class="recipe-create__preview-text" data-preview-description>Your recipe description will appear here.</p>
                 </section>
 
-            <div class="detail-duo">
+            <div class="detail-duo recipe-create__duo">
                 <section class="detail-panel recipe-create__section">
                     <p class="detail-panel__label">Ingredients</p>
                     <div class="recipe-create__section-head">
@@ -328,12 +395,24 @@ function old(string $key, array $old): string
                         <button type="button" class="recipe-create__ghost" data-add-row="ingredient">Tambah bahan</button>
                     </div>
                     <div class="recipe-create__rows" data-rows="ingredients">
-                        <?php foreach ($ingredients as $index => $ingredient): ?>
+                        <?php foreach (
+                            $ingredients
+                            as $index => $ingredient
+                        ): ?>
                             <div class="recipe-create__row recipe-create__row--ingredient">
-                                <input type="text" name="ingredients[<?= $index ?>][nama_bahan]" placeholder="Nama bahan" value="<?= e($ingredient['nama_bahan']) ?>" required>
-                                <input type="text" name="ingredients[<?= $index ?>][jumlah]" placeholder="Jumlah" value="<?= e($ingredient['jumlah']) ?>">
-                                <input type="text" name="ingredients[<?= $index ?>][satuan]" placeholder="Satuan" value="<?= e($ingredient['satuan']) ?>">
-                                <input type="text" name="ingredients[<?= $index ?>][keterangan]" placeholder="Keterangan" value="<?= e($ingredient['keterangan']) ?>">
+                                <input type="text" name="ingredients[<?= $index ?>][nama_bahan]" placeholder="Nama bahan" value="<?= e(
+    $ingredient["nama_bahan"],
+) ?>" required>
+                                <input type="text" name="ingredients[<?= $index ?>][jumlah]" placeholder="Jumlah" value="<?= e(
+    $ingredient["jumlah"],
+) ?>">
+                                <input type="text" name="ingredients[<?= $index ?>][satuan]" placeholder="Satuan" value="<?= e(
+    $ingredient["satuan"],
+) ?>">
+                                <input type="text" name="ingredients[<?= $index ?>][keterangan]" placeholder="Keterangan" value="<?= e(
+    $ingredient["keterangan"],
+) ?>">
+                                <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus bahan">Hapus</button>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -348,7 +427,10 @@ function old(string $key, array $old): string
                     <div class="recipe-create__rows" data-rows="tools">
                         <?php foreach ($tools as $index => $tool): ?>
                             <div class="recipe-create__row recipe-create__row--tool">
-                                <input type="text" name="tools[<?= $index ?>][nama_peralatan]" placeholder="Nama peralatan" value="<?= e($tool['nama_peralatan']) ?>" required>
+                                <input type="text" name="tools[<?= $index ?>][nama_peralatan]" placeholder="Nama peralatan" value="<?= e(
+    $tool["nama_peralatan"],
+) ?>" required>
+                                <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus peralatan">Hapus</button>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -360,7 +442,10 @@ function old(string $key, array $old): string
                 <h2>Langkah memasak</h2>
                 <label class="recipe-create__full">
                     <span>Tulis langkah per baris</span>
-                    <textarea name="langkah_resep" rows="8" placeholder="1. Panaskan minyak&#10;2. Tumis bawang" required><?= old('langkah_resep', $old) ?></textarea>
+                    <textarea name="langkah_resep" rows="8" placeholder="1. Panaskan minyak&#10;2. Tumis bawang" required><?= old(
+                        "langkah_resep",
+                        $old,
+                    ) ?></textarea>
                 </label>
             </section>
 
@@ -377,12 +462,14 @@ function old(string $key, array $old): string
             <input type="text" name="ingredients[__INDEX__][jumlah]" placeholder="Jumlah">
             <input type="text" name="ingredients[__INDEX__][satuan]" placeholder="Satuan">
             <input type="text" name="ingredients[__INDEX__][keterangan]" placeholder="Keterangan">
+            <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus bahan">Hapus</button>
         </div>
     </template>
 
     <template id="tool-template">
         <div class="recipe-create__row recipe-create__row--tool">
             <input type="text" name="tools[__INDEX__][nama_peralatan]" placeholder="Nama peralatan" required>
+            <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus peralatan">Hapus</button>
         </div>
     </template>
 
@@ -501,6 +588,28 @@ function old(string $key, array $old): string
                     const html = template.innerHTML.replaceAll('__INDEX__', String(index));
                     container.insertAdjacentHTML('beforeend', html);
                 });
+            });
+
+            document.addEventListener('click', (event) => {
+                const removeButton = event.target.closest('[data-remove-row]');
+                if (!removeButton) {
+                    return;
+                }
+
+                const row = removeButton.closest('.recipe-create__row');
+                const container = row ? row.parentElement : null;
+                if (!row || !container) {
+                    return;
+                }
+
+                if (container.children.length <= 1) {
+                    row.querySelectorAll('input').forEach((input) => {
+                        input.value = '';
+                    });
+                    return;
+                }
+
+                row.remove();
             });
         })();
 
