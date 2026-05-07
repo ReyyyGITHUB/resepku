@@ -1,18 +1,46 @@
 <?php
 
 require_once __DIR__ . '/../config/helpers.php';
-require_once __DIR__ . '/../data/recipes.php';
+require_once __DIR__ . '/../data/recipe_repository.php';
 
 startSession();
 
 $isGuest = !empty($_SESSION['guest_mode']) && empty($_SESSION['user']);
 $userName = $isGuest ? 'Guest' : ($_SESSION['user']['name'] ?? 'Nayaka');
-$recipes = recipe_catalog();
-$recipes = $recipes !== [] ? $recipes : [recipe_fallback()];
-$featured = recipe_find(1) ?? ($recipes[0] ?? null);
+$recipes = recipe_catalog_from_db(8);
 $topRecipes = array_slice($recipes, 0, 4);
 $bottomRecipes = array_slice($recipes, 4, 4);
-$sideRecipes = $featured ? recipe_related($featured, 2) : [];
+
+$featured = [
+    'title' => 'Special Salad Chicken',
+    'image' => '../assets/img/recipe-salad-hero.png',
+    'summary' => 'Enjoy the perfect combination of protein-rich grilled chicken breast and fresh vegetables.',
+    'cook_time' => '20 mins',
+    'id' => null,
+];
+
+$sideRecipes = [
+    [
+        'title' => 'Fresh Salad Bowl',
+        'image' => '../assets/img/recipe-salad-card.png',
+        'id' => null,
+    ],
+    [
+        'title' => 'Green Matcha Drink',
+        'image' => '../assets/img/recipe-salad-card.png',
+        'id' => null,
+    ],
+];
+
+if ($recipes === []) {
+    $topRecipes = [[
+        'id' => 0,
+        'title' => 'Belum ada resep',
+        'image' => '../assets/img/recipe-salad-card.png',
+        'cook_time' => '-',
+    ]];
+    $bottomRecipes = [];
+}
 
 ?>
 <!DOCTYPE html>
@@ -87,9 +115,11 @@ $sideRecipes = $featured ? recipe_related($featured, 2) : [];
         <section class="recipe-grid" aria-label="Daftar resep">
             <?php foreach ($topRecipes as $recipe): ?>
                 <article class="recipe-card" data-node-id="16:155">
-                    <a class="recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
-                        <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
-                    </a>
+                    <?php if (!empty($recipe['id'])): ?>
+                        <a class="recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
+                            <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
+                        </a>
+                    <?php endif; ?>
                     <div class="recipe-card__panel"></div>
                     <img class="recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
                     <button class="recipe-card__bookmark" type="button" aria-label="Simpan resep">
@@ -113,7 +143,7 @@ $sideRecipes = $featured ? recipe_related($featured, 2) : [];
                     <h2><?= e($featured['title']) ?></h2>
                     <p><?= e($featured['summary']) ?></p>
                     <div class="feature-card__footer">
-                        <a href="../resep/detail.php?id=<?= e((string) $featured['id']) ?>">Get the recipe</a>
+                        <a href="#">Get the recipe</a>
                         <span>Cook Time : <?= e($featured['cook_time']) ?></span>
                     </div>
                 </div>
@@ -136,9 +166,11 @@ $sideRecipes = $featured ? recipe_related($featured, 2) : [];
         <section class="recipe-grid recipe-grid--bottom" aria-label="Resep lainnya">
             <?php foreach ($bottomRecipes as $recipe): ?>
                 <article class="recipe-card" data-node-id="16:155">
-                    <a class="recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
-                        <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
-                    </a>
+                    <?php if (!empty($recipe['id'])): ?>
+                        <a class="recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
+                            <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
+                        </a>
+                    <?php endif; ?>
                     <div class="recipe-card__panel"></div>
                     <img class="recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
                     <button class="recipe-card__bookmark" type="button" aria-label="Simpan resep">

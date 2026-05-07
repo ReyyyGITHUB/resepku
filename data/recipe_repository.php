@@ -1,0 +1,334 @@
+<?php
+
+require_once __DIR__ . '/../config/db.php';
+
+function recipe_asset_path(?string $path): string
+{
+    $path = trim((string) $path);
+
+    if ($path === '') {
+        return '../assets/img/recipe-salad-card.png';
+    }
+
+    if (preg_match('~^(?:https?:)?//~i', $path)) {
+        return $path;
+    }
+
+    if (str_starts_with($path, '/')) {
+        return $path;
+    }
+
+    if (str_starts_with($path, '../') || str_starts_with($path, './')) {
+        return $path;
+    }
+
+    return '../' . ltrim($path, '/');
+}
+
+function recipe_row_to_card(array $row): array
+{
+    $id = (int) ($row['resep_id'] ?? 0);
+    $title = (string) ($row['nama_resep'] ?? '');
+    $image = recipe_asset_path($row['foto_resep'] ?? null);
+
+    return [
+        'id' => $id,
+        'title' => $title !== '' ? $title : 'Untitled Recipe',
+        'slug' => $row['slug'] ?? ($id > 0 ? 'recipe-' . $id : 'recipe-preview'),
+        'image' => $image,
+        'author' => $row['author'] ?? 'ResepKu Team',
+        'author_avatar' => recipe_asset_path($row['author_avatar'] ?? '../assets/img/home-profile.png'),
+        'cook_time' => recipe_format_cook_time($row['waktu_memasak'] ?? null),
+        'servings' => recipe_format_servings($row['porsi'] ?? null),
+        'difficulty' => recipe_format_difficulty($row['tingkat_kesulitan'] ?? null),
+        'rating' => isset($row['rating_value']) ? (float) $row['rating_value'] : 0.0,
+        'summary' => (string) ($row['summary'] ?? ''),
+        'description' => (string) ($row['deskripsi'] ?? ''),
+        'ingredients' => $row['ingredients'] ?? [],
+        'tools' => $row['tools'] ?? [],
+        'steps' => $row['steps'] ?? [],
+        'category' => (string) ($row['kategori'] ?? ''),
+        'related' => $row['related'] ?? [],
+    ];
+}
+
+function recipe_format_cook_time(mixed $minutes): string
+{
+    if ($minutes === null || $minutes === '') {
+        return '-';
+    }
+
+    return ((int) $minutes) . ' mins';
+}
+
+function recipe_format_servings(mixed $servings): string
+{
+    if ($servings === null || $servings === '') {
+        return '-';
+    }
+
+    $servings = (int) $servings;
+    return $servings . ($servings === 1 ? ' serving' : ' servings');
+}
+
+function recipe_format_difficulty(mixed $difficulty): string
+{
+    return match ((string) $difficulty) {
+        'mudah' => 'Easy',
+        'sedang' => 'Medium',
+        'sulit' => 'Hard',
+        default => '-',
+    };
+}
+
+function recipe_parse_list(?string $value): array
+{
+    $value = trim((string) $value);
+
+    if ($value === '') {
+        return [];
+    }
+
+    $parts = preg_split('/\r\n|\r|\n/', $value);
+    $items = [];
+
+    foreach ($parts as $part) {
+        $item = trim(preg_replace('/^\s*[-•\d.\)]\s*/', '', (string) $part));
+        if ($item !== '') {
+            $items[] = $item;
+        }
+    }
+
+    return $items;
+}
+
+function recipe_catalog_from_db(int $limit = 8): array
+{
+    $sql = <<<SQL
+        SELECT
+            r.resep_id,
+            r.nama_resep,
+            r.foto_resep,
+            r.waktu_memasak,
+            r.porsi,
+            r.tingkat_kesulitan,
+            r.kategori,
+            r.deskripsi,
+            r.langkah_resep,
+            p.nama_pengguna AS author_name,
+            p.foto_profil AS author_avatar
+        FROM recipes r
+        INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
+        ORDER BY r.dibuat_pada DESC, r.resep_id DESC
+        LIMIT :limit
+    SQL;
+
+    $stmt = db()->prepare($sql);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $recipes = [];
+
+    foreach ($stmt->fetchAll() as $row) {
+        $recipes[] = recipe_row_to_card([
+            'resep_id' => $row['resep_id'],
+            'nama_resep' => $row['nama_resep'],
+            'foto_resep' => $row['foto_resep'],
+            'waktu_memasak' => $row['waktu_memasak'],
+            'porsi' => $row['porsi'],
+            'tingkat_kesulitan' => $row['tingkat_kesulitan'],
+            'kategori' => $row['kategori'],
+            'summary' => $row['deskripsi'] ?? '',
+            'deskripsi' => $row['deskripsi'] ?? '',
+            'author' => $row['author_name'] ?? 'ResepKu Team',
+            'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+            'ingredients' => [],
+            'tools' => [],
+            'steps' => recipe_parse_list($row['langkah_resep'] ?? ''),
+        ]);
+    }
+
+    return $recipes;
+}
+
+function recipe_find_db(int $id): ?array
+{
+    $sql = <<<SQL
+        SELECT
+            r.resep_id,
+            r.pengguna_id,
+            r.nama_resep,
+            r.deskripsi,
+            r.langkah_resep,
+            r.waktu_memasak,
+            r.porsi,
+            r.foto_resep,
+            r.kategori,
+            r.tingkat_kesulitan,
+            p.nama_pengguna AS author_name,
+            p.foto_profil AS author_avatar
+        FROM recipes r
+        INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
+        WHERE r.resep_id = :id
+        LIMIT 1
+    SQL;
+
+    $stmt = db()->prepare($sql);
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+
+    if (!$row) {
+        return null;
+    }
+
+    $ingredientsStmt = db()->prepare(
+        'SELECT nama_bahan, jumlah, satuan, keterangan FROM bahan_resep WHERE resep_id = :id ORDER BY bahan_resep_id ASC'
+    );
+    $ingredientsStmt->execute([':id' => $id]);
+    $ingredients = [];
+    foreach ($ingredientsStmt->fetchAll() as $ingredientRow) {
+        $ingredient = trim((string) ($ingredientRow['nama_bahan'] ?? ''));
+        $amount = trim((string) ($ingredientRow['jumlah'] ?? ''));
+        $unit = trim((string) ($ingredientRow['satuan'] ?? ''));
+        $note = trim((string) ($ingredientRow['keterangan'] ?? ''));
+
+        if ($amount !== '') {
+            $ingredient .= ' ' . $amount;
+        }
+
+        if ($unit !== '') {
+            $ingredient .= ' ' . $unit;
+        }
+
+        if ($note !== '') {
+            $ingredient .= ' ' . $note;
+        }
+
+        $ingredients[] = trim($ingredient);
+    }
+
+    $toolsStmt = db()->prepare(
+        'SELECT nama_peralatan FROM peralatan_resep WHERE resep_id = :id ORDER BY peralatan_id ASC'
+    );
+    $toolsStmt->execute([':id' => $id]);
+    $tools = [];
+    foreach ($toolsStmt->fetchAll() as $toolRow) {
+        $tool = trim((string) ($toolRow['nama_peralatan'] ?? ''));
+        if ($tool !== '') {
+            $tools[] = $tool;
+        }
+    }
+
+    $steps = recipe_parse_list((string) ($row['langkah_resep'] ?? ''));
+    $summary = trim((string) ($row['deskripsi'] ?? ''));
+
+    return recipe_row_to_card([
+        'resep_id' => $row['resep_id'],
+        'nama_resep' => $row['nama_resep'],
+        'foto_resep' => $row['foto_resep'],
+        'waktu_memasak' => $row['waktu_memasak'],
+        'porsi' => $row['porsi'],
+        'tingkat_kesulitan' => $row['tingkat_kesulitan'],
+        'kategori' => $row['kategori'],
+        'summary' => $summary,
+        'deskripsi' => $row['deskripsi'] ?? '',
+        'author' => $row['author_name'] ?? 'ResepKu Team',
+        'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+        'ingredients' => $ingredients,
+        'tools' => $tools,
+        'steps' => $steps,
+        'related' => [],
+    ]);
+}
+
+function recipe_related_db(array $recipe, int $limit = 3): array
+{
+    $category = (string) ($recipe['category'] ?? '');
+    $excludeId = (int) ($recipe['id'] ?? 0);
+
+    if ($category !== '') {
+        $sql = <<<SQL
+            SELECT
+                r.resep_id,
+                r.nama_resep,
+                r.foto_resep,
+                r.waktu_memasak,
+                r.porsi,
+                r.tingkat_kesulitan,
+                r.kategori,
+                p.nama_pengguna AS author_name,
+                p.foto_profil AS author_avatar
+            FROM recipes r
+            INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
+            WHERE r.kategori = :kategori
+              AND r.resep_id <> :exclude_id
+            ORDER BY r.dibuat_pada DESC, r.resep_id DESC
+            LIMIT :limit
+        SQL;
+
+        $stmt = db()->prepare($sql);
+        $stmt->bindValue(':kategori', $category, PDO::PARAM_STR);
+        $stmt->bindValue(':exclude_id', $excludeId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $items = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $items[] = recipe_row_to_card([
+                'resep_id' => $row['resep_id'],
+                'nama_resep' => $row['nama_resep'],
+                'foto_resep' => $row['foto_resep'],
+                'waktu_memasak' => $row['waktu_memasak'],
+                'porsi' => $row['porsi'],
+                'tingkat_kesulitan' => $row['tingkat_kesulitan'],
+                'kategori' => $row['kategori'],
+                'author' => $row['author_name'] ?? 'ResepKu Team',
+                'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+            ]);
+        }
+
+        if ($items !== []) {
+            return $items;
+        }
+    }
+
+    $sql = <<<SQL
+        SELECT
+            r.resep_id,
+            r.nama_resep,
+            r.foto_resep,
+            r.waktu_memasak,
+            r.porsi,
+            r.tingkat_kesulitan,
+            r.kategori,
+            p.nama_pengguna AS author_name,
+            p.foto_profil AS author_avatar
+        FROM recipes r
+        INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
+        WHERE r.resep_id <> :exclude_id
+        ORDER BY r.dibuat_pada DESC, r.resep_id DESC
+        LIMIT :limit
+    SQL;
+
+    $stmt = db()->prepare($sql);
+    $stmt->bindValue(':exclude_id', $excludeId, PDO::PARAM_INT);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $items = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $items[] = recipe_row_to_card([
+            'resep_id' => $row['resep_id'],
+            'nama_resep' => $row['nama_resep'],
+            'foto_resep' => $row['foto_resep'],
+            'waktu_memasak' => $row['waktu_memasak'],
+            'porsi' => $row['porsi'],
+            'tingkat_kesulitan' => $row['tingkat_kesulitan'],
+            'kategori' => $row['kategori'],
+            'author' => $row['author_name'] ?? 'ResepKu Team',
+            'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+        ]);
+    }
+
+    return $items;
+}

@@ -1,17 +1,36 @@
 <?php
 
 require_once __DIR__ . '/../config/helpers.php';
-require_once __DIR__ . '/../data/recipes.php';
+require_once __DIR__ . '/../data/recipe_repository.php';
 
 startSession();
 
 $isGuest = empty($_SESSION['user']);
 $userName = $_SESSION['user']['name'] ?? 'Guest';
 $recipeId = (int) ($_GET['id'] ?? 1);
-$recipes = recipe_catalog();
-$recipes = $recipes !== [] ? $recipes : [recipe_fallback()];
-$recipe = recipe_find($recipeId) ?? ($recipes[0] ?? null);
-$relatedRecipes = $recipe ? recipe_related($recipe, 3) : [];
+$recipe = recipe_find_db($recipeId);
+
+if ($recipe === null) {
+    $recipe = [
+        'id' => 0,
+        'title' => 'Recipe not available',
+        'image' => '../assets/img/recipe-salad-hero.png',
+        'author' => 'ResepKu',
+        'author_avatar' => '../assets/img/home-profile.png',
+        'cook_time' => '-',
+        'servings' => '-',
+        'difficulty' => '-',
+        'rating' => 0,
+        'summary' => 'No recipe data is available yet.',
+        'description' => 'No recipe data is available yet.',
+        'ingredients' => [],
+        'tools' => [],
+        'steps' => [],
+        'category' => '',
+    ];
+}
+
+$relatedRecipes = $recipe['id'] > 0 ? recipe_related_db($recipe, 3) : [];
 
 if ($recipe === null) {
     $recipe = [
@@ -71,6 +90,11 @@ if ($recipe === null) {
     </aside>
 
     <main class="detail-main">
+        <a class="detail-back" href="../home/" aria-label="Kembali ke halaman home">
+            <span aria-hidden="true">←</span>
+            <span>Back</span>
+        </a>
+
         <section class="detail-hero">
             <div class="detail-hero__media">
                 <img src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">

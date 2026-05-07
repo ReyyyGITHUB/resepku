@@ -1,0 +1,380 @@
+.auth-page {
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: #201712;
+}
+
+.login-screen {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+    color: var(--color-white);
+}
+
+.register-screen {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+    color: var(--color-white);
+}
+
+.login-screen__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    pointer-events: none;
+}
+
+.register-back {
+    position: absolute;
+    z-index: 2;
+    top: 29px;
+    left: 38px;
+    display: block;
+    width: 28px;
+    height: 33px;
+}
+
+.register-back img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.login-screen__content {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 640px);
+    min-height: 729px;
+    padding-top: 29px;
+}
+
+.brand {
+    position: absolute;
+    top: 29px;
+    left: 120px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 96px;
+}
+
+.brand__mark {
+    width: 84px;
+    height: 96px;
+    object-fit: cover;
+}
+
+.brand__copy {
+    margin-left: -3px;
+    padding-top: 24px;
+    line-height: 1;
+}
+
+.brand__name {
+    width: 144px;
+    height: 34px;
+    margin: 0;
+    color: var(--color-white);
+    font-family: var(--font-brand);
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.15;
+    text-decoration: underline;
+}
+
+.brand__tagline {
+    margin: 0;
+    color: var(--color-white);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+
+.login-form {
+    position: absolute;
+    top: 261px;
+    left: 132px;
+    width: 394px;
+}
+
+.login-form__title {
+    position: relative;
+    left: 50%;
+    width: 420px;
+    margin: 0 0 58px;
+    transform: translateX(-50%);
+    color: var(--color-white);
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    text-decoration: underline;
+}
+
+.login-form__title span {
+    display: block;
+}
+
+.auth-alert {
+    width: 100%;
+    margin: -34px 0 16px;
+    padding: 9px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.25;
+}
+
+.auth-alert--error {
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    background: rgba(120, 25, 18, 0.52);
+    color: var(--color-white);
+}
+
+.auth-alert--success {
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    background: rgba(26, 94, 53, 0.52);
+    color: var(--color-white);
+}
+
+.auth-form__input,
+.login-form__input {
+    display: block;
+    width: 100%;
+    height: 50px;
+    margin-bottom: 26px;
+    padding: 10px;
+    border: 1px solid var(--color-white);
+    border-radius: 16px;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.auth-form__input::placeholder,
+.login-form__input::placeholder {
+    color: var(--color-white);
+    opacity: 1;
+}
+
+.auth-form__input:focus,
+.login-form__input:focus {
+    border-color: var(--color-white);
+}
+
+.login-form__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 50px;
+    margin-top: 22px;
+    padding: 10px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--color-orange);
+    color: var(--color-white);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.2;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.login-form__button:hover {
+    background: rgba(255, 174, 23, 0.98);
+}
+
+.login-form__guest {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 14px;
+    padding: 10px;
+    border: 1px solid var(--color-white);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-white);
+    font-size: 16px;
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+.login-form__guest:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.login-form__signup {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 23px 0 0;
+    color: var(--color-white);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.2;
+    text-decoration: underline;
+}
+
+.login-form__signup a {
+    color: var(--color-gold);
+    text-decoration: underline;
+}
+
+.register-brand {
+    top: 29px;
+    left: 120px;
+}
+
+.register-form {
+    position: absolute;
+    top: 204px;
+    left: 132px;
+    width: 394px;
+}
+
+.register-form__intro {
+    width: 394px;
+    margin: 0 0 51px;
+    color: var(--color-white);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.register-form__intro h1 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.register-form__intro p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.register-form .auth-alert {
+    margin: -32px 0 14px;
+}
+
+.register-form .login-form__input {
+    margin-bottom: 36px;
+}
+
+.register-form .login-form__input:nth-of-type(2) {
+    margin-bottom: 30px;
+}
+
+.register-form .login-form__input:nth-of-type(4) {
+    margin-bottom: 26px;
+}
+
+.register-form__button {
+    margin-top: 0;
+    text-decoration: none;
+}
+
+@media (max-width: 700px) {
+    .login-screen__content {
+        width: 100%;
+        min-height: 100vh;
+        padding: 0;
+    }
+
+    .brand {
+        top: 22px;
+        left: 22px;
+        height: 58px;
+    }
+
+    .brand__mark {
+        width: 50px;
+        height: 58px;
+    }
+
+    .brand__copy {
+        padding-top: 12px;
+    }
+
+    .brand__name {
+        height: 24px;
+        font-size: 20px;
+    }
+
+    .brand__tagline {
+        max-width: calc(100vw - 92px);
+        overflow-wrap: anywhere;
+        white-space: normal;
+        font-size: 11px;
+    }
+
+    .login-form {
+        top: 236px;
+        left: 50%;
+        width: min(394px, calc(100vw - 44px));
+        transform: translateX(-50%);
+    }
+
+    .login-form__title {
+        width: min(420px, calc(100vw - 32px));
+        margin-bottom: 46px;
+        font-size: 22px;
+    }
+
+    .login-form__signup {
+        flex-wrap: wrap;
+        font-size: 18px;
+    }
+
+    .register-back {
+        top: 22px;
+        left: 18px;
+        width: 26px;
+        height: 31px;
+    }
+
+    .register-brand {
+        left: 62px;
+    }
+
+    .register-form {
+        top: 170px;
+        left: 50%;
+        width: min(394px, calc(100vw - 44px));
+        transform: translateX(-50%);
+    }
+
+    .register-form__intro {
+        width: 100%;
+        margin-bottom: 54px;
+        white-space: normal;
+    }
+
+    .register-form__intro h1 {
+        font-size: 22px;
+    }
+
+    .register-form__intro p {
+        font-size: 14px;
+    }
+
+    .register-form .login-form__input {
+        margin-bottom: 24px;
+    }
+}
+
