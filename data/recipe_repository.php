@@ -921,6 +921,102 @@ function recipe_toggle_favorite_db(int $recipeId, int $userId): array
     }
 }
 
+function recipe_is_following_db(int $followerId, int $targetUserId): bool
+{
+    if ($followerId <= 0 || $targetUserId <= 0 || $followerId === $targetUserId) {
+        return false;
+    }
+
+    $stmt = db()->prepare(
+        'SELECT 1 FROM following WHERE follower_id = :follower_id AND following_id_user = :target_user_id LIMIT 1'
+    );
+    $stmt->execute([
+        ':follower_id' => $followerId,
+        ':target_user_id' => $targetUserId,
+    ]);
+
+    return (bool) $stmt->fetchColumn();
+}
+
+function recipe_follow_state_db(int $targetUserId, ?int $followerId = null): array
+{
+    $profile = recipe_user_profile_db($targetUserId);
+
+    if ($profile === null || $profile['status'] !== 'aktif') {
+        throw new InvalidArgumentException('Profil pengguna tidak tersedia.');
+    }
+
+    return [
+        'target_user_id' => $targetUserId,
+        'following' => $followerId !== null ? recipe_is_following_db($followerId, $targetUserId) : false,
+        'follower_count' => (int) $profile['follower_count'],
+        'following_count' => (int) $profile['following_count'],
+    ];
+}
+
+function recipe_toggle_follow_db(int $targetUserId, int $followerId): array
+{
+    if ($targetUserId <= 0) {
+        throw new InvalidArgumentException('User tidak valid.');
+    }
+
+    if ($followerId <= 0) {
+        throw new InvalidArgumentException('Silakan login terlebih dahulu.');
+    }
+
+    if ($targetUserId === $followerId) {
+        throw new InvalidArgumentException('Kamu tidak bisa follow profile sendiri.');
+    }
+
+    $profile = recipe_user_profile_db($targetUserId);
+    if ($profile === null || $profile['status'] !== 'aktif') {
+        throw new InvalidArgumentException('Profil pengguna tidak tersedia.');
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $existsStmt = $pdo->prepare(
+            'SELECT following_id FROM following WHERE follower_id = :follower_id AND following_id_user = :target_user_id LIMIT 1'
+        );
+        $existsStmt->execute([
+            ':follower_id' => $followerId,
+            ':target_user_id' => $targetUserId,
+        ]);
+        $existing = $existsStmt->fetch();
+
+        if ($existing) {
+            $deleteStmt = $pdo->prepare(
+                'DELETE FROM following WHERE follower_id = :follower_id AND following_id_user = :target_user_id'
+            );
+            $deleteStmt->execute([
+                ':follower_id' => $followerId,
+                ':target_user_id' => $targetUserId,
+            ]);
+            $following = false;
+        } else {
+            $insertStmt = $pdo->prepare(
+                'INSERT INTO following (follower_id, following_id_user) VALUES (:follower_id, :target_user_id)'
+            );
+            $insertStmt->execute([
+                ':follower_id' => $followerId,
+                ':target_user_id' => $targetUserId,
+            ]);
+            $following = true;
+        }
+
+        $pdo->commit();
+
+        $state = recipe_follow_state_db($targetUserId, $followerId);
+        $state['following'] = $following;
+        return $state;
+    } catch (Throwable $throwable) {
+        $pdo->rollBack();
+        throw $throwable;
+    }
+}
+
 function recipe_remove_favorite_db(int $recipeId, int $userId): bool
 {
     $stmt = db()->prepare(

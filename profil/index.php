@@ -5,18 +5,30 @@ require_once __DIR__ . '/../data/recipe_repository.php';
 
 startSession();
 
-if (empty($_SESSION['user'])) {
+$currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
+$requestedUserId = (int) ($_GET['id'] ?? 0);
+$isPublicProfile = $requestedUserId > 0;
+
+if (!$isPublicProfile && $currentUserId <= 0) {
     redirectTo('../auth/login.php');
 }
 
-$userId = (int) ($_SESSION['user']['id'] ?? 0);
-$profile = $userId > 0 ? recipe_user_profile_db($userId) : null;
-
-if ($profile === null) {
-    redirectTo('../home/');
+if ($isPublicProfile && $currentUserId > 0 && $requestedUserId === $currentUserId) {
+    redirectTo('../profil/');
 }
 
-$recipes = recipe_user_recipes_db($userId, 12);
+$profileUserId = $isPublicProfile ? $requestedUserId : $currentUserId;
+$profile = $profileUserId > 0 ? recipe_user_profile_db($profileUserId) : null;
+$isUnavailable = $profile === null || ($isPublicProfile && $profile['status'] !== 'aktif');
+$isFollowingProfile = !$isUnavailable && $isPublicProfile && $currentUserId > 0
+    ? recipe_is_following_db($currentUserId, $profileUserId)
+    : false;
+$recipes = !$isUnavailable ? recipe_user_recipes_db($profileUserId, 12) : [];
+$sidebarProfile = $currentUserId > 0 ? recipe_user_profile_db($currentUserId) : null;
+$sidebarName = $sidebarProfile['name'] ?? 'Guest';
+$sidebarAvatar = $sidebarProfile['avatar'] ?? '../assets/img/home-profile.png';
+$sidebarBio = $sidebarProfile['bio'] ?? '';
+$pageTitle = $isPublicProfile && !$isUnavailable ? $profile['name'] . ' - Resepku' : 'Profile - Resepku';
 
 ?>
 <!DOCTYPE html>
@@ -24,29 +36,33 @@ $recipes = recipe_user_recipes_db($userId, 12);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Resepku</title>
+    <title><?= e($pageTitle) ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="profile-page">
+<body class="profile-page" data-guest-mode="<?= $currentUserId > 0 ? '0' : '1' ?>" data-csrf-token="<?= e(csrfToken()) ?>">
     <aside class="home-sidebar" data-node-id="16:154">
         <div class="home-sidebar__profile">
             <div class="home-sidebar__brand">
                 <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
                 <div>
                     <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status">Signed in</p>
+                    <p class="home-sidebar__status"><?= $currentUserId > 0 ? 'Signed in' : 'Guest mode' ?></p>
                 </div>
             </div>
 
             <div class="home-sidebar__identity">
-                <img src="<?= e($profile['avatar']) ?>" alt="<?= e($profile['name']) ?>" class="home-sidebar__avatar">
+                <img src="<?= e($sidebarAvatar) ?>" alt="<?= e($sidebarName) ?>" class="home-sidebar__avatar">
                 <div class="home-sidebar__welcome">
-                    <strong><?= e($profile['name']) ?></strong>
-                    <span><?= $profile['bio'] !== '' ? e($profile['bio']) : 'Kelola akun dan resep publik kamu dari sini.' ?></span>
+                    <strong><?= e($sidebarName) ?></strong>
+                    <span><?= $sidebarBio !== '' ? e($sidebarBio) : ($currentUserId > 0 ? 'Kelola akun dan resep publik kamu dari sini.' : 'Jelajahi profil dan resep komunitas.') ?></span>
                 </div>
             </div>
 
-            <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
+            <?php if ($currentUserId > 0): ?>
+                <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
+            <?php else: ?>
+                <a href="../auth/login.php" class="home-sidebar__logout">Login</a>
+            <?php endif; ?>
         </div>
 
         <div class="home-sidebar__divider"></div>
@@ -54,10 +70,15 @@ $recipes = recipe_user_recipes_db($userId, 12);
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Profil">
             <a href="../home/">Home</a>
-            <a class="is-active" href="../profil/">Profile</a>
-            <a href="../resep/myresep.php">My Recipes</a>
-            <a href="../resep/buat.php">Add Recipe</a>
-            <a href="../resep/favorite.php">Favorite</a>
+            <?php if ($currentUserId > 0): ?>
+                <a class="<?= !$isPublicProfile ? 'is-active' : '' ?>" href="../profil/">Profile</a>
+                <a href="../resep/myresep.php">My Recipes</a>
+                <a href="../resep/buat.php">Add Recipe</a>
+                <a href="../resep/favorite.php">Favorite</a>
+            <?php else: ?>
+                <a href="../auth/login.php">Login</a>
+                <a href="../auth/register.php">Register</a>
+            <?php endif; ?>
         </nav>
 
         <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
@@ -72,6 +93,18 @@ $recipes = recipe_user_recipes_db($userId, 12);
     </aside>
 
     <main class="profile-main">
+        <?php if ($isUnavailable): ?>
+            <section class="profile-hero" aria-label="Profil tidak tersedia">
+                <div class="profile-hero__content">
+                    <img class="profile-hero__avatar" src="../assets/img/home-profile.png" alt="">
+                    <h1 class="profile-hero__name">Profile tidak tersedia</h1>
+                    <p class="profile-hero__message">User tidak aktif, tidak bisa melihat profile.</p>
+                    <div class="profile-actions">
+                        <a class="profile-actions__primary" href="../home/">Kembali ke Home</a>
+                    </div>
+                </div>
+            </section>
+        <?php else: ?>
         <section class="profile-hero" aria-label="Profil pengguna">
             <div class="profile-hero__content">
                 <img class="profile-hero__avatar" src="<?= e($profile['avatar']) ?>" alt="<?= e($profile['name']) ?>">
@@ -86,7 +119,7 @@ $recipes = recipe_user_recipes_db($userId, 12);
                         <span>Recipe</span>
                     </div>
                     <div class="profile-stat">
-                        <strong><?= e((string) $profile['follower_count']) ?></strong>
+                        <strong data-follower-count><?= e((string) $profile['follower_count']) ?></strong>
                         <span>Follower</span>
                     </div>
                     <div class="profile-stat">
@@ -96,17 +129,27 @@ $recipes = recipe_user_recipes_db($userId, 12);
                 </div>
 
                 <div class="profile-actions">
-                    <a class="profile-actions__primary" href="../resep/buat.php">Add Recipe</a>
-                    <a class="profile-actions__secondary" href="../auth/logout.php">Logout</a>
+                    <?php if ($isPublicProfile): ?>
+                        <button
+                            class="profile-actions__primary<?= $isFollowingProfile ? ' is-active' : '' ?>"
+                            type="button"
+                            data-guest-gate
+                            data-social-action="follow"
+                            data-user-id="<?= e((string) $profileUserId) ?>"
+                        ><?= $isFollowingProfile ? 'Following' : 'Follow' ?></button>
+                    <?php else: ?>
+                        <a class="profile-actions__primary" href="../resep/buat.php">Add Recipe</a>
+                        <a class="profile-actions__secondary" href="../auth/logout.php">Logout</a>
+                    <?php endif; ?>
                 </div>
             </div>
         </section>
 
-        <section class="profile-section" aria-label="Daftar resep saya">
+        <section class="profile-section" aria-label="<?= $isPublicProfile ? 'Daftar resep pengguna' : 'Daftar resep saya' ?>">
             <div class="profile-section__head">
                 <div>
-                    <h2>My Recipes</h2>
-                    <p>Resep yang kamu bagikan ke komunitas.</p>
+                    <h2><?= $isPublicProfile ? 'Recipes' : 'My Recipes' ?></h2>
+                    <p><?= $isPublicProfile ? 'Resep yang dibagikan pengguna ini ke komunitas.' : 'Resep yang kamu bagikan ke komunitas.' ?></p>
                 </div>
             </div>
 
@@ -114,8 +157,10 @@ $recipes = recipe_user_recipes_db($userId, 12);
                 <div class="profile-empty-wrap">
                     <article class="profile-empty">
                         <h2>Belum ada resep</h2>
-                        <p>Buat resep pertama supaya profilmu langsung terisi.</p>
-                        <a href="../resep/buat.php">Tambah resep</a>
+                        <p><?= $isPublicProfile ? 'Belum ada resep dari pengguna ini.' : 'Buat resep pertama supaya profilmu langsung terisi.' ?></p>
+                        <?php if (!$isPublicProfile): ?>
+                            <a href="../resep/buat.php">Tambah resep</a>
+                        <?php endif; ?>
                     </article>
                 </div>
             <?php else: ?>
@@ -143,6 +188,8 @@ $recipes = recipe_user_recipes_db($userId, 12);
                 </section>
             <?php endif; ?>
         </section>
+        <?php endif; ?>
     </main>
+    <script src="../assets/js/main.js"></script>
 </body>
 </html>

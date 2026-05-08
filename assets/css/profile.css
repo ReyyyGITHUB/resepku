@@ -65,6 +65,14 @@
     font-weight: 700;
 }
 
+.profile-hero__message {
+    max-width: 560px;
+    margin: 0;
+    color: #5f646d;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
 .profile-stats {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -115,13 +123,36 @@
 }
 
 .profile-actions__primary {
+    font-family: inherit;
+}
+
+.profile-actions__primary {
     background: #fb9b00;
     color: #111111;
+}
+
+.profile-actions__primary.is-active {
+    background: #111111;
+    color: #ffffff;
+}
+
+.profile-actions__primary--disabled {
+    cursor: not-allowed;
+    opacity: 0.64;
 }
 
 .profile-actions__secondary {
     background: #ffffff;
     color: #000000;
+}
+
+.profile-actions__hint {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    color: #5f646d;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .profile-section {

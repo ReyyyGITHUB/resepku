@@ -89,6 +89,65 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    async function postSocialAction(endpoint, body) {
+        var response = await fetch("../api/" + endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "X-CSRF-Token": csrfToken,
+            },
+            body: new URLSearchParams(body).toString(),
+        });
+
+        var payload = await response.json().catch(function () {
+            return null;
+        });
+
+        if (!response.ok || !payload) {
+            throw new Error((payload && payload.message) || "Gagal memproses aksi.");
+        }
+
+        return payload;
+    }
+
+    var followButton = document.querySelector('[data-social-action="follow"]');
+    var followerCount = document.querySelector("[data-follower-count]");
+
+    function updateFollowState(state) {
+        if (!followButton) {
+            return;
+        }
+
+        var following = !!state.following;
+        followButton.classList.toggle("is-active", following);
+        followButton.textContent = following ? "Followed" : "Follow";
+
+        if (followerCount && typeof state.follower_count !== "undefined") {
+            followerCount.textContent = String(state.follower_count);
+        }
+    }
+
+    if (followButton) {
+        followButton.addEventListener("click", async function () {
+            if (guestMode) {
+                window.location.href = "../auth/login.php";
+                return;
+            }
+
+            try {
+                followButton.disabled = true;
+                followButton.classList.add("profile-actions__primary--disabled");
+                var payload = await postSocialAction("follow.php", { user_id: followButton.dataset.userId || "" });
+                updateFollowState(payload.data || {});
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                followButton.disabled = false;
+                followButton.classList.remove("profile-actions__primary--disabled");
+            }
+        });
+    }
+
     if (!detailPage) {
         return;
     }
@@ -187,27 +246,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         commentList.innerHTML = list.map(renderComment).join("");
         commentEmpty = null;
-    }
-
-    async function postSocialAction(endpoint, body) {
-        var response = await fetch("../api/" + endpoint, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "X-CSRF-Token": csrfToken,
-            },
-            body: new URLSearchParams(body).toString(),
-        });
-
-        var payload = await response.json().catch(function () {
-            return null;
-        });
-
-        if (!response.ok || !payload) {
-            throw new Error((payload && payload.message) || "Gagal memproses aksi.");
-        }
-
-        return payload;
     }
 
     if (likeButton) {

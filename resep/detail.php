@@ -16,6 +16,7 @@ if ($recipe === null) {
         'id' => 0,
         'title' => 'Recipe not available',
         'image' => '../assets/img/recipe-salad-hero.png',
+        'user_id' => 0,
         'author' => 'ResepKu',
         'author_avatar' => '../assets/img/home-profile.png',
         'cook_time' => '-',
@@ -51,6 +52,7 @@ if ($recipe === null) {
         'id' => 0,
         'title' => 'Recipe not available',
         'image' => '/assets/img/recipe-salad-hero.png',
+        'user_id' => 0,
         'author' => 'ResepKu',
         'author_avatar' => '/assets/img/home-profile.png',
         'cook_time' => '-',
@@ -135,13 +137,23 @@ if ($recipe === null) {
                 <p class="detail-hero__eyebrow">Recipe Detail</p>
                 <h1><?= e($recipe['title']) ?></h1>
 
-                <div class="detail-author">
-                    <img src="<?= e($recipe['author_avatar']) ?>" alt="">
-                    <div>
-                        <strong><?= e($recipe['author']) ?></strong>
-                        <span>Shared on ResepKu</span>
+                <?php if ((int) ($recipe['user_id'] ?? 0) > 0): ?>
+                    <a class="detail-author detail-author--link" href="../profil/?id=<?= e((string) $recipe['user_id']) ?>">
+                        <img src="<?= e($recipe['author_avatar']) ?>" alt="">
+                        <div>
+                            <strong><?= e($recipe['author']) ?></strong>
+                            <span>Shared on ResepKu</span>
+                        </div>
+                    </a>
+                <?php else: ?>
+                    <div class="detail-author">
+                        <img src="<?= e($recipe['author_avatar']) ?>" alt="">
+                        <div>
+                            <strong><?= e($recipe['author']) ?></strong>
+                            <span>Shared on ResepKu</span>
+                        </div>
                     </div>
-                </div>
+                <?php endif; ?>
 
                 <div class="detail-meta">
                     <span><?= e($recipe['cook_time']) ?></span>
