@@ -214,7 +214,7 @@ CREATE TABLE `pengguna` (
 --
 
 INSERT INTO `pengguna` (`pengguna_id`, `nama_pengguna`, `email`, `kata_sandi`, `foto_profil`, `bio`, `role`, `status`, `dibuat_pada`) VALUES
-(1, 'Nayaka', 'nayaka@resepku.test', '$2y$10$dummyhashdummyhashdummyhashdummyhashdummyhashdummyhashdum', 'assets/img/home-profile.png', 'ResepKu team account for demo content.', 'admin', 'aktif', '2026-05-07 16:22:38'),
+(1, 'resepku', 'resepku@resepku.test', 'resepku123', 'assets/img/home-profile.png', 'ResepKu admin account for demo content.', 'admin', 'aktif', '2026-05-07 16:22:38'),
 (2, 'jembut', 'jembutlebat@gmail.com', 'jembut123', NULL, NULL, 'pengguna', 'aktif', '2026-05-07 14:15:17'),
 (3, 'tempiks', 'tempe123@gmail.com', 'tempe123', NULL, NULL, 'pengguna', 'aktif', '2026-05-07 14:37:34');
 

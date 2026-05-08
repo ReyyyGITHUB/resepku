@@ -5,6 +5,7 @@ require_once __DIR__ . '/../data/recipe_repository.php';
 
 startSession();
 
+$isAdmin = isAdmin();
 $isGuest = empty($_SESSION['user']);
 $userName = $_SESSION['user']['name'] ?? 'Guest';
 $currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
@@ -108,6 +109,9 @@ if ($recipe === null) {
             <a href="../resep/myresep.php">My Recipes</a>
             <a href="../resep/buat.php">Add Recipe</a>
             <a href="../resep/favorite.php">Favorite</a>
+            <?php if ($isAdmin): ?>
+                <a href="../admin/">Admin</a>
+            <?php endif; ?>
             <a href="../cari.php">Search</a>
         </nav>
 

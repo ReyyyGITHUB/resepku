@@ -38,6 +38,44 @@ function redirectTo(string $path): never
     exit;
 }
 
+function currentUser(): ?array
+{
+    startSession();
+
+    return isset($_SESSION['user']) && is_array($_SESSION['user'])
+        ? $_SESSION['user']
+        : null;
+}
+
+function isAdmin(): bool
+{
+    $user = currentUser();
+
+    return ($user['role'] ?? '') === 'admin';
+}
+
+function requireLogin(string $loginPath = '../auth/login.php'): array
+{
+    $user = currentUser();
+
+    if ($user === null) {
+        redirectTo($loginPath);
+    }
+
+    return $user;
+}
+
+function requireAdmin(string $loginPath = '../auth/login.php', string $fallbackPath = '../home/'): array
+{
+    $user = requireLogin($loginPath);
+
+    if (($user['role'] ?? '') !== 'admin') {
+        redirectTo($fallbackPath);
+    }
+
+    return $user;
+}
+
 function appUrl(string $path = ''): string
 {
     $baseUrl = rtrim((string) env('APP_URL', ''), '/');

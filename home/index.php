@@ -5,6 +5,7 @@ require_once __DIR__ . '/../data/recipe_repository.php';
 
 startSession();
 
+$isAdmin = isAdmin();
 $isGuest = !empty($_SESSION['guest_mode']) && empty($_SESSION['user']);
 $userName = $isGuest ? 'Guest' : ($_SESSION['user']['name'] ?? 'Nayaka');
 $filters = [
@@ -125,6 +126,9 @@ if ($recipes === []) {
             <a href="../resep/myresep.php">My Recipes</a>
             <a href="../resep/buat.php">Add Recipe</a>
             <a href="../resep/favorite.php">Favorite</a>
+            <?php if ($isAdmin): ?>
+                <a href="../admin/">Admin</a>
+            <?php endif; ?>
             <a href="../cari.php">Search</a>
         </nav>
 

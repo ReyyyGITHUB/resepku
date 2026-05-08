@@ -53,6 +53,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'role' => $user['role'],
                 ];
 
+                if ($user['role'] === 'admin') {
+                    redirectTo('../admin/');
+                }
+
                 redirectTo('../home/');
             }
         } catch (PDOException) {

@@ -1,7 +1,7 @@
 # Invoice Progress Fitur ResepKu
 
 **Berdasarkan PRD:** `PRD_ResepKu.md`  
-**Tanggal pengecekan:** 8 Mei 2026  
+**Tanggal pengecekan:** 9 Mei 2026  
 **Metode cek:** mencocokkan PRD dengan file proyek, halaman PHP, API, dan struktur database.
 
 ---
@@ -10,10 +10,10 @@
 
 | Keterangan | Jumlah |
 |---|---:|
-| Total item dicek | 55 |
-| ✅ Selesai | 36 |
+| Total item dicek | 56 |
+| ✅ Selesai | 40 |
 | ⚠️ Sebagian | 6 |
-| ❌ Belum selesai | 13 |
+| ❌ Belum selesai | 10 |
 
 > Catatan: status ini berdasarkan pengecekan kode/static review, belum termasuk testing manual semua flow di browser.
 
@@ -27,9 +27,9 @@
 | ⚠️ | Register aman dengan hash password | Form ada, tapi password masih disimpan langsung, belum `password_hash()`. |
 | ✅ | Login | Ada `auth/login.php`, session user, validasi status akun. |
 | ⚠️ | Login aman dengan `password_verify()` | Login ada, tapi masih membandingkan password plaintext. |
-| ❌ | Lupa Kata Sandi | File `auth/lupa-sandi.php` belum ada. |
+| ✅ | Lupa Kata Sandi | Ada `auth/lupa-sandi.php`, `auth/reset-sandi.php`, token reset sekali pakai, dan pengiriman email via Gmail SMTP vanilla PHP. |
 | ✅ | Logout | Ada `auth/logout.php`. |
-| ❌ | Edit Profil | Belum ada form edit nama, foto profil, dan bio. |
+| ✅ | Edit Profil | Ada `profil/edit.php` untuk edit nama, bio, dan ganti password dengan accordion. |
 | ✅ | Role pengguna/admin di database | Kolom `role` ada di tabel `pengguna`. |
 | ✅ | Session regenerate setelah login | Ada `session_regenerate_id(true)` di login. |
 | ✅ | CSRF auth | Form login/register memakai token CSRF. |
@@ -91,7 +91,7 @@
 | ✅ | Daftar Resep Pengguna | Profil dan `resep/myresep.php` menampilkan resep user. |
 | ✅ | Statistik Profil | Ada jumlah resep, follower, following. |
 | ✅ | Daftar Favorit | Ada `resep/favorite.php`. |
-| ❌ | Edit data profil | Belum ada halaman/form update profil. |
+| ✅ | Edit data profil | Ada `profil/edit.php`; tombol edit di profile menuju route khusus edit. |
 
 ---
 
@@ -135,6 +135,7 @@
 | ✅ | `following` | Ada. |
 | ✅ | `kategori_resep` | Ada. |
 | ✅ | `peralatan_resep` | Ada. |
+| ✅ | `password_resets` | Ada di `resepku.sql` dan tersedia skrip `sql/create_password_resets.sql` untuk setup tabel reset password. |
 | ⚠️ | Seeder akun | Data contoh masih memakai password plaintext/dummy hash yang tidak konsisten dengan standar security. |
 
 ---
@@ -155,17 +156,16 @@
 
 ## Prioritas Pekerjaan Berikutnya
 
-1. ❌ Lengkapi edit profil: nama, email, password, bio, foto profil di `/profil`.
-2. ❌ Buat `auth/lupa-sandi.php`.
-3. ❌ Buat panel admin: dashboard, pengguna, resep, laporan, dan middleware role admin.
-4. ❌ Buat laporan CS: form lapor resep/pengguna dan status laporan.
-5. ⚠️ Lengkapi feed resep dari following.
-6. ⚠️ Audit auth password: `password_hash()` saat register dan `password_verify()` saat login.
+1. ❌ Buat panel admin: dashboard, pengguna, resep, laporan, dan middleware role admin.
+2. ❌ Buat laporan CS: form lapor resep/pengguna dan status laporan.
+3. ⚠️ Lengkapi feed resep dari following.
+4. ⚠️ Audit auth password: `password_hash()` saat register dan `password_verify()` saat login.
+5. ⚠️ Validasi pengiriman email reset di environment lokal/production dengan konfigurasi SMTP Gmail.
 
 ---
 
 ## Kesimpulan
 
-Pekerjaan yang sudah paling kuat ada di **CRUD resep, detail resep, upload foto, database, pencarian/filter, like, rating, dan favorit**.
+Pekerjaan yang sudah paling kuat ada di **CRUD resep, detail resep, upload foto, database, pencarian/filter, like, rating, favorit, edit profil, dan lupa sandi**.
 
-Bagian yang paling belum selesai adalah **edit profil, lupa sandi, panel admin, laporan CS, feed following, dan hardening password**.
+Bagian yang paling belum selesai adalah **panel admin, laporan CS, feed following, konfigurasi email runtime, dan hardening password**.
