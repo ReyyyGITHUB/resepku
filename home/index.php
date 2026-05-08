@@ -124,8 +124,8 @@ if ($recipes === []) {
             <a href="../profil/">Profile</a>
             <a href="../resep/myresep.php">My Recipes</a>
             <a href="../resep/buat.php">Add Recipe</a>
-            <a href="#" aria-disabled="true" tabindex="-1">Favorite</a>
-            <a href="../home/#recipe-search">Search</a>
+            <a href="../resep/favorite.php">Favorite</a>
+            <a href="../cari.php">Search</a>
         </nav>
 
         <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
@@ -141,7 +141,7 @@ if ($recipes === []) {
 
     <main class="home-main" data-node-id="1:312">
         <header class="home-topbar">
-            <form class="home-search-form" method="get" action="../home/">
+            <form class="home-search-form" method="get" action="../cari.php" data-empty-action="../home/">
                 <label class="sr-only" for="recipe-search">Search recipes</label>
                 <input id="recipe-search" class="home-search" type="search" name="q" placeholder="Search Recipes....." value="<?= e($filters['q']) ?>">
                 <input type="hidden" name="category" value="<?= e($filters['category']) ?>">
@@ -178,7 +178,7 @@ if ($recipes === []) {
                         <a class="home-filter<?= $activeCategory === mb_strtolower($pill['value']) ? ' is-active' : '' ?>" href="../home/?<?= e(http_build_query($query)) ?>"><?= e($pill['label']) ?></a>
                     <?php endforeach; ?>
                 </div>
-                <form class="home-controls" aria-label="Filter resep lanjutan" method="get" action="../home/">
+                <form class="home-controls" aria-label="Filter resep lanjutan" method="get" action="../cari.php">
                     <input type="hidden" name="q" value="<?= e($filters['q']) ?>">
                     <input type="hidden" name="category" value="<?= e($filters['category']) ?>">
 
@@ -336,5 +336,6 @@ if ($recipes === []) {
             </section>
         <?php endif; ?>
     </main>
+    <script src="../assets/js/main.js"></script>
 </body>
 </html>

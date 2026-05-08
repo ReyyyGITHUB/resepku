@@ -7,6 +7,7 @@ startSession();
 
 $isGuest = empty($_SESSION['user']);
 $userName = $_SESSION['user']['name'] ?? 'Guest';
+$currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
 $recipeId = (int) ($_GET['id'] ?? 1);
 $recipe = recipe_find_db($recipeId);
 
@@ -30,7 +31,20 @@ if ($recipe === null) {
     ];
 }
 
+$socialState = $recipe['id'] > 0 ? recipe_social_state_db($recipe['id'], $currentUserId > 0 ? $currentUserId : null) : [
+    'recipe_id' => 0,
+    'likes_count' => 0,
+    'favorites_count' => 0,
+    'ratings_count' => 0,
+    'rating_average' => 0.0,
+    'liked' => false,
+    'favorited' => false,
+    'user_rating' => null,
+];
+
 $relatedRecipes = $recipe['id'] > 0 ? recipe_related_db($recipe, 3) : [];
+$comments = $recipe['id'] > 0 ? recipe_comments_db($recipe['id']) : [];
+$commentCount = count($comments);
 
 if ($recipe === null) {
     $recipe = [
@@ -61,7 +75,7 @@ if ($recipe === null) {
     <title><?= e($recipe['title']) ?> - Resepku</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="detail-page" data-guest-mode="<?= $isGuest ? '1' : '0' ?>">
+<body class="detail-page" data-guest-mode="<?= $isGuest ? '1' : '0' ?>" data-csrf-token="<?= e(csrfToken()) ?>">
     <aside class="home-sidebar detail-sidebar">
         <div class="home-sidebar__profile">
             <div class="home-sidebar__brand">
@@ -91,8 +105,8 @@ if ($recipe === null) {
             <a href="../profil/">Profile</a>
             <a href="../resep/myresep.php">My Recipes</a>
             <a href="../resep/buat.php">Add Recipe</a>
-            <a href="#" aria-disabled="true" tabindex="-1">Favorite</a>
-            <a class="is-active" href="#">Recipe Detail</a>
+            <a href="../resep/favorite.php">Favorite</a>
+            <a href="../cari.php">Search</a>
         </nav>
 
         <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
@@ -133,16 +147,27 @@ if ($recipe === null) {
                     <span><?= e($recipe['cook_time']) ?></span>
                     <span><?= e($recipe['servings']) ?></span>
                     <span><?= e($recipe['difficulty']) ?></span>
-                    <span><?= number_format((float) $recipe['rating'], 1) ?> ★</span>
+                    <span data-rating-average><?= number_format((float) $socialState['rating_average'], 1) ?> ★</span>
                 </div>
 
                 <p class="detail-summary"><?= e($recipe['summary']) ?></p>
 
                 <div class="detail-actions" aria-label="Aksi resep">
-                    <button type="button" class="detail-action" data-guest-gate data-action-toggle>Like</button>
-                    <button type="button" class="detail-action" data-guest-gate data-action-toggle>Favorite</button>
-                    <button type="button" class="detail-action" data-guest-gate data-action-toggle>Rate</button>
-                    <button type="button" class="detail-action" data-guest-gate>Share</button>
+                    <button type="button" class="detail-action<?= $socialState['liked'] ? ' is-active' : '' ?>" data-guest-gate data-social-action="like" data-recipe-id="<?= e((string) $recipe['id']) ?>">
+                        <span>Like</span>
+                        <span data-like-count><?= e((string) $socialState['likes_count']) ?></span>
+                    </button>
+                    <button type="button" class="detail-action<?= $socialState['favorited'] ? ' is-active' : '' ?>" data-guest-gate data-social-action="favorite" data-recipe-id="<?= e((string) $recipe['id']) ?>">
+                        <span>Favorite</span>
+                        <span data-favorite-count><?= e((string) $socialState['favorites_count']) ?></span>
+                    </button>
+                    <button type="button" class="detail-action" data-guest-gate data-social-action="rate" data-recipe-id="<?= e((string) $recipe['id']) ?>">
+                        <span>Rate</span>
+                        <span data-user-rating><?= $socialState['user_rating'] !== null ? e(number_format((float) $socialState['user_rating'], 1)) : '0.0' ?></span>
+                    </button>
+                    <button type="button" class="detail-action" data-social-action="share" data-share-url="<?= e((string) (($_SERVER['REQUEST_SCHEME'] ?? 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $_SERVER['REQUEST_URI'])) ?>">
+                        <span>Share</span>
+                    </button>
                 </div>
             </div>
         </section>
@@ -186,6 +211,54 @@ if ($recipe === null) {
                         <?php endforeach; ?>
                     </ol>
                 </article>
+
+                <article class="detail-panel detail-comments" id="comments-section">
+                    <div class="detail-comments__head">
+                        <div>
+                            <p class="detail-panel__label">Comments</p>
+                            <h2>Komentar <span data-comment-count><?= e((string) $commentCount) ?></span></h2>
+                        </div>
+                    </div>
+
+                    <?php if ($isGuest): ?>
+                        <div class="detail-comments__guest">
+                            <p>Login untuk menulis komentar. Kamu tetap bisa membaca komentar yang sudah ada.</p>
+                            <a href="../auth/login.php">Login</a>
+                        </div>
+                    <?php else: ?>
+                        <form class="detail-comments__form" data-comment-form>
+                            <input type="hidden" name="recipe_id" value="<?= e((string) $recipe['id']) ?>">
+                            <label class="sr-only" for="comment-content">Tulis komentar</label>
+                            <textarea id="comment-content" name="content" rows="4" placeholder="Tulis komentar kamu..." required></textarea>
+                            <div class="detail-comments__actions">
+                                <p class="detail-comments__hint">Komentar akan tampil di atas setelah dikirim.</p>
+                                <button type="submit" class="detail-action detail-comments__submit">Kirim Komentar</button>
+                            </div>
+                        </form>
+                    <?php endif; ?>
+
+                    <div class="detail-comments__list" data-comment-list>
+                        <?php if ($comments === []): ?>
+                            <div class="detail-comments__empty" data-comment-empty>
+                                <h3>Belum ada komentar</h3>
+                                <p>Jadilah yang pertama memberi komentar pada resep ini.</p>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($comments as $comment): ?>
+                                <article class="detail-comment">
+                                    <img class="detail-comment__avatar" src="<?= e($comment['avatar']) ?>" alt="<?= e($comment['author']) ?>">
+                                    <div class="detail-comment__body">
+                                        <div class="detail-comment__meta">
+                                            <strong><?= e($comment['author']) ?></strong>
+                                            <span><?= e($comment['created_at_label']) ?></span>
+                                        </div>
+                                        <p><?= e($comment['content']) ?></p>
+                                    </div>
+                                </article>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </article>
             </div>
 
             <aside class="detail-side">
@@ -210,7 +283,7 @@ if ($recipe === null) {
                     <article class="detail-panel detail-panel--guest">
                         <p class="detail-panel__label">Guest Mode</p>
                         <h2>Unlock actions</h2>
-                        <p class="detail-panel__text">Like, favorite, rating, and comments will open a register gate for guest users.</p>
+                        <p class="detail-panel__text">Like, favorite, dan rating hanya tersedia setelah login.</p>
                         <button type="button" class="detail-action detail-action--full" data-guest-gate>Create account</button>
                     </article>
                 <?php endif; ?>
@@ -223,7 +296,7 @@ if ($recipe === null) {
         <div class="guest-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="guest-modal-title">
             <p class="guest-modal__eyebrow">Guest Mode</p>
             <h2 id="guest-modal-title">Register to unlock actions</h2>
-            <p>Like, favorite, rating, and comment are available after you create an account.</p>
+            <p>Like, favorite, dan rating tersedia setelah kamu login.</p>
             <div class="guest-modal__actions">
                 <a class="guest-modal__primary" href="../auth/register.php">Create account</a>
                 <button type="button" class="guest-modal__secondary" data-guest-close>Maybe later</button>

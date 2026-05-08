@@ -15,36 +15,6 @@ if ($profile === null) {
     redirectTo('../home/');
 }
 
-$filters = [
-    'q' => trim((string) ($_GET['q'] ?? '')),
-    'category' => trim((string) ($_GET['category'] ?? '')),
-];
-
-$recipes = recipe_user_recipes_db((int) $user['id'], 100);
-$allRecipes = $recipes;
-
-if ($filters['q'] !== '' || $filters['category'] !== '') {
-    $recipes = array_values(array_filter($recipes, static function (array $recipe) use ($filters): bool {
-        if ($filters['q'] !== '' && stripos($recipe['title'], $filters['q']) === false) {
-            return false;
-        }
-
-        if ($filters['category'] !== '' && mb_strtolower((string) ($recipe['category'] ?? '')) !== mb_strtolower($filters['category'])) {
-            return false;
-        }
-
-        return true;
-    }));
-}
-
-$categoryPills = [
-    ['label' => 'All', 'value' => ''],
-    ['label' => 'Food', 'value' => 'food'],
-    ['label' => 'Salad', 'value' => 'salad'],
-    ['label' => 'Dessert', 'value' => 'dessert'],
-    ['label' => 'Drinks', 'value' => 'drinks'],
-];
-
 $alerts = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -54,26 +24,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = (string) ($_POST['action'] ?? '');
         $recipeId = (int) ($_POST['recipe_id'] ?? 0);
 
-        if ($action === 'delete' && $recipeId > 0) {
-            if (recipe_delete_db($recipeId, (int) $user['id'])) {
-                redirectTo('../resep/myresep.php?deleted=1');
-            }
-
-            $alerts[] = 'Resep tidak ditemukan atau bukan milik akun ini.';
+        if ($action === 'remove' && $recipeId > 0) {
+            recipe_remove_favorite_db($recipeId, (int) $user['id']);
+            redirectTo('../resep/favorite.php?removed=1');
         }
     }
 }
 
-if (!empty($_GET['deleted'])) {
-    $alerts[] = 'Resep berhasil dihapus.';
+if (!empty($_GET['removed'])) {
+    $alerts[] = 'Resep berhasil dihapus dari favorit.';
 }
 
-if (!empty($_GET['updated'])) {
-    $alerts[] = 'Resep berhasil diperbarui.';
-}
-
-$totalRecipes = count($allRecipes);
-$visibleRecipes = count($recipes);
+$recipes = recipe_user_favorites_db((int) $user['id'], 200);
+$totalFavorites = count($recipes);
 
 ?>
 <!DOCTYPE html>
@@ -81,7 +44,7 @@ $visibleRecipes = count($recipes);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Recipes - Resepku</title>
+    <title>Favorite - Resepku</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="myrecipes-page">
@@ -99,7 +62,7 @@ $visibleRecipes = count($recipes);
                 <img src="<?= e($profile['avatar']) ?>" alt="<?= e($profile['name']) ?>" class="home-sidebar__avatar">
                 <div class="home-sidebar__welcome">
                     <strong><?= e($profile['name']) ?></strong>
-                    <span>Kelola, edit, dan hapus resep milikmu dari satu tempat.</span>
+                    <span>Daftar resep yang sudah kamu simpan ke favorit.</span>
                 </div>
             </div>
 
@@ -109,22 +72,22 @@ $visibleRecipes = count($recipes);
         <div class="home-sidebar__divider"></div>
 
         <p class="home-sidebar__label">Navigasi utama</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Resep">
+        <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Favorit">
             <a href="../home/">Home</a>
             <a href="../profil/">Profile</a>
-            <a class="is-active" href="../resep/myresep.php">My Recipes</a>
+            <a href="../resep/myresep.php">My Recipes</a>
             <a href="../resep/buat.php">Add Recipe</a>
-            <a href="../home/?sort=popular">Favorite</a>
-            <a href="../cari.php">Search</a>
+            <a class="is-active" href="../resep/favorite.php">Favorite</a>
+            <a href="../home/?sort=popular">Popular</a>
         </nav>
 
         <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
         <nav class="home-sidebar__nav home-sidebar__nav--categories" aria-label="Kategori resep">
-            <a href="../resep/myresep.php">All</a>
-            <a href="../resep/myresep.php?category=food">Food</a>
-            <a href="../resep/myresep.php?category=salad">Salad</a>
-            <a href="../resep/myresep.php?category=dessert">Dessert</a>
-            <a href="../resep/myresep.php?category=drinks">Drinks</a>
+            <a href="../resep/favorite.php">All</a>
+            <a href="../resep/favorite.php?category=food">Food</a>
+            <a href="../resep/favorite.php?category=salad">Salad</a>
+            <a href="../resep/favorite.php?category=dessert">Dessert</a>
+            <a href="../resep/favorite.php?category=drinks">Drinks</a>
         </nav>
 
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
@@ -132,10 +95,9 @@ $visibleRecipes = count($recipes);
 
     <main class="myrecipes-main">
         <header class="myrecipes-topbar">
-            <form class="home-search-form myrecipes-search-form" method="get" action="../cari.php" data-empty-action="../home/">
-                <label class="sr-only" for="myrecipes-search">Search recipes</label>
-                <input id="myrecipes-search" class="home-search" type="search" name="q" placeholder="Search my recipes..." value="<?= e($filters['q']) ?>">
-                <input type="hidden" name="category" value="<?= e($filters['category']) ?>">
+            <form class="home-search-form myrecipes-search-form" method="get" action="../resep/favorite.php">
+                <label class="sr-only" for="favorite-search">Search favorite recipes</label>
+                <input id="favorite-search" class="home-search" type="search" name="q" placeholder="Search favorites..." value="<?= e(trim((string) ($_GET['q'] ?? ''))) ?>">
             </form>
 
             <a class="home-add" href="../resep/buat.php">
@@ -151,30 +113,19 @@ $visibleRecipes = count($recipes);
 
         <section class="myrecipes-hero">
             <div>
-                <p class="myrecipes-hero__eyebrow">Recipe management</p>
-                <h1>My Recipes</h1>
-                <p class="myrecipes-hero__copy">Edit, update cover image, dan hapus resep yang kamu miliki.</p>
-                <div class="home-filters myrecipes-filters" aria-label="Kategori resep">
-                    <?php foreach ($categoryPills as $pill): ?>
-                        <?php
-                        $query = array_filter([
-                            'q' => $filters['q'],
-                            'category' => $pill['value'],
-                        ], static fn ($value) => $value !== '');
-                        ?>
-                        <a class="home-filter<?= mb_strtolower($filters['category']) === mb_strtolower($pill['value']) ? ' is-active' : '' ?>" href="../resep/myresep.php?<?= e(http_build_query($query)) ?>"><?= e($pill['label']) ?></a>
-                    <?php endforeach; ?>
-                </div>
+                <p class="myrecipes-hero__eyebrow">Saved recipes</p>
+                <h1>Favorite</h1>
+                <p class="myrecipes-hero__copy">Resep yang kamu simpan ke favorit tersusun dari yang paling baru difavoritkan.</p>
             </div>
 
             <div class="myrecipes-stats">
                 <div>
-                    <strong><?= e((string) $totalRecipes) ?></strong>
-                    <span>Total resep</span>
+                    <strong><?= e((string) $totalFavorites) ?></strong>
+                    <span>Total favorit</span>
                 </div>
                 <div>
-                    <strong><?= e((string) $visibleRecipes) ?></strong>
-                    <span>Hasil tampil</span>
+                    <strong><?= e((string) $profile['recipe_count']) ?></strong>
+                    <span>Total resep</span>
                 </div>
             </div>
         </section>
@@ -187,12 +138,12 @@ $visibleRecipes = count($recipes);
             </section>
         <?php endif; ?>
 
-        <section class="recipe-grid myrecipes-grid" aria-label="Resep milik saya">
+        <section class="recipe-grid myrecipes-grid" aria-label="Daftar favorit">
             <?php if ($recipes === []): ?>
                 <article class="myrecipes-empty">
-                    <h2>Belum ada resep</h2>
-                    <p>Buat resep pertama supaya halaman ini langsung berisi daftar kelolaan.</p>
-                    <a href="../resep/buat.php">Tambah resep</a>
+                    <h2>Belum ada favorit</h2>
+                    <p>Simpan resep dari detail resep untuk melihatnya di sini.</p>
+                    <a href="../home/">Cari resep</a>
                 </article>
             <?php else: ?>
                 <?php foreach ($recipes as $recipe): ?>
@@ -205,26 +156,26 @@ $visibleRecipes = count($recipes);
                             <div class="myrecipe-card__head">
                                 <div>
                                     <h2><?= e($recipe['title']) ?></h2>
-                                    <p><?= e($recipe['category'] !== '' ? ucfirst((string) $recipe['category']) : 'Uncategorized') ?></p>
+                                    <p><?= e($recipe['author']) ?></p>
                                 </div>
                                 <span class="myrecipe-card__badge"><?= e($recipe['difficulty']) ?></span>
                             </div>
 
                             <div class="myrecipe-card__meta">
                                 <span><?= e($recipe['cook_time']) ?></span>
-                                <span><?= e($recipe['servings']) ?></span>
+                                <span>★ <?= number_format((float) $recipe['rating'], 1) ?></span>
+                                <span><?= e((string) ($recipe['likes_count'] ?? 0)) ?> likes</span>
                             </div>
 
                             <p class="myrecipe-card__summary"><?= e($recipe['summary'] !== '' ? $recipe['summary'] : 'Belum ada deskripsi singkat.') ?></p>
 
                             <div class="myrecipe-card__actions">
-                                <a href="../resep/edit.php?id=<?= e((string) $recipe['id']) ?>">Edit</a>
                                 <a href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">View</a>
-                                <form method="post" onsubmit="return confirm('Hapus resep ini?');">
+                                <form method="post" onsubmit="return confirm('Hapus dari favorit?');">
                                     <input type="hidden" name="_token" value="<?= e(csrfToken()) ?>">
-                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="action" value="remove">
                                     <input type="hidden" name="recipe_id" value="<?= e((string) $recipe['id']) ?>">
-                                    <button type="submit">Delete</button>
+                                    <button type="submit">Remove</button>
                                 </form>
                             </div>
                         </div>
@@ -233,6 +184,5 @@ $visibleRecipes = count($recipes);
             <?php endif; ?>
         </section>
     </main>
-    <script src="../assets/js/main.js"></script>
 </body>
 </html>

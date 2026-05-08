@@ -1,0 +1,140 @@
+INVOICE PROGRESS FITUR RESEPKU
+Berdasarkan PRD_ResepKu.md
+Tanggal pengecekan: 8 Mei 2026
+
+RINGKASAN
+Total item dicek: 55
+Selesai: 34
+Sebagian: 7
+Belum selesai: 14
+
+Keterangan:
+[v] Sudah selesai
+[!] Sebagian selesai
+[x] Belum selesai
+
+==============================
+1. AUTENTIKASI & AKUN
+==============================
+[v] Register
+[!] Register aman dengan hash password - form ada, tapi password masih plaintext
+[v] Login
+[!] Login aman dengan password_verify - login ada, tapi masih cek plaintext
+[x] Lupa Kata Sandi
+[v] Logout
+[x] Edit Profil
+[v] Role pengguna/admin di database
+[v] Session regenerate setelah login
+[v] CSRF auth
+
+==============================
+2. MANAJEMEN RESEP
+==============================
+[v] Buat Resep
+[v] Edit Resep
+[v] Hapus Resep
+[v] Lihat Detail Resep
+[v] Upload Foto Resep
+[v] Tag Kategori
+[v] Tingkat Kesulitan
+[v] Alat & Bahan
+[v] Langkah Memasak
+[v] Waktu Memasak
+[v] Jumlah Porsi
+[v] Kolom tambahan recipes: foto_resep, kategori, tingkat_kesulitan, pengguna_id
+
+==============================
+3. FITUR SOSIAL
+==============================
+[v] Like Resep
+[x] Komentar Resep
+[v] Rating Bintang
+[v] Favorit Resep
+[v] Share Resep
+[x] Following / Follower
+[x] Lihat Profil Orang Lain
+[x] Feed Resep dari Following
+
+==============================
+4. PENCARIAN & FILTER
+==============================
+[v] Cari Resep
+[v] Filter Kategori
+[v] Filter Kesulitan
+[!] Filter Waktu Masak - ada di home, belum lengkap di cari.php
+[v] Sort Terpopuler
+[v] Sort Terbaru
+
+==============================
+5. PROFIL PENGGUNA
+==============================
+[v] Halaman Profil Sendiri
+[x] Halaman Profil Orang Lain
+[v] Daftar Resep Pengguna
+[v] Statistik Profil
+[v] Daftar Favorit
+[x] Edit Data Profil
+
+==============================
+6. LAPORAN / CUSTOMER SUPPORT
+==============================
+[!] Tabel Laporan CS sudah ada
+[x] Laporkan Resep
+[x] Laporkan Pengguna
+[x] Status Laporan untuk user
+[x] Proses status laporan oleh admin
+
+==============================
+7. PANEL ADMIN
+==============================
+[x] Dashboard Admin
+[x] Kelola Pengguna
+[x] Kelola Resep
+[x] Kelola Laporan CS
+[x] Statistik Konten Admin
+[x] Middleware akses admin
+
+==============================
+8. DATABASE
+==============================
+[v] Tabel pengguna
+[v] Tabel recipes
+[v] Tabel bahan_resep
+[v] Tabel favorite
+[v] Tabel ratings
+[v] Tabel cs
+[v] Tabel likes
+[v] Tabel komentar
+[v] Tabel following
+[v] Tabel kategori_resep
+[v] Tabel peralatan_resep
+[!] Seeder akun - masih ada password plaintext/dummy hash
+
+==============================
+9. KEAMANAN
+==============================
+[v] SQL Injection - mayoritas query pakai PDO prepared statements
+[v] XSS - output banyak memakai helper escape
+[v] CSRF - token sudah dipakai di banyak form/API POST
+[v] Session - session_regenerate_id setelah login
+[x] Password Hash - belum password_hash dan password_verify
+[v] Upload File - validasi ekstensi/MIME dan rename file
+[x] Akses Admin - belum ada panel dan middleware admin
+
+==============================
+PRIORITAS PEKERJAAN BERIKUTNYA
+==============================
+1. [x] Perbaiki auth password: password_hash saat register dan password_verify saat login
+2. [x] Buat halaman lupa sandi
+3. [x] Buat sistem komentar: API, form komentar, daftar komentar
+4. [x] Buat follow/unfollow dan profil orang lain
+5. [x] Buat laporan CS: lapor resep/pengguna dan status laporan
+6. [x] Buat panel admin: dashboard, pengguna, resep, laporan
+7. [!] Lengkapi edit profil dan upload foto profil
+
+KESIMPULAN
+Pekerjaan yang sudah paling kuat:
+CRUD resep, detail resep, upload foto, database, pencarian/filter, like, rating, dan favorit.
+
+Pekerjaan yang belum selesai:
+Komentar, follow/profil orang lain, laporan CS, lupa sandi, edit profil, admin panel, dan keamanan password.

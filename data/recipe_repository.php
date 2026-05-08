@@ -43,6 +43,8 @@ function recipe_row_to_card(array $row): array
         'servings' => recipe_format_servings($row['porsi'] ?? null),
         'difficulty' => recipe_format_difficulty($row['tingkat_kesulitan'] ?? null),
         'rating' => isset($row['rating_value']) ? (float) $row['rating_value'] : 0.0,
+        'likes_count' => (int) ($row['likes_count'] ?? 0),
+        'favorites_count' => (int) ($row['favorites_count'] ?? 0),
         'summary' => (string) ($row['summary'] ?? ''),
         'description' => (string) ($row['deskripsi'] ?? ''),
         'ingredients' => $row['ingredients'] ?? [],
@@ -212,6 +214,21 @@ function recipe_user_profile_db(int $userId): ?array
     ];
 }
 
+function recipe_format_datetime_label(?string $value): string
+{
+    $value = trim((string) $value);
+    if ($value === '') {
+        return '';
+    }
+
+    $timestamp = strtotime($value);
+    if ($timestamp === false) {
+        return $value;
+    }
+
+    return date('d M Y, H:i', $timestamp);
+}
+
 function recipe_user_recipes_db(int $userId, int $limit = 12): array
 {
     $sql = <<<SQL
@@ -249,6 +266,79 @@ function recipe_user_recipes_db(int $userId, int $limit = 12): array
             'porsi' => $row['porsi'],
             'tingkat_kesulitan' => $row['tingkat_kesulitan'],
             'kategori' => $row['kategori'],
+            'summary' => $row['deskripsi'] ?? '',
+            'deskripsi' => $row['deskripsi'] ?? '',
+            'author' => $row['author_name'] ?? 'ResepKu Team',
+            'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+            'ingredients' => [],
+            'tools' => [],
+            'steps' => recipe_parse_list($row['langkah_resep'] ?? ''),
+        ]);
+    }
+
+    return $recipes;
+}
+
+function recipe_user_favorites_db(int $userId, int $limit = 100): array
+{
+    $sql = <<<SQL
+        SELECT
+            r.resep_id,
+            r.nama_resep,
+            r.foto_resep,
+            r.waktu_memasak,
+            r.porsi,
+            r.tingkat_kesulitan,
+            r.kategori,
+            r.deskripsi,
+            r.langkah_resep,
+            f.dibuat_pada AS favorited_at,
+            p.nama_pengguna AS author_name,
+            p.foto_profil AS author_avatar,
+            COALESCE(l.like_count, 0) AS likes_count,
+            COALESCE(rt.rating_average, 0) AS rating_average,
+            COALESCE(ft.favorite_count, 0) AS favorites_count
+        FROM favorite f
+        INNER JOIN recipes r ON r.resep_id = f.resep_id
+        INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
+        LEFT JOIN (
+            SELECT resep_id, COUNT(*) AS like_count
+            FROM likes
+            GROUP BY resep_id
+        ) l ON l.resep_id = r.resep_id
+        LEFT JOIN (
+            SELECT resep_id, AVG(rating_value) AS rating_average
+            FROM ratings
+            GROUP BY resep_id
+        ) rt ON rt.resep_id = r.resep_id
+        LEFT JOIN (
+            SELECT resep_id, COUNT(*) AS favorite_count
+            FROM favorite
+            GROUP BY resep_id
+        ) ft ON ft.resep_id = r.resep_id
+        WHERE f.pengguna_id = :user_id
+        ORDER BY f.dibuat_pada DESC, f.favorite_id DESC
+        LIMIT :limit
+    SQL;
+
+    $stmt = db()->prepare($sql);
+    $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $recipes = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $recipes[] = recipe_row_to_card([
+            'resep_id' => $row['resep_id'],
+            'nama_resep' => $row['nama_resep'],
+            'foto_resep' => $row['foto_resep'],
+            'waktu_memasak' => $row['waktu_memasak'],
+            'porsi' => $row['porsi'],
+            'tingkat_kesulitan' => $row['tingkat_kesulitan'],
+            'kategori' => $row['kategori'],
+            'rating_value' => $row['rating_average'],
+            'likes_count' => $row['likes_count'],
+            'favorites_count' => $row['favorites_count'],
             'summary' => $row['deskripsi'] ?? '',
             'deskripsi' => $row['deskripsi'] ?? '',
             'author' => $row['author_name'] ?? 'ResepKu Team',
@@ -606,6 +696,273 @@ function recipe_find_db(int $id): ?array
         'steps' => $steps,
         'related' => [],
     ]);
+}
+
+function recipe_comments_db(int $recipeId, int $limit = 50): array
+{
+    $sql = <<<SQL
+        SELECT
+            k.komentar_id,
+            k.pengguna_id,
+            k.resep_id,
+            k.isi_komentar,
+            k.dibuat_pada,
+            p.nama_pengguna,
+            p.foto_profil
+        FROM komentar k
+        INNER JOIN pengguna p ON p.pengguna_id = k.pengguna_id
+        WHERE k.resep_id = :recipe_id
+        ORDER BY k.dibuat_pada DESC, k.komentar_id DESC
+        LIMIT :limit
+    SQL;
+
+    $stmt = db()->prepare($sql);
+    $stmt->bindValue(':recipe_id', $recipeId, PDO::PARAM_INT);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $comments = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $comments[] = [
+            'id' => (int) $row['komentar_id'],
+            'user_id' => (int) $row['pengguna_id'],
+            'recipe_id' => (int) $row['resep_id'],
+            'content' => (string) $row['isi_komentar'],
+            'created_at' => (string) $row['dibuat_pada'],
+            'created_at_label' => recipe_format_datetime_label($row['dibuat_pada'] ?? ''),
+            'author' => (string) $row['nama_pengguna'],
+            'avatar' => recipe_asset_path($row['foto_profil'] ?? '../assets/img/home-profile.png'),
+        ];
+    }
+
+    return $comments;
+}
+
+function recipe_add_comment_db(int $recipeId, int $userId, string $content): array
+{
+    $content = trim($content);
+    if ($content === '') {
+        throw new InvalidArgumentException('Komentar tidak boleh kosong.');
+    }
+
+    $stmt = db()->prepare(
+        'INSERT INTO komentar (pengguna_id, resep_id, isi_komentar)
+         VALUES (:pengguna_id, :resep_id, :isi_komentar)'
+    );
+    $stmt->execute([
+        ':pengguna_id' => $userId,
+        ':resep_id' => $recipeId,
+        ':isi_komentar' => $content,
+    ]);
+
+    $commentId = (int) db()->lastInsertId();
+    $comment = recipe_comments_db($recipeId, 1);
+
+    if ($comment !== []) {
+        return $comment[0];
+    }
+
+    return [
+        'id' => $commentId,
+        'user_id' => $userId,
+        'recipe_id' => $recipeId,
+        'content' => $content,
+        'created_at' => date('Y-m-d H:i:s'),
+        'created_at_label' => date('d M Y, H:i'),
+        'author' => 'User',
+        'avatar' => '../assets/img/home-profile.png',
+    ];
+}
+
+function recipe_social_state_db(int $recipeId, ?int $userId = null): array
+{
+    $pdo = db();
+
+    $countStmt = $pdo->prepare(
+        'SELECT
+            (SELECT COUNT(*) FROM likes WHERE resep_id = :likes_recipe_id) AS likes_count,
+            (SELECT COUNT(*) FROM favorite WHERE resep_id = :favorites_recipe_id) AS favorites_count,
+            (SELECT COUNT(*) FROM ratings WHERE resep_id = :ratings_recipe_id) AS ratings_count,
+            (SELECT AVG(rating_value) FROM ratings WHERE resep_id = :average_recipe_id) AS rating_average'
+    );
+    $countStmt->execute([
+        ':likes_recipe_id' => $recipeId,
+        ':favorites_recipe_id' => $recipeId,
+        ':ratings_recipe_id' => $recipeId,
+        ':average_recipe_id' => $recipeId,
+    ]);
+    $counts = $countStmt->fetch() ?: [];
+
+    $state = [
+        'recipe_id' => $recipeId,
+        'likes_count' => (int) ($counts['likes_count'] ?? 0),
+        'favorites_count' => (int) ($counts['favorites_count'] ?? 0),
+        'ratings_count' => (int) ($counts['ratings_count'] ?? 0),
+        'rating_average' => round((float) ($counts['rating_average'] ?? 0), 1),
+        'liked' => false,
+        'favorited' => false,
+        'user_rating' => null,
+    ];
+
+    if ($userId !== null && $userId > 0) {
+        $userStmt = $pdo->prepare(
+            'SELECT
+                EXISTS(SELECT 1 FROM likes WHERE pengguna_id = :liked_user_id AND resep_id = :liked_recipe_id) AS liked,
+                EXISTS(SELECT 1 FROM favorite WHERE pengguna_id = :favorite_user_id AND resep_id = :favorite_recipe_id) AS favorited,
+                (SELECT rating_value FROM ratings WHERE pengguna_id = :rating_user_id AND resep_id = :rating_recipe_id LIMIT 1) AS user_rating'
+        );
+        $userStmt->execute([
+            ':liked_user_id' => $userId,
+            ':liked_recipe_id' => $recipeId,
+            ':favorite_user_id' => $userId,
+            ':favorite_recipe_id' => $recipeId,
+            ':rating_user_id' => $userId,
+            ':rating_recipe_id' => $recipeId,
+        ]);
+        $user = $userStmt->fetch() ?: [];
+
+        $state['liked'] = (bool) ($user['liked'] ?? false);
+        $state['favorited'] = (bool) ($user['favorited'] ?? false);
+        $state['user_rating'] = isset($user['user_rating']) ? (float) $user['user_rating'] : null;
+    }
+
+    return $state;
+}
+
+function recipe_toggle_like_db(int $recipeId, int $userId): array
+{
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $existsStmt = $pdo->prepare(
+            'SELECT like_id FROM likes WHERE pengguna_id = :user_id AND resep_id = :recipe_id LIMIT 1'
+        );
+        $existsStmt->execute([
+            ':user_id' => $userId,
+            ':recipe_id' => $recipeId,
+        ]);
+        $existing = $existsStmt->fetch();
+
+        if ($existing) {
+            $deleteStmt = $pdo->prepare(
+                'DELETE FROM likes WHERE pengguna_id = :user_id AND resep_id = :recipe_id'
+            );
+            $deleteStmt->execute([
+                ':user_id' => $userId,
+                ':recipe_id' => $recipeId,
+            ]);
+            $liked = false;
+        } else {
+            $insertStmt = $pdo->prepare(
+                'INSERT INTO likes (pengguna_id, resep_id) VALUES (:user_id, :recipe_id)'
+            );
+            $insertStmt->execute([
+                ':user_id' => $userId,
+                ':recipe_id' => $recipeId,
+            ]);
+            $liked = true;
+        }
+
+        $pdo->commit();
+
+        $state = recipe_social_state_db($recipeId, $userId);
+        $state['liked'] = $liked;
+        return $state;
+    } catch (Throwable $throwable) {
+        $pdo->rollBack();
+        throw $throwable;
+    }
+}
+
+function recipe_toggle_favorite_db(int $recipeId, int $userId): array
+{
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $existsStmt = $pdo->prepare(
+            'SELECT favorite_id FROM favorite WHERE pengguna_id = :user_id AND resep_id = :recipe_id LIMIT 1'
+        );
+        $existsStmt->execute([
+            ':user_id' => $userId,
+            ':recipe_id' => $recipeId,
+        ]);
+        $existing = $existsStmt->fetch();
+
+        if ($existing) {
+            $deleteStmt = $pdo->prepare(
+                'DELETE FROM favorite WHERE pengguna_id = :user_id AND resep_id = :recipe_id'
+            );
+            $deleteStmt->execute([
+                ':user_id' => $userId,
+                ':recipe_id' => $recipeId,
+            ]);
+            $favorited = false;
+        } else {
+            $insertStmt = $pdo->prepare(
+                'INSERT INTO favorite (pengguna_id, resep_id) VALUES (:user_id, :recipe_id)'
+            );
+            $insertStmt->execute([
+                ':user_id' => $userId,
+                ':recipe_id' => $recipeId,
+            ]);
+            $favorited = true;
+        }
+
+        $pdo->commit();
+
+        $state = recipe_social_state_db($recipeId, $userId);
+        $state['favorited'] = $favorited;
+        return $state;
+    } catch (Throwable $throwable) {
+        $pdo->rollBack();
+        throw $throwable;
+    }
+}
+
+function recipe_remove_favorite_db(int $recipeId, int $userId): bool
+{
+    $stmt = db()->prepare(
+        'DELETE FROM favorite WHERE pengguna_id = :user_id AND resep_id = :recipe_id'
+    );
+    $stmt->execute([
+        ':user_id' => $userId,
+        ':recipe_id' => $recipeId,
+    ]);
+
+    return $stmt->rowCount() > 0;
+}
+
+function recipe_set_rating_db(int $recipeId, int $userId, float $ratingValue): array
+{
+    $ratingValue = round($ratingValue, 1);
+    if ($ratingValue < 1 || $ratingValue > 5) {
+        throw new InvalidArgumentException('Rating harus berada di antara 1 sampai 5.');
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $stmt = $pdo->prepare(
+            'INSERT INTO ratings (pengguna_id, resep_id, rating_value)
+             VALUES (:user_id, :id, :rating_value)
+             ON DUPLICATE KEY UPDATE rating_value = VALUES(rating_value)'
+        );
+        $stmt->execute([
+            ':user_id' => $userId,
+            ':id' => $recipeId,
+            ':rating_value' => $ratingValue,
+        ]);
+
+        $pdo->commit();
+
+        return recipe_social_state_db($recipeId, $userId);
+    } catch (Throwable $throwable) {
+        $pdo->rollBack();
+        throw $throwable;
+    }
 }
 
 function recipe_related_db(array $recipe, int $limit = 3): array

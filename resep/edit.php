@@ -247,8 +247,8 @@ function old(string $key, array $old): string
             <a href="../profil/">Profile</a>
             <a class="is-active" href="../resep/myresep.php">My Recipes</a>
             <a href="../resep/buat.php">Add Recipe</a>
-            <a href="#" aria-disabled="true" tabindex="-1">Favorite</a>
-            <a href="../home/#recipe-search">Search</a>
+            <a href="../resep/favorite.php">Favorite</a>
+            <a href="../cari.php">Search</a>
         </nav>
 
         <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
