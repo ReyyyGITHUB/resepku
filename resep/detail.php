@@ -88,6 +88,7 @@ if ($recipe === null) {
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Resep">
             <a href="../home/">Home</a>
+            <a href="../profil/">Profile</a>
             <a href="#" aria-disabled="true" tabindex="-1">My Recipes</a>
             <a href="../resep/buat.php">Add Recipe</a>
             <a href="#" aria-disabled="true" tabindex="-1">Favorite</a>

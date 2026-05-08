@@ -156,6 +156,111 @@ function recipe_catalog_from_db(?int $limit = null): array
     return $recipes;
 }
 
+function recipe_user_profile_db(int $userId): ?array
+{
+    $sql = <<<SQL
+        SELECT
+            p.pengguna_id,
+            p.nama_pengguna,
+            p.email,
+            p.foto_profil,
+            p.bio,
+            p.role,
+            p.status,
+            p.dibuat_pada,
+            (
+                SELECT COUNT(*)
+                FROM recipes r
+                WHERE r.pengguna_id = p.pengguna_id
+            ) AS recipe_count,
+            (
+                SELECT COUNT(*)
+                FROM following f
+                WHERE f.following_id_user = p.pengguna_id
+            ) AS follower_count,
+            (
+                SELECT COUNT(*)
+                FROM following f
+                WHERE f.follower_id = p.pengguna_id
+            ) AS following_count
+        FROM pengguna p
+        WHERE p.pengguna_id = :user_id
+        LIMIT 1
+    SQL;
+
+    $stmt = db()->prepare($sql);
+    $stmt->execute([':user_id' => $userId]);
+    $row = $stmt->fetch();
+
+    if (!$row) {
+        return null;
+    }
+
+    return [
+        'id' => (int) $row['pengguna_id'],
+        'name' => (string) $row['nama_pengguna'],
+        'email' => (string) $row['email'],
+        'avatar' => recipe_asset_path($row['foto_profil'] ?? '../assets/img/home-profile.png'),
+        'bio' => trim((string) ($row['bio'] ?? '')),
+        'role' => (string) ($row['role'] ?? 'pengguna'),
+        'status' => (string) ($row['status'] ?? 'aktif'),
+        'joined_at' => (string) ($row['dibuat_pada'] ?? ''),
+        'recipe_count' => (int) ($row['recipe_count'] ?? 0),
+        'follower_count' => (int) ($row['follower_count'] ?? 0),
+        'following_count' => (int) ($row['following_count'] ?? 0),
+    ];
+}
+
+function recipe_user_recipes_db(int $userId, int $limit = 12): array
+{
+    $sql = <<<SQL
+        SELECT
+            r.resep_id,
+            r.nama_resep,
+            r.foto_resep,
+            r.waktu_memasak,
+            r.porsi,
+            r.tingkat_kesulitan,
+            r.kategori,
+            r.deskripsi,
+            r.langkah_resep,
+            p.nama_pengguna AS author_name,
+            p.foto_profil AS author_avatar
+        FROM recipes r
+        INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
+        WHERE r.pengguna_id = :user_id
+        ORDER BY r.dibuat_pada DESC, r.resep_id DESC
+        LIMIT :limit
+    SQL;
+
+    $stmt = db()->prepare($sql);
+    $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $recipes = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $recipes[] = recipe_row_to_card([
+            'resep_id' => $row['resep_id'],
+            'nama_resep' => $row['nama_resep'],
+            'foto_resep' => $row['foto_resep'],
+            'waktu_memasak' => $row['waktu_memasak'],
+            'porsi' => $row['porsi'],
+            'tingkat_kesulitan' => $row['tingkat_kesulitan'],
+            'kategori' => $row['kategori'],
+            'summary' => $row['deskripsi'] ?? '',
+            'deskripsi' => $row['deskripsi'] ?? '',
+            'author' => $row['author_name'] ?? 'ResepKu Team',
+            'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+            'ingredients' => [],
+            'tools' => [],
+            'steps' => recipe_parse_list($row['langkah_resep'] ?? ''),
+        ]);
+    }
+
+    return $recipes;
+}
+
 function recipe_catalog_filtered_db(array $filters = [], int $limit = 24): array
 {
     $where = [];
