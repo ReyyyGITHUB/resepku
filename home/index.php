@@ -22,9 +22,9 @@ $isDefaultView = $filters['q'] === ''
     && $filters['sort'] === 'newest';
 
 $recipes = recipe_catalog_filtered_db($filters, 24);
-$defaultRecipes = $isDefaultView ? recipe_catalog_from_db(8) : [];
+$defaultRecipes = $isDefaultView ? recipe_catalog_from_db() : [];
 $topRecipes = $isDefaultView ? array_slice($defaultRecipes, 0, 4) : [];
-$bottomRecipes = $isDefaultView ? array_slice($defaultRecipes, 4, 4) : [];
+$bottomRecipes = $isDefaultView ? array_slice($defaultRecipes, 4) : [];
 $activeCategory = mb_strtolower($filters['category']);
 
 $categoryPills = [

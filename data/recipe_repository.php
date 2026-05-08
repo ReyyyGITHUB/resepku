@@ -102,7 +102,7 @@ function recipe_parse_list(?string $value): array
     return $items;
 }
 
-function recipe_catalog_from_db(int $limit = 8): array
+function recipe_catalog_from_db(?int $limit = null): array
 {
     $sql = <<<SQL
         SELECT
@@ -119,12 +119,17 @@ function recipe_catalog_from_db(int $limit = 8): array
             p.foto_profil AS author_avatar
         FROM recipes r
         INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
-        ORDER BY r.dibuat_pada DESC, r.resep_id DESC
-        LIMIT :limit
+        ORDER BY r.dibuat_pada ASC, r.resep_id ASC
     SQL;
 
+    if ($limit !== null) {
+        $sql .= ' LIMIT :limit';
+    }
+
     $stmt = db()->prepare($sql);
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    if ($limit !== null) {
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    }
     $stmt->execute();
 
     $recipes = [];
