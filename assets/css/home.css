@@ -11,64 +11,99 @@
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 10;
+    display: flex;
+    flex-direction: column;
     width: 272px;
     min-height: 100vh;
     background: #ffffff;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
     overflow-y: auto;
 }
 
+.home-sidebar__profile {
+    display: grid;
+    gap: 16px;
+    padding: 22px 20px 18px;
+}
+
 .home-sidebar__brand {
-    position: relative;
-    padding: 24px 24px 18px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .home-sidebar__logo {
-    width: 70px;
-    height: 80px;
+    width: 52px;
+    height: 60px;
     object-fit: cover;
+    flex: 0 0 auto;
 }
 
 .home-sidebar__name {
-    margin: -8px 0 0;
+    margin: 0;
     font-family: var(--font-brand);
-    font-size: 36px;
+    font-size: 30px;
     font-weight: 700;
     line-height: 1;
 }
 
-.home-sidebar__user {
-    margin: 6px 0 14px;
+.home-sidebar__status {
+    margin: 4px 0 0;
+    color: #adadad;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
-.home-sidebar__avatar {
-    width: 78px;
-    height: 74px;
-    border-radius: 100px;
-    object-fit: cover;
+.home-sidebar__identity {
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
 }
 
 .home-sidebar__welcome {
-    margin: 12px 0 14px;
+    min-width: 0;
+}
+
+.home-sidebar__avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.home-sidebar__welcome strong {
+    display: block;
     font-size: 15px;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.2;
+}
+
+.home-sidebar__welcome span {
+    display: block;
+    margin-top: 4px;
+    color: #464646;
+    font-size: 12px;
+    line-height: 1.4;
 }
 
 .home-sidebar__logout {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 113px;
-    height: 29px;
+    min-height: 38px;
+    padding: 0 14px;
     border: 1px solid #000000;
-    border-radius: 10px;
+    border-radius: 12px;
     color: #000000;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 700;
     text-decoration: none;
+    background: #ffffff;
 }
 
 .home-sidebar__divider {
@@ -77,42 +112,54 @@
 }
 
 .home-sidebar__label {
-    margin: 14px 0 0 21px;
+    margin: 16px 0 0;
+    padding: 0 20px;
     color: #adadad;
-    font-size: 16px;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .home-sidebar__nav {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 160px;
-    margin: 24px auto 0;
+    padding: 12px 20px 0;
 }
 
 .home-sidebar__nav a {
     display: flex;
     align-items: center;
-    height: 36px;
-    padding: 10px;
-    border: 1px solid #d4af37;
-    border-radius: 10px;
+    min-height: 40px;
+    padding: 10px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.9);
     color: #000000;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
     text-decoration: none;
 }
 
 .home-sidebar__nav a.is-active {
     border-color: #000000;
     background: #fb9b00;
+    box-shadow: 0 8px 18px rgba(251, 155, 0, 0.2);
+}
+
+.home-sidebar__nav a[aria-disabled="true"] {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.home-sidebar__nav--categories {
+    padding-bottom: 16px;
 }
 
 .home-sidebar__chef {
     display: block;
-    width: 132px;
-    height: auto;
-    margin: 28px auto 20px;
+    width: calc(100% - 40px);
+    max-width: 180px;
+    margin: auto 20px 20px;
     object-fit: contain;
 }
 
@@ -952,60 +999,68 @@
         position: static;
         width: 100%;
         min-height: auto;
-        padding: 18px;
+        border-right: 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     }
 
-    .home-sidebar__brand {
-        display: grid;
-        grid-template-columns: 74px 1fr auto;
-        align-items: center;
+    .home-sidebar__profile {
         gap: 14px;
-        height: auto;
-        padding: 0;
-        text-align: left;
+        padding: 16px 18px 14px;
     }
 
     .home-sidebar__logo,
-    .home-sidebar__chef,
-    .home-sidebar__divider,
-    .home-sidebar__label,
-    .home-sidebar__user {
+    .home-sidebar__divider {
         display: none;
+    }
+
+    .home-sidebar__brand {
+        align-items: flex-start;
     }
 
     .home-sidebar__name {
         margin: 0;
-        font-size: 34px;
+        font-size: 28px;
+    }
+
+    .home-sidebar__status {
+        margin-top: 3px;
+    }
+
+    .home-sidebar__identity {
+        grid-template-columns: 48px minmax(0, 1fr);
+        padding: 12px;
     }
 
     .home-sidebar__avatar {
-        grid-column: 1;
-        grid-row: 1 / span 2;
-        width: 64px;
-        height: 64px;
-    }
-
-    .home-sidebar__welcome {
-        margin: 4px 0 0;
-        font-size: 14px;
+        width: 48px;
+        height: 48px;
     }
 
     .home-sidebar__logout {
-        grid-column: 3;
-        grid-row: 1 / span 2;
+        width: 100%;
+    }
+
+    .home-sidebar__label {
+        margin-top: 4px;
+        padding: 0 18px;
     }
 
     .home-sidebar__nav {
         flex-direction: row;
-        width: 100%;
         gap: 10px;
-        margin-top: 18px;
+        padding: 12px 18px 0;
         overflow-x: auto;
         padding-bottom: 4px;
     }
 
     .home-sidebar__nav a {
         min-width: 130px;
+        white-space: nowrap;
+    }
+
+    .home-sidebar__chef {
+        width: min(180px, calc(100% - 36px));
+        margin: 14px auto 18px;
     }
 
     .home-main {
@@ -1096,18 +1151,7 @@
 }
 
 @media (max-width: 520px) {
-    .home-sidebar__brand {
-        grid-template-columns: 56px 1fr;
-    }
-
-    .home-sidebar__avatar {
-        width: 52px;
-        height: 52px;
-    }
-
     .home-sidebar__logout {
-        grid-column: 1 / -1;
-        grid-row: auto;
         width: 100%;
     }
 
@@ -1132,6 +1176,19 @@
     .recipe-grid {
         --recipe-card-min: 244px;
         grid-template-columns: 1fr;
+    }
+
+    .home-sidebar__nav {
+        gap: 8px;
+    }
+
+    .home-sidebar__nav a {
+        min-width: 118px;
+    }
+
+    .home-sidebar__chef {
+        width: min(160px, calc(100% - 28px));
+        margin: 10px auto 16px;
     }
 }
 

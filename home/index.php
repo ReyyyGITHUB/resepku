@@ -96,23 +96,39 @@ if ($recipes === []) {
 </head>
 <body class="home-page">
     <aside class="home-sidebar" data-node-id="16:154">
-        <div class="home-sidebar__brand">
-            <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
-            <p class="home-sidebar__name">Resepku</p>
-            <p class="home-sidebar__user"><?= e($userName) ?></p>
-            <img src="../assets/img/home-profile.png" alt="" class="home-sidebar__avatar">
-            <p class="home-sidebar__welcome">welcome back!<br><?= e($userName) ?></p>
+        <div class="home-sidebar__profile">
+            <div class="home-sidebar__brand">
+                <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
+                <div>
+                    <p class="home-sidebar__name">Resepku</p>
+                    <p class="home-sidebar__status"><?= $isGuest ? 'Guest mode' : 'Signed in' ?></p>
+                </div>
+            </div>
+
+            <div class="home-sidebar__identity">
+                <img src="../assets/img/home-profile.png" alt="" class="home-sidebar__avatar">
+                <div class="home-sidebar__welcome">
+                    <strong><?= e($userName) ?></strong>
+                    <span><?= $isGuest ? 'Login untuk simpan resep dan kelola profil.' : 'Akses resep pribadi dan aktivitas akun.' ?></span>
+                </div>
+            </div>
+
             <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
         </div>
 
         <div class="home-sidebar__divider"></div>
-        <p class="home-sidebar__label">kategori</p>
 
-        <nav class="home-sidebar__nav" aria-label="Navigasi Home">
-            <a class="is-active" href="#">Home</a>
-            <a href="#">Favorite</a>
-            <a href="#">My Recipes</a>
-            <a href="#">Search Recipe</a>
+        <p class="home-sidebar__label">Navigasi utama</p>
+        <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Home">
+            <a class="is-active" href="../home/">Home</a>
+            <a href="#" aria-disabled="true" tabindex="-1">My Recipes</a>
+            <a href="../resep/buat.php">Add Recipe</a>
+            <a href="#" aria-disabled="true" tabindex="-1">Favorite</a>
+            <a href="../home/#recipe-search">Search</a>
+        </nav>
+
+        <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
+        <nav class="home-sidebar__nav home-sidebar__nav--categories" aria-label="Kategori resep">
             <a href="#">Food</a>
             <a href="#">Salad</a>
             <a href="#">Dessert</a>
