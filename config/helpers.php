@@ -37,3 +37,15 @@ function redirectTo(string $path): never
     header('Location: ' . $path);
     exit;
 }
+
+function appUrl(string $path = ''): string
+{
+    $baseUrl = rtrim((string) env('APP_URL', ''), '/');
+    $path = ltrim($path, '/');
+
+    if ($baseUrl === '') {
+        return '/' . $path;
+    }
+
+    return $path === '' ? $baseUrl : $baseUrl . '/' . $path;
+}

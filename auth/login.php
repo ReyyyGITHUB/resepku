@@ -111,6 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <button class="login-form__button" type="submit" data-node-id="1:2061">Login</button>
 
+                <p class="login-form__forgot">
+                    <a href="lupa-sandi.php">Forgot password?</a>
+                </p>
+
                 <button class="login-form__guest" type="submit" name="guest_login" value="1" formnovalidate>Login as Guest</button>
 
                 <p class="login-form__signup" data-node-id="1:2068">

@@ -221,6 +221,22 @@ INSERT INTO `pengguna` (`pengguna_id`, `nama_pengguna`, `email`, `kata_sandi`, `
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `password_resets`
+--
+
+CREATE TABLE `password_resets` (
+  `password_reset_id` bigint UNSIGNED NOT NULL,
+  `pengguna_id` bigint UNSIGNED NOT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token_hash` char(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `used_at` datetime DEFAULT NULL,
+  `dibuat_pada` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `peralatan_resep`
 --
 
@@ -385,6 +401,15 @@ ALTER TABLE `pengguna`
   ADD UNIQUE KEY `email` (`email`);
 
 --
+-- Indexes for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  ADD PRIMARY KEY (`password_reset_id`),
+  ADD UNIQUE KEY `token_hash` (`token_hash`),
+  ADD KEY `password_resets_pengguna_fk` (`pengguna_id`),
+  ADD KEY `password_resets_email_idx` (`email`);
+
+--
 -- Indexes for table `peralatan_resep`
 --
 ALTER TABLE `peralatan_resep`
@@ -459,6 +484,12 @@ ALTER TABLE `pengguna`
   MODIFY `pengguna_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  MODIFY `password_reset_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `peralatan_resep`
 --
 ALTER TABLE `peralatan_resep`
@@ -521,6 +552,12 @@ ALTER TABLE `komentar`
 ALTER TABLE `likes`
   ADD CONSTRAINT `likes_pengguna_fk` FOREIGN KEY (`pengguna_id`) REFERENCES `pengguna` (`pengguna_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `likes_resep_fk` FOREIGN KEY (`resep_id`) REFERENCES `recipes` (`resep_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  ADD CONSTRAINT `password_resets_pengguna_fk` FOREIGN KEY (`pengguna_id`) REFERENCES `pengguna` (`pengguna_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `peralatan_resep`
