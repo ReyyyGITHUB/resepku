@@ -55,7 +55,7 @@ $recipes = recipe_user_recipes_db($userId, 12);
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Profil">
             <a href="../home/">Home</a>
             <a class="is-active" href="../profil/">Profile</a>
-            <a href="#" aria-disabled="true" tabindex="-1">My Recipes</a>
+            <a href="../resep/myresep.php">My Recipes</a>
             <a href="../resep/buat.php">Add Recipe</a>
             <a href="#" aria-disabled="true" tabindex="-1">Favorite</a>
         </nav>
@@ -111,11 +111,13 @@ $recipes = recipe_user_recipes_db($userId, 12);
             </div>
 
             <?php if ($recipes === []): ?>
-                <article class="profile-empty">
-                    <h2>Belum ada resep</h2>
-                    <p>Buat resep pertama supaya profilmu langsung terisi.</p>
-                    <a href="../resep/buat.php">Tambah resep</a>
-                </article>
+                <div class="profile-empty-wrap">
+                    <article class="profile-empty">
+                        <h2>Belum ada resep</h2>
+                        <p>Buat resep pertama supaya profilmu langsung terisi.</p>
+                        <a href="../resep/buat.php">Tambah resep</a>
+                    </article>
+                </div>
             <?php else: ?>
                 <section class="recipe-grid profile-grid" aria-label="Resep profil">
                     <?php foreach ($recipes as $recipe): ?>

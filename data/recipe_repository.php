@@ -33,6 +33,7 @@ function recipe_row_to_card(array $row): array
 
     return [
         'id' => $id,
+        'user_id' => (int) ($row['user_id'] ?? 0),
         'title' => $title !== '' ? $title : 'Untitled Recipe',
         'slug' => $row['slug'] ?? ($id > 0 ? 'recipe-' . $id : 'recipe-preview'),
         'image' => $image,
@@ -261,6 +262,136 @@ function recipe_user_recipes_db(int $userId, int $limit = 12): array
     return $recipes;
 }
 
+function recipe_find_owned_db(int $id, int $userId): ?array
+{
+    $recipe = recipe_find_db($id);
+
+    if ($recipe === null || (int) ($recipe['user_id'] ?? 0) !== $userId) {
+        return null;
+    }
+
+    return $recipe;
+}
+
+function recipe_sync_related_rows(PDO $pdo, int $recipeId, array $ingredients, array $tools): void
+{
+    $pdo->prepare('DELETE FROM bahan_resep WHERE resep_id = :id')->execute([':id' => $recipeId]);
+    $pdo->prepare('DELETE FROM peralatan_resep WHERE resep_id = :id')->execute([':id' => $recipeId]);
+
+    $ingredientStmt = $pdo->prepare(
+        'INSERT INTO bahan_resep (resep_id, nama_bahan, jumlah, satuan, keterangan)
+         VALUES (:resep_id, :nama_bahan, :jumlah, :satuan, :keterangan)'
+    );
+    foreach ($ingredients as $ingredient) {
+        $ingredientStmt->execute([
+            ':resep_id' => $recipeId,
+            ':nama_bahan' => $ingredient['nama_bahan'],
+            ':jumlah' => $ingredient['jumlah'] !== '' ? $ingredient['jumlah'] : null,
+            ':satuan' => $ingredient['satuan'] !== '' ? $ingredient['satuan'] : null,
+            ':keterangan' => $ingredient['keterangan'] !== '' ? $ingredient['keterangan'] : null,
+        ]);
+    }
+
+    $toolStmt = $pdo->prepare(
+        'INSERT INTO peralatan_resep (resep_id, nama_peralatan) VALUES (:resep_id, :nama_peralatan)'
+    );
+    foreach ($tools as $tool) {
+        $toolStmt->execute([
+            ':resep_id' => $recipeId,
+            ':nama_peralatan' => $tool,
+        ]);
+    }
+}
+
+function recipe_create_db(int $userId, array $payload, array $ingredients, array $tools): int
+{
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $stmt = $pdo->prepare(
+            'INSERT INTO recipes (pengguna_id, nama_resep, deskripsi, langkah_resep, waktu_memasak, porsi, foto_resep, kategori, tingkat_kesulitan)
+             VALUES (:pengguna_id, :nama_resep, :deskripsi, :langkah_resep, :waktu_memasak, :porsi, :foto_resep, :kategori, :tingkat_kesulitan)'
+        );
+        $stmt->execute([
+            ':pengguna_id' => $userId,
+            ':nama_resep' => $payload['nama_resep'],
+            ':deskripsi' => $payload['deskripsi'],
+            ':langkah_resep' => $payload['langkah_resep'],
+            ':waktu_memasak' => $payload['waktu_memasak'],
+            ':porsi' => $payload['porsi'],
+            ':foto_resep' => $payload['foto_resep'],
+            ':kategori' => $payload['kategori'],
+            ':tingkat_kesulitan' => $payload['tingkat_kesulitan'],
+        ]);
+
+        $recipeId = (int) $pdo->lastInsertId();
+        recipe_sync_related_rows($pdo, $recipeId, $ingredients, $tools);
+        $pdo->commit();
+
+        return $recipeId;
+    } catch (Throwable $throwable) {
+        $pdo->rollBack();
+        throw $throwable;
+    }
+}
+
+function recipe_update_db(int $id, int $userId, array $payload, array $ingredients, array $tools): bool
+{
+    if (recipe_find_owned_db($id, $userId) === null) {
+        return false;
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $stmt = $pdo->prepare(
+            'UPDATE recipes
+             SET nama_resep = :nama_resep,
+                 deskripsi = :deskripsi,
+                 langkah_resep = :langkah_resep,
+                 waktu_memasak = :waktu_memasak,
+                 porsi = :porsi,
+                 foto_resep = COALESCE(:foto_resep, foto_resep),
+                 kategori = :kategori,
+                 tingkat_kesulitan = :tingkat_kesulitan
+             WHERE resep_id = :id AND pengguna_id = :pengguna_id'
+        );
+        $stmt->execute([
+            ':nama_resep' => $payload['nama_resep'],
+            ':deskripsi' => $payload['deskripsi'],
+            ':langkah_resep' => $payload['langkah_resep'],
+            ':waktu_memasak' => $payload['waktu_memasak'],
+            ':porsi' => $payload['porsi'],
+            ':foto_resep' => $payload['foto_resep'],
+            ':kategori' => $payload['kategori'],
+            ':tingkat_kesulitan' => $payload['tingkat_kesulitan'],
+            ':id' => $id,
+            ':pengguna_id' => $userId,
+        ]);
+
+        recipe_sync_related_rows($pdo, $id, $ingredients, $tools);
+        $pdo->commit();
+
+        return true;
+    } catch (Throwable $throwable) {
+        $pdo->rollBack();
+        throw $throwable;
+    }
+}
+
+function recipe_delete_db(int $id, int $userId): bool
+{
+    $stmt = db()->prepare('DELETE FROM recipes WHERE resep_id = :id AND pengguna_id = :pengguna_id');
+    $stmt->execute([
+        ':id' => $id,
+        ':pengguna_id' => $userId,
+    ]);
+
+    return $stmt->rowCount() > 0;
+}
+
 function recipe_catalog_filtered_db(array $filters = [], int $limit = 24): array
 {
     $where = [];
@@ -459,6 +590,7 @@ function recipe_find_db(int $id): ?array
 
     return recipe_row_to_card([
         'resep_id' => $row['resep_id'],
+        'user_id' => (int) ($row['pengguna_id'] ?? 0),
         'nama_resep' => $row['nama_resep'],
         'foto_resep' => $row['foto_resep'],
         'waktu_memasak' => $row['waktu_memasak'],
@@ -510,10 +642,11 @@ function recipe_related_db(array $recipe, int $limit = 3): array
         $items = [];
         foreach ($stmt->fetchAll() as $row) {
             $items[] = recipe_row_to_card([
-                'resep_id' => $row['resep_id'],
-                'nama_resep' => $row['nama_resep'],
-                'foto_resep' => $row['foto_resep'],
-                'waktu_memasak' => $row['waktu_memasak'],
+        'resep_id' => $row['resep_id'],
+        'user_id' => (int) ($row['pengguna_id'] ?? 0),
+        'nama_resep' => $row['nama_resep'],
+        'foto_resep' => $row['foto_resep'],
+        'waktu_memasak' => $row['waktu_memasak'],
                 'porsi' => $row['porsi'],
                 'tingkat_kesulitan' => $row['tingkat_kesulitan'],
                 'kategori' => $row['kategori'],

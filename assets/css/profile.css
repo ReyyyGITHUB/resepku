@@ -152,11 +152,20 @@
     margin-top: 0;
 }
 
+.profile-empty-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 18px 0 8px;
+}
+
 .profile-empty {
-    padding: 28px;
-    border-radius: 18px;
+    width: min(100%, 520px);
+    padding: 26px 28px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
     background: #ffffff;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.04);
+    text-align: center;
 }
 
 .profile-empty h2 {
@@ -165,7 +174,7 @@
 }
 
 .profile-empty p {
-    margin: 0 0 16px;
+    margin: 0 0 18px;
     color: #5f646d;
 }
 
