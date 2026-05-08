@@ -4,9 +4,9 @@ Tanggal pengecekan: 8 Mei 2026
 
 RINGKASAN
 Total item dicek: 55
-Selesai: 34
-Sebagian: 7
-Belum selesai: 14
+Selesai: 36
+Sebagian: 6
+Belum selesai: 13
 
 Keterangan:
 [v] Sudah selesai
@@ -51,9 +51,9 @@ Keterangan:
 [v] Rating Bintang
 [v] Favorit Resep
 [v] Share Resep
-[x] Following / Follower
-[x] Lihat Profil Orang Lain
-[x] Feed Resep dari Following
+[v] Following / Follower
+[v] Lihat Profil Orang Lain
+[!] Feed Resep dari Following
 
 ==============================
 4. PENCARIAN & FILTER
@@ -69,7 +69,7 @@ Keterangan:
 5. PROFIL PENGGUNA
 ==============================
 [v] Halaman Profil Sendiri
-[x] Halaman Profil Orang Lain
+[v] Halaman Profil Orang Lain
 [v] Daftar Resep Pengguna
 [v] Statistik Profil
 [v] Daftar Favorit
@@ -124,17 +124,16 @@ Keterangan:
 ==============================
 PRIORITAS PEKERJAAN BERIKUTNYA
 ==============================
-1. [x] Perbaiki auth password: password_hash saat register dan password_verify saat login
-2. [x] Buat halaman lupa sandi
-3. [x] Buat sistem komentar: API, form komentar, daftar komentar
-4. [x] Buat follow/unfollow dan profil orang lain
-5. [x] Buat laporan CS: lapor resep/pengguna dan status laporan
-6. [x] Buat panel admin: dashboard, pengguna, resep, laporan
-7. [!] Lengkapi edit profil dan upload foto profil
+1. [ ] Lengkapi edit profil: nama, email, password, bio, foto profil di /profil
+2. [ ] Buat auth/lupa-sandi.php
+3. [ ] Buat panel admin: dashboard, pengguna, resep, laporan, dan middleware role admin
+4. [ ] Buat laporan CS: form lapor resep/pengguna dan status laporan
+5. [!] Lengkapi feed resep dari following
+6. [!] Audit auth password: password_hash saat register dan password_verify saat login
 
 KESIMPULAN
 Pekerjaan yang sudah paling kuat:
 CRUD resep, detail resep, upload foto, database, pencarian/filter, like, rating, dan favorit.
 
 Pekerjaan yang belum selesai:
-Komentar, follow/profil orang lain, laporan CS, lupa sandi, edit profil, admin panel, dan keamanan password.
+Edit profil, lupa sandi, panel admin, laporan CS, feed following, dan keamanan password.

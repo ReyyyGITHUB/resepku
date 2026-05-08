@@ -214,6 +214,38 @@ function recipe_user_profile_db(int $userId): ?array
     ];
 }
 
+function recipe_update_user_profile_db(int $userId, string $name, string $bio, ?string $newPassword = null): bool
+{
+    $name = trim($name);
+    $bio = trim($bio);
+    $newPassword = $newPassword !== null ? trim($newPassword) : null;
+
+    if ($userId <= 0 || $name === '') {
+        return false;
+    }
+
+    $fields = [
+        'nama_pengguna = :name',
+        'bio = :bio',
+    ];
+    $params = [
+        ':name' => $name,
+        ':bio' => $bio !== '' ? $bio : null,
+        ':user_id' => $userId,
+    ];
+
+    if ($newPassword !== null && $newPassword !== '') {
+        $fields[] = 'kata_sandi = :password';
+        $params[':password'] = $newPassword;
+    }
+
+    $sql = 'UPDATE pengguna SET ' . implode(', ', $fields) . ' WHERE pengguna_id = :user_id';
+    $stmt = db()->prepare($sql);
+    $stmt->execute($params);
+
+    return true;
+}
+
 function recipe_format_datetime_label(?string $value): string
 {
     $value = trim((string) $value);

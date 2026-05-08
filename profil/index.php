@@ -8,6 +8,8 @@ startSession();
 $currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
 $requestedUserId = (int) ($_GET['id'] ?? 0);
 $isPublicProfile = $requestedUserId > 0;
+$flashSuccess = $_SESSION['flash_success'] ?? null;
+unset($_SESSION['flash_success']);
 
 if (!$isPublicProfile && $currentUserId <= 0) {
     redirectTo('../auth/login.php');
@@ -93,6 +95,12 @@ $pageTitle = $isPublicProfile && !$isUnavailable ? $profile['name'] . ' - Resepk
     </aside>
 
     <main class="profile-main">
+        <?php if ($flashSuccess): ?>
+            <div class="profile-alert profile-alert--success" role="status">
+                <?= e($flashSuccess) ?>
+            </div>
+        <?php endif; ?>
+
         <?php if ($isUnavailable): ?>
             <section class="profile-hero" aria-label="Profil tidak tersedia">
                 <div class="profile-hero__content">
@@ -112,6 +120,14 @@ $pageTitle = $isPublicProfile && !$isUnavailable ? $profile['name'] . ' - Resepk
                 <div class="profile-hero__badge">
                     <?= $profile['role'] === 'admin' ? 'Admin Community' : 'Member Community' ?>
                 </div>
+
+                <?php if (trim((string) ($profile['bio'] ?? '')) !== ''): ?>
+                    <p class="profile-hero__bio"><?= e((string) $profile['bio']) ?></p>
+                <?php endif; ?>
+
+                <?php if (!$isPublicProfile): ?>
+                    <a class="profile-hero__edit" href="../profil/edit.php">Edit Profile</a>
+                <?php endif; ?>
 
                 <div class="profile-stats" aria-label="Statistik profil">
                     <div class="profile-stat">

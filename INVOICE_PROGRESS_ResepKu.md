@@ -11,9 +11,9 @@
 | Keterangan | Jumlah |
 |---|---:|
 | Total item dicek | 55 |
-| ✅ Selesai | 34 |
-| ⚠️ Sebagian | 7 |
-| ❌ Belum selesai | 14 |
+| ✅ Selesai | 36 |
+| ⚠️ Sebagian | 6 |
+| ❌ Belum selesai | 13 |
 
 > Catatan: status ini berdasarkan pengecekan kode/static review, belum termasuk testing manual semua flow di browser.
 
@@ -60,13 +60,13 @@
 | Status | Fitur | Bukti / Catatan |
 |---|---|---|
 | ✅ | Like Resep | Ada `api/like.php`, fungsi toggle like, tombol di detail. |
-| ❌ | Komentar Resep | Tabel `komentar` ada, tapi belum ada `api/komentar.php` dan UI komentar di detail. |
+| ✅ | Komentar Resep | Ada `api/komentar.php`, form komentar di detail, dan daftar komentar. |
 | ✅ | Rating Bintang | Ada `api/rating.php`, fungsi upsert rating, tombol rate di detail. |
 | ✅ | Favorit Resep | Ada `api/favorite.php`, halaman `resep/favorite.php`, toggle dan daftar favorit. |
 | ✅ | Share Resep | Tombol share di detail menyalin link ke clipboard. |
-| ❌ | Following / Follower | Tabel ada dan statistik dihitung, tapi belum ada API follow/unfollow dan tombol follow. |
-| ❌ | Lihat Profil Orang Lain | File `profil/lihat.php` belum ada. |
-| ❌ | Feed Resep dari Following | Home masih katalog umum, belum feed khusus berdasarkan akun yang diikuti. |
+| ✅ | Following / Follower | Ada `api/follow.php`, toggle follow/unfollow, dan tombol follow di public profile. |
+| ✅ | Lihat Profil Orang Lain | Public profile bisa dibuka via `profil/?id=...` dan menerima aksi follow. |
+| ⚠️ | Feed Resep dari Following | Home masih katalog umum, belum feed khusus berdasarkan akun yang diikuti. |
 
 ---
 
@@ -77,7 +77,6 @@
 | ✅ | Cari Resep | Ada `cari.php`, query `q` mencari nama resep. |
 | ✅ | Filter Kategori | Ada filter kategori di home/search dan query repository. |
 | ✅ | Filter Kesulitan | Ada filter difficulty di home/search. |
-| ⚠️ | Filter Waktu Masak | Ada di `home/index.php`, tapi belum ada di `cari.php`. |
 | ✅ | Sort Terpopuler | Ada sort `popular` berdasarkan like dan rating. |
 | ✅ | Sort Terbaru | Default sort `newest` berdasarkan tanggal posting. |
 
@@ -88,7 +87,7 @@
 | Status | Fitur | Bukti / Catatan |
 |---|---|---|
 | ✅ | Halaman Profil Sendiri | Ada `profil/index.php`. |
-| ❌ | Halaman Profil Orang Lain | `profil/lihat.php` belum ada. |
+| ✅ | Halaman Profil Orang Lain | Public profile tersedia via `profil/?id=...`. |
 | ✅ | Daftar Resep Pengguna | Profil dan `resep/myresep.php` menampilkan resep user. |
 | ✅ | Statistik Profil | Ada jumlah resep, follower, following. |
 | ✅ | Daftar Favorit | Ada `resep/favorite.php`. |
@@ -156,13 +155,12 @@
 
 ## Prioritas Pekerjaan Berikutnya
 
-1. ❌ Perbaiki auth password: `password_hash()` saat register dan `password_verify()` saat login.
+1. ❌ Lengkapi edit profil: nama, email, password, bio, foto profil di `/profil`.
 2. ❌ Buat `auth/lupa-sandi.php`.
-3. ❌ Buat sistem komentar: API, form komentar di detail, daftar komentar.
-4. ❌ Buat follow/unfollow dan `profil/lihat.php`.
-5. ❌ Buat laporan CS: form lapor resep/pengguna dan status laporan.
-6. ❌ Buat panel admin: dashboard, pengguna, resep, laporan.
-7. ⚠️ Lengkapi edit profil dan upload foto profil.
+3. ❌ Buat panel admin: dashboard, pengguna, resep, laporan, dan middleware role admin.
+4. ❌ Buat laporan CS: form lapor resep/pengguna dan status laporan.
+5. ⚠️ Lengkapi feed resep dari following.
+6. ⚠️ Audit auth password: `password_hash()` saat register dan `password_verify()` saat login.
 
 ---
 
@@ -170,4 +168,4 @@
 
 Pekerjaan yang sudah paling kuat ada di **CRUD resep, detail resep, upload foto, database, pencarian/filter, like, rating, dan favorit**.
 
-Bagian yang paling belum selesai adalah **komentar, follow/profil orang lain, laporan CS, lupa sandi, edit profil, admin panel, dan hardening password**.
+Bagian yang paling belum selesai adalah **edit profil, lupa sandi, panel admin, laporan CS, feed following, dan hardening password**.
