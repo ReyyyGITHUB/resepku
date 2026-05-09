@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", function () {
     var guestTriggers = document.querySelectorAll("[data-guest-gate]");
     var csrfToken = document.body.dataset.csrfToken || "";
     var detailPage = document.body.classList.contains("detail-page");
+    var profileEditModal = document.querySelector("[data-profile-edit-modal]");
+    var profileEditOpeners = document.querySelectorAll("[data-profile-edit-open]");
+    var profileEditClosers = document.querySelectorAll("[data-profile-edit-close]");
 
     function openGuestModal() {
         if (!guestModal) {
@@ -55,6 +58,48 @@ document.addEventListener("DOMContentLoaded", function () {
         document.addEventListener("keydown", function (event) {
             if (event.key === "Escape") {
                 closeGuestModal();
+            }
+        });
+    }
+
+    function openProfileEditModal() {
+        if (!profileEditModal) {
+            return;
+        }
+
+        profileEditModal.classList.add("is-open");
+        profileEditModal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+    }
+
+    function closeProfileEditModal() {
+        if (!profileEditModal) {
+            return;
+        }
+
+        profileEditModal.classList.remove("is-open");
+        profileEditModal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+    }
+
+    profileEditOpeners.forEach(function (button) {
+        button.addEventListener("click", openProfileEditModal);
+    });
+
+    profileEditClosers.forEach(function (button) {
+        button.addEventListener("click", closeProfileEditModal);
+    });
+
+    if (profileEditModal) {
+        profileEditModal.addEventListener("click", function (event) {
+            if (event.target.matches(".profile-modal__backdrop")) {
+                closeProfileEditModal();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeProfileEditModal();
             }
         });
     }
@@ -110,24 +155,26 @@ document.addEventListener("DOMContentLoaded", function () {
         return payload;
     }
 
-    var followButton = document.querySelector('[data-social-action="follow"]');
+    var followButtons = document.querySelectorAll('[data-social-action="follow"]');
     var followerCount = document.querySelector("[data-follower-count]");
 
-    function updateFollowState(state) {
-        if (!followButton) {
+    function updateFollowState(button, state) {
+        if (!button) {
             return;
         }
 
         var following = !!state.following;
-        followButton.classList.toggle("is-active", following);
-        followButton.textContent = following ? "Followed" : "Follow";
+        var followLabel = button.dataset.followLabel || "Follow";
+        var followedLabel = button.dataset.followedLabel || "Followed";
+        button.classList.toggle("is-active", following);
+        button.textContent = following ? followedLabel : followLabel;
 
         if (followerCount && typeof state.follower_count !== "undefined") {
             followerCount.textContent = String(state.follower_count);
         }
     }
 
-    if (followButton) {
+    followButtons.forEach(function (followButton) {
         followButton.addEventListener("click", async function () {
             if (guestMode) {
                 window.location.href = "../auth/login.php";
@@ -138,7 +185,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 followButton.disabled = true;
                 followButton.classList.add("profile-actions__primary--disabled");
                 var payload = await postSocialAction("follow.php", { user_id: followButton.dataset.userId || "" });
-                updateFollowState(payload.data || {});
+                updateFollowState(followButton, payload.data || {});
             } catch (error) {
                 alert(error.message);
             } finally {
@@ -146,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 followButton.classList.remove("profile-actions__primary--disabled");
             }
         });
-    }
+    });
 
     if (!detailPage) {
         return;

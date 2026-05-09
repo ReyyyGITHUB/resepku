@@ -110,6 +110,7 @@ function recipe_catalog_from_db(?int $limit = null): array
     $sql = <<<SQL
         SELECT
             r.resep_id,
+            r.pengguna_id AS user_id,
             r.nama_resep,
             r.foto_resep,
             r.waktu_memasak,
@@ -266,6 +267,7 @@ function recipe_user_recipes_db(int $userId, int $limit = 12): array
     $sql = <<<SQL
         SELECT
             r.resep_id,
+            r.pengguna_id AS user_id,
             r.nama_resep,
             r.foto_resep,
             r.waktu_memasak,
@@ -316,6 +318,7 @@ function recipe_user_favorites_db(int $userId, int $limit = 100): array
     $sql = <<<SQL
         SELECT
             r.resep_id,
+            r.pengguna_id AS user_id,
             r.nama_resep,
             r.foto_resep,
             r.waktu_memasak,
