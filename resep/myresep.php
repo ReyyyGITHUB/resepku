@@ -10,6 +10,7 @@ if (empty($_SESSION['user'])) {
 }
 
 $user = $_SESSION['user'];
+$isAdmin = isAdmin();
 $profile = recipe_user_profile_db((int) ($user['id'] ?? 0));
 if ($profile === null) {
     redirectTo('../home/');
@@ -102,6 +103,10 @@ $visibleRecipes = count($recipes);
                     <span>Kelola, edit, dan hapus resep milikmu dari satu tempat.</span>
                 </div>
             </div>
+
+            <?php if ($isAdmin): ?>
+                <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+            <?php endif; ?>
 
             <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
         </div>

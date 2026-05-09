@@ -5,6 +5,7 @@ require_once __DIR__ . '/../data/recipe_repository.php';
 
 startSession();
 
+$isAdmin = isAdmin();
 $currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
 $requestedUserId = (int) ($_GET['id'] ?? 0);
 $isPublicProfile = $requestedUserId > 0;
@@ -59,6 +60,10 @@ $pageTitle = $isPublicProfile && !$isUnavailable ? $profile['name'] . ' - Resepk
                     <span><?= $sidebarBio !== '' ? e($sidebarBio) : ($currentUserId > 0 ? 'Kelola akun dan resep publik kamu dari sini.' : 'Jelajahi profil dan resep komunitas.') ?></span>
                 </div>
             </div>
+
+            <?php if ($isAdmin): ?>
+                <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+            <?php endif; ?>
 
             <?php if ($currentUserId > 0): ?>
                 <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>

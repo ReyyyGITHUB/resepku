@@ -91,6 +91,23 @@
     line-height: 1.4;
 }
 
+.home-sidebar__admin-panel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 14px;
+    border: 1px solid #000000;
+    border-radius: 14px;
+    background: #fb9b00;
+    color: #000000;
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 8px 18px rgba(251, 155, 0, 0.2);
+}
+
 .home-sidebar__logout {
     display: inline-flex;
     align-items: center;

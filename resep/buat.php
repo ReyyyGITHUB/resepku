@@ -10,6 +10,7 @@ if (empty($_SESSION["user"])) {
 }
 
 $user = $_SESSION["user"];
+$isAdmin = isAdmin();
 $errors = [];
 $success = null;
 
@@ -252,6 +253,10 @@ function old(string $key, array $old): string
                     <span>Buat resep baru dan simpan ke koleksi publik.</span>
                 </div>
             </div>
+
+            <?php if ($isAdmin): ?>
+                <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+            <?php endif; ?>
 
             <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
         </div>

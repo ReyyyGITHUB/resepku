@@ -10,6 +10,7 @@ if (empty($_SESSION['user'])) {
 }
 
 $user = $_SESSION['user'];
+$isAdmin = isAdmin();
 $recipeId = (int) ($_GET['id'] ?? $_POST['recipe_id'] ?? 0);
 $recipe = $recipeId > 0 ? recipe_find_owned_db($recipeId, (int) $user['id']) : null;
 
@@ -235,6 +236,10 @@ function old(string $key, array $old): string
                     <span>Update resep milikmu tanpa keluar dari alur kerja.</span>
                 </div>
             </div>
+
+            <?php if ($isAdmin): ?>
+                <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+            <?php endif; ?>
 
             <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
         </div>

@@ -5,6 +5,7 @@ require_once __DIR__ . '/data/recipe_repository.php';
 
 startSession();
 
+$isAdmin = isAdmin();
 $isGuest = !empty($_SESSION['guest_mode']) && empty($_SESSION['user']);
 $userName = $isGuest ? 'Guest' : ($_SESSION['user']['name'] ?? 'Nayaka');
 
@@ -76,6 +77,10 @@ function search_asset_path(string $path): string
                     <span><?= $isGuest ? 'Login untuk simpan resep dan kelola profil.' : 'Akses resep pribadi dan aktivitas akun.' ?></span>
                 </div>
             </div>
+
+            <?php if ($isAdmin): ?>
+                <a href="admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+            <?php endif; ?>
 
             <a href="auth/logout.php" class="home-sidebar__logout">Log Out</a>
         </div>

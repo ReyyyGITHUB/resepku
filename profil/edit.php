@@ -5,6 +5,7 @@ require_once __DIR__ . '/../data/recipe_repository.php';
 
 startSession();
 
+$isAdmin = isAdmin();
 $currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
 if ($currentUserId <= 0) {
     redirectTo('../auth/login.php');
@@ -122,6 +123,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span><?= $profile['bio'] !== '' ? e($profile['bio']) : 'Kelola akun dan resep publik kamu dari sini.' ?></span>
                 </div>
             </div>
+
+            <?php if ($isAdmin): ?>
+                <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+            <?php endif; ?>
 
             <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
         </div>

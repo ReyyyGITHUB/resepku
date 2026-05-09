@@ -114,6 +114,10 @@ if ($recipes === []) {
                 </div>
             </div>
 
+            <?php if ($isAdmin): ?>
+                <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+            <?php endif; ?>
+
             <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
         </div>
 
