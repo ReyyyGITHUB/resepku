@@ -168,10 +168,6 @@
     pointer-events: none;
 }
 
-.home-sidebar__nav--categories {
-    padding-bottom: 16px;
-}
-
 .home-sidebar__chef {
     display: block;
     width: calc(100% - 40px);

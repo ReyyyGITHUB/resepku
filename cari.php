@@ -104,15 +104,6 @@ function search_asset_path(string $path): string
             <a class="is-active" href="cari.php">Search</a>
         </nav>
 
-        <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--categories" aria-label="Kategori resep">
-                        <a href="?">All</a>
-            <a href="cari.php?category=food">Food</a>
-            <a href="cari.php?category=salad">Salad</a>
-            <a href="cari.php?category=dessert">Dessert</a>
-            <a href="cari.php?category=drinks">Drinks</a>
-        </nav>
-
         <img src="assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
     </aside>
 

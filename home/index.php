@@ -132,18 +132,7 @@ if ($recipes === []) {
             <a href="../resep/buat.php">Add Recipe</a>
             <a href="../resep/favorite.php">Favorite</a>
             <a href="../profil/laporan.php">Pengaduan Saya</a>
-            <?php if ($isAdmin): ?>
-                <a href="../admin/">Admin</a>
-            <?php endif; ?>
             <a href="../cari.php">Search</a>
-        </nav>
-
-        <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--categories" aria-label="Kategori resep">
-            <a href="#">Food</a>
-            <a href="#">Salad</a>
-            <a href="#">Dessert</a>
-            <a href="#">Drinks</a>
         </nav>
 
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">

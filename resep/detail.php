@@ -126,14 +126,6 @@ if ($recipe === null) {
             <a href="../cari.php">Search</a>
         </nav>
 
-        <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--categories" aria-label="Kategori resep">
-            <a href="#">Food</a>
-            <a href="#">Salad</a>
-            <a href="#">Dessert</a>
-            <a href="#">Drinks</a>
-        </nav>
-
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
     </aside>
 

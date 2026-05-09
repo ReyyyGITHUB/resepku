@@ -87,15 +87,6 @@ $totalFavorites = count($recipes);
             <a href="../home/?sort=popular">Popular</a>
         </nav>
 
-        <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--categories" aria-label="Kategori resep">
-            <a href="../resep/favorite.php">All</a>
-            <a href="../resep/favorite.php?category=food">Food</a>
-            <a href="../resep/favorite.php?category=salad">Salad</a>
-            <a href="../resep/favorite.php?category=dessert">Dessert</a>
-            <a href="../resep/favorite.php?category=drinks">Drinks</a>
-        </nav>
-
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
     </aside>
 

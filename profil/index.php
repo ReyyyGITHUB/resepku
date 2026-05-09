@@ -140,14 +140,6 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
             <?php endif; ?>
         </nav>
 
-        <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--categories" aria-label="Kategori resep">
-            <a href="../home/?category=food">Food</a>
-            <a href="../home/?category=salad">Salad</a>
-            <a href="../home/?category=dessert">Dessert</a>
-            <a href="../home/?category=drinks">Drinks</a>
-        </nav>
-
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
     </aside>
 
