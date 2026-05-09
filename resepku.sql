@@ -110,6 +110,8 @@ CREATE TABLE `cs` (
   `target_tipe` enum('resep','pengguna') COLLATE utf8mb4_unicode_ci NOT NULL,
   `target_resep_id` bigint UNSIGNED DEFAULT NULL,
   `target_pengguna_id` bigint UNSIGNED DEFAULT NULL,
+  `kategori_laporan` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'lainnya',
+  `catatan_laporan` text COLLATE utf8mb4_unicode_ci,
   `alasan` text COLLATE utf8mb4_unicode_ci,
   `status` enum('menunggu','ditolak','selesai') COLLATE utf8mb4_unicode_ci DEFAULT 'menunggu',
   `dibuat_pada` datetime DEFAULT CURRENT_TIMESTAMP

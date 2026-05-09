@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../data/admin_repository.php';
 require_once __DIR__ . '/../data/recipe_repository.php';
 
 startSession();
@@ -43,6 +44,7 @@ $socialState = $recipe['id'] > 0 ? recipe_social_state_db($recipe['id'], $curren
     'favorited' => false,
     'user_rating' => null,
 ];
+$reportCategoryOptions = report_category_options();
 
 $relatedRecipes = $recipe['id'] > 0 ? recipe_related_db($recipe, 3) : [];
 $comments = $recipe['id'] > 0 ? recipe_comments_db($recipe['id']) : [];
@@ -188,6 +190,11 @@ if ($recipe === null) {
                     <button type="button" class="detail-action" data-social-action="share" data-share-url="<?= e((string) (($_SERVER['REQUEST_SCHEME'] ?? 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $_SERVER['REQUEST_URI'])) ?>">
                         <span>Share</span>
                     </button>
+                    <?php if ($recipe['id'] > 0): ?>
+                        <button type="button" class="detail-action detail-action--report" data-guest-gate data-report-open data-report-target-type="resep" data-report-target-id="<?= e((string) $recipe['id']) ?>" data-report-target-label="<?= e($recipe['title']) ?>">
+                            <span>Laporkan</span>
+                        </button>
+                    <?php endif; ?>
                 </div>
             </div>
         </section>
@@ -310,6 +317,42 @@ if ($recipe === null) {
             </aside>
         </section>
     </main>
+
+    <?php if ($recipe['id'] > 0): ?>
+        <div class="report-modal" data-report-modal aria-hidden="true">
+            <div class="report-modal__backdrop" data-report-close></div>
+            <div class="report-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+                <p class="report-modal__eyebrow">Laporan CS</p>
+                <h2 id="report-modal-title">Laporkan resep</h2>
+                <p data-report-target-preview>Laporan akan dikirim untuk resep ini.</p>
+
+                <form class="report-form" data-report-form>
+                    <input type="hidden" name="target_type" value="resep">
+                    <input type="hidden" name="target_id" value="<?= e((string) $recipe['id']) ?>">
+
+                    <label class="report-field">
+                        <span>Kategori</span>
+                        <select name="category" required>
+                            <option value="">Pilih kategori</option>
+                            <?php foreach ($reportCategoryOptions as $value => $label): ?>
+                                <option value="<?= e($value) ?>"><?= e($label) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+
+                    <label class="report-field">
+                        <span>Catatan</span>
+                        <textarea name="note" rows="4" maxlength="500" placeholder="Jelaskan masalahnya secara singkat dan jelas" required></textarea>
+                    </label>
+
+                    <div class="report-modal__actions">
+                        <button type="button" class="report-modal__secondary" data-report-close>Batal</button>
+                        <button type="submit" class="report-modal__primary">Kirim laporan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <div class="guest-modal" data-guest-modal aria-hidden="true">
         <div class="guest-modal__backdrop" data-guest-close></div>

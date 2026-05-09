@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../data/admin_repository.php';
 require_once __DIR__ . '/../data/recipe_repository.php';
 
 startSession();
@@ -31,7 +32,11 @@ $communityRecipes = !$isUnavailable ? array_values(array_filter(
     recipe_catalog_from_db(6),
     static fn (array $recipe) => (int) ($recipe['user_id'] ?? 0) !== $profileUserId
 )) : [];
+$profileReports = (!$isPublicProfile && $currentUserId > 0 && !$isUnavailable)
+    ? report_user_reports_db($currentUserId, 20)
+    : [];
 $suggestedAccounts = [];
+$reportCategoryOptions = report_category_options();
 
 if (!$isUnavailable) {
     $accountSql = <<<SQL
@@ -173,15 +178,26 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                             </div>
 
                             <?php if ($isPublicProfile): ?>
-                                <button
-                                    class="profile-summary__follow<?= $isFollowingProfile ? ' is-active' : '' ?>"
-                                    type="button"
-                                    data-guest-gate
-                                    data-social-action="follow"
-                                    data-user-id="<?= e((string) $profileUserId) ?>"
-                                    data-follow-label="Follow"
-                                    data-followed-label="Following"
-                                ><?= $isFollowingProfile ? 'Following' : 'Follow' ?></button>
+                                <div class="profile-summary__actions">
+                                    <button
+                                        class="profile-summary__follow<?= $isFollowingProfile ? ' is-active' : '' ?>"
+                                        type="button"
+                                        data-guest-gate
+                                        data-social-action="follow"
+                                        data-user-id="<?= e((string) $profileUserId) ?>"
+                                        data-follow-label="Follow"
+                                        data-followed-label="Following"
+                                    ><?= $isFollowingProfile ? 'Following' : 'Follow' ?></button>
+                                    <button
+                                        class="profile-summary__report"
+                                        type="button"
+                                        data-guest-gate
+                                        data-report-open
+                                        data-report-target-type="pengguna"
+                                        data-report-target-id="<?= e((string) $profileUserId) ?>"
+                                        data-report-target-label="<?= e($profile['name']) ?>"
+                                    >Laporkan</button>
+                                </div>
                             <?php else: ?>
                                 <button class="profile-summary__edit" type="button" data-profile-edit-open>Edit Profile</button>
                             <?php endif; ?>
@@ -318,6 +334,43 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                             </div>
                         <?php endif; ?>
                     </section>
+
+                    <?php if (!$isPublicProfile): ?>
+                        <section class="profile-panel profile-panel--reports" aria-label="Status laporan saya">
+                            <div class="profile-panel__head">
+                                <div>
+                                    <p class="profile-panel__kicker">CS</p>
+                                    <h2>Status Laporan Saya</h2>
+                                </div>
+                            </div>
+
+                            <?php if ($profileReports === []): ?>
+                                <div class="profile-panel__empty">Belum ada laporan yang kamu kirim.</div>
+                            <?php else: ?>
+                                <div class="profile-report-list">
+                                    <?php foreach ($profileReports as $report): ?>
+                                        <?php
+                                        $targetLabel = 'Target sudah dihapus';
+                                        if ($report['target_tipe'] === 'resep' && !empty($report['target_resep_nama'])) {
+                                            $targetLabel = $report['target_resep_nama'];
+                                        } elseif ($report['target_tipe'] === 'pengguna' && !empty($report['target_pengguna_nama'])) {
+                                            $targetLabel = $report['target_pengguna_nama'];
+                                        }
+                                        ?>
+                                        <article class="profile-report-item">
+                                            <div class="profile-report-item__head">
+                                                <strong><?= e(report_category_label((string) $report['kategori_laporan'])) ?></strong>
+                                                <span><?= e((string) $report['status']) ?></span>
+                                            </div>
+                                            <p class="profile-report-item__target"><?= e(ucfirst((string) $report['target_tipe'])) ?>: <?= e($targetLabel) ?></p>
+                                            <p class="profile-report-item__note"><?= e((string) ($report['catatan_laporan'] ?: $report['alasan'])) ?></p>
+                                            <span class="profile-report-item__date"><?= e((string) $report['dibuat_pada']) ?></span>
+                                        </article>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </section>
+                    <?php endif; ?>
                 </aside>
             </section>
 
@@ -396,6 +449,40 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
             <?php endif; ?>
         <?php endif; ?>
     </main>
+
+    <div class="report-modal" data-report-modal aria-hidden="true">
+        <div class="report-modal__backdrop" data-report-close></div>
+        <div class="report-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+            <p class="report-modal__eyebrow">Laporan CS</p>
+            <h2 id="report-modal-title">Laporkan profil</h2>
+            <p data-report-target-preview>Laporan akan dikirim untuk profil ini.</p>
+
+            <form class="report-form" data-report-form>
+                <input type="hidden" name="target_type" value="pengguna">
+                <input type="hidden" name="target_id" value="<?= e((string) $profileUserId) ?>">
+
+                <label class="report-field">
+                    <span>Kategori</span>
+                    <select name="category" required>
+                        <option value="">Pilih kategori</option>
+                        <?php foreach ($reportCategoryOptions as $value => $label): ?>
+                            <option value="<?= e($value) ?>"><?= e($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+
+                <label class="report-field">
+                    <span>Catatan</span>
+                    <textarea name="note" rows="4" maxlength="500" placeholder="Jelaskan masalahnya secara singkat dan jelas" required></textarea>
+                </label>
+
+                <div class="report-modal__actions">
+                    <button type="button" class="report-modal__secondary" data-report-close>Batal</button>
+                    <button type="submit" class="report-modal__primary">Kirim laporan</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <script src="../assets/js/main.js"></script>
 </body>
 </html>

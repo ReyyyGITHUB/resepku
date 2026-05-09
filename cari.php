@@ -99,7 +99,7 @@ function search_asset_path(string $path): string
 
         <p class="home-sidebar__label home-sidebar__label--compact">kategori</p>
         <nav class="home-sidebar__nav home-sidebar__nav--categories" aria-label="Kategori resep">
-            <a href="cari.php">All</a>
+                        <a href="?">All</a>
             <a href="cari.php?category=food">Food</a>
             <a href="cari.php?category=salad">Salad</a>
             <a href="cari.php?category=dessert">Dessert</a>
@@ -174,7 +174,7 @@ function search_asset_path(string $path): string
 
                     <div class="home-controls__actions">
                         <button class="home-controls__apply" type="submit">Apply filters</button>
-                        <a class="home-controls__clear" href="cari.php">Clear filter</a>
+                        <a class="home-controls__clear" href="?">Clear filter</a>
                     </div>
                 </form>
             </div>
@@ -197,7 +197,7 @@ function search_asset_path(string $path): string
                 <article class="recipe-grid__empty">
                     <h2>Resep tidak ditemukan</h2>
                     <p><?= e($searchHint) ?> belum punya hasil. Coba kata lain atau ubah filter.</p>
-                    <a href="cari.php">Reset filter</a>
+                    <a href="?">Reset filter</a>
                     </article>
             <?php else: ?>
                 <?php foreach ($recipes as $recipe): ?>

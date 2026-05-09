@@ -64,6 +64,8 @@ function admin_reports_db(array $filters = [], int $limit = 100): array
 
     $status = trim((string) ($filters['status'] ?? ''));
     $targetType = trim((string) ($filters['target_type'] ?? ''));
+    $category = trim((string) ($filters['category'] ?? ''));
+    $query = trim((string) ($filters['q'] ?? ''));
 
     if (in_array($status, ['menunggu', 'ditolak', 'selesai'], true)) {
         $where[] = 'c.status = :status';
@@ -75,12 +77,24 @@ function admin_reports_db(array $filters = [], int $limit = 100): array
         $params[':target_type'] = $targetType;
     }
 
+    if ($category !== '') {
+        $where[] = 'c.kategori_laporan = :category';
+        $params[':category'] = $category;
+    }
+
+    if ($query !== '') {
+        $where[] = '(pelapor.nama_pengguna LIKE :query OR r.nama_resep LIKE :query OR target_user.nama_pengguna LIKE :query OR c.alasan LIKE :query OR c.catatan_laporan LIKE :query)';
+        $params[':query'] = '%' . $query . '%';
+    }
+
     $sql = 'SELECT
             c.ticket_id,
             c.pelapor_id,
             c.target_tipe,
             c.target_resep_id,
             c.target_pengguna_id,
+            c.kategori_laporan,
+            c.catatan_laporan,
             c.alasan,
             c.status,
             c.dibuat_pada,
@@ -290,4 +304,121 @@ function admin_update_report_status_db(int $ticketId, string $status): bool
     ]);
 
     return $stmt->rowCount() > 0;
+}
+
+function report_category_options(): array
+{
+    return [
+        'spam' => 'Spam / promosi',
+        'konten_tidak_pantas' => 'Konten tidak pantas',
+        'penipuan' => 'Penipuan / scam',
+        'hak_cipta' => 'Pelanggaran hak cipta',
+        'pelecehan' => 'Pelecehan / ujaran kebencian',
+        'lainnya' => 'Lainnya',
+    ];
+}
+
+function report_category_label(string $value): string
+{
+    $options = report_category_options();
+    return $options[$value] ?? 'Lainnya';
+}
+
+function report_create_db(int $reporterId, string $targetType, int $targetId, string $category, string $note): int
+{
+    if ($reporterId <= 0 || $targetId <= 0) {
+        throw new InvalidArgumentException('Target laporan tidak valid.');
+    }
+
+    $targetType = trim($targetType);
+    $category = trim($category);
+    $note = trim($note);
+
+    if (!in_array($targetType, ['resep', 'pengguna'], true)) {
+        throw new InvalidArgumentException('Tipe target tidak valid.');
+    }
+
+    $options = report_category_options();
+    if (!array_key_exists($category, $options)) {
+        throw new InvalidArgumentException('Kategori laporan tidak valid.');
+    }
+
+    if ($note === '') {
+        throw new InvalidArgumentException('Catatan laporan wajib diisi.');
+    }
+
+    $pdo = db();
+
+    if ($targetType === 'resep') {
+        $targetStmt = $pdo->prepare('SELECT pengguna_id, nama_resep FROM recipes WHERE resep_id = :id LIMIT 1');
+        $targetStmt->execute([':id' => $targetId]);
+        $target = $targetStmt->fetch();
+
+        if (!$target) {
+            throw new InvalidArgumentException('Resep tidak ditemukan.');
+        }
+
+        if ((int) ($target['pengguna_id'] ?? 0) === $reporterId) {
+            throw new InvalidArgumentException('Kamu tidak bisa melaporkan resep milik sendiri.');
+        }
+    } else {
+        $targetStmt = $pdo->prepare('SELECT nama_pengguna FROM pengguna WHERE pengguna_id = :id LIMIT 1');
+        $targetStmt->execute([':id' => $targetId]);
+        $target = $targetStmt->fetch();
+
+        if (!$target) {
+            throw new InvalidArgumentException('Pengguna tidak ditemukan.');
+        }
+
+        if ($targetId === $reporterId) {
+            throw new InvalidArgumentException('Kamu tidak bisa melaporkan akun sendiri.');
+        }
+    }
+
+    $summary = report_category_label($category) . ': ' . $note;
+
+    $stmt = $pdo->prepare(
+        'INSERT INTO cs (pelapor_id, target_tipe, target_resep_id, target_pengguna_id, kategori_laporan, catatan_laporan, alasan, status)
+         VALUES (:pelapor_id, :target_tipe, :target_resep_id, :target_pengguna_id, :kategori_laporan, :catatan_laporan, :alasan, "menunggu")'
+    );
+    $stmt->execute([
+        ':pelapor_id' => $reporterId,
+        ':target_tipe' => $targetType,
+        ':target_resep_id' => $targetType === 'resep' ? $targetId : null,
+        ':target_pengguna_id' => $targetType === 'pengguna' ? $targetId : null,
+        ':kategori_laporan' => $category,
+        ':catatan_laporan' => $note,
+        ':alasan' => $summary,
+    ]);
+
+    return (int) $pdo->lastInsertId();
+}
+
+function report_user_reports_db(int $userId, int $limit = 50): array
+{
+    $stmt = db()->prepare(
+        'SELECT
+            c.ticket_id,
+            c.target_tipe,
+            c.target_resep_id,
+            c.target_pengguna_id,
+            c.kategori_laporan,
+            c.catatan_laporan,
+            c.alasan,
+            c.status,
+            c.dibuat_pada,
+            r.nama_resep AS target_resep_nama,
+            target_user.nama_pengguna AS target_pengguna_nama
+         FROM cs c
+         LEFT JOIN recipes r ON r.resep_id = c.target_resep_id
+         LEFT JOIN pengguna target_user ON target_user.pengguna_id = c.target_pengguna_id
+         WHERE c.pelapor_id = :user_id
+         ORDER BY c.dibuat_pada DESC, c.ticket_id DESC
+         LIMIT :limit'
+    );
+    $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll();
 }

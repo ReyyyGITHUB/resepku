@@ -44,3 +44,139 @@ input {
     border: 0;
 }
 
+.report-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.report-modal.is-open {
+    display: flex;
+}
+
+.report-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.report-modal__dialog {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 560px);
+    padding: 28px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+}
+
+.report-modal__eyebrow {
+    margin: 0 0 8px;
+    color: #adadad;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.report-modal__dialog h2 {
+    margin: 0 0 10px;
+    font-size: 28px;
+    line-height: 1.1;
+}
+
+.report-modal__dialog p {
+    margin: 0 0 18px;
+    color: #4f4f4f;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.report-form {
+    display: grid;
+    gap: 16px;
+}
+
+.report-field {
+    display: grid;
+    gap: 8px;
+}
+
+.report-field span {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.report-field select,
+.report-field textarea {
+    width: 100%;
+    border: 1px solid #d8d8d8;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font: inherit;
+    background: #ffffff;
+}
+
+.report-field textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.report-modal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.report-modal__primary,
+.report-modal__secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid #000000;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.report-modal__primary {
+    background: #fb9b00;
+    color: #000000;
+}
+
+.report-modal__secondary {
+    background: #ffffff;
+    color: #000000;
+}
+
+@media (max-width: 520px) {
+    .report-modal {
+        padding: 14px;
+    }
+
+    .report-modal__dialog {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .report-modal__dialog h2 {
+        font-size: 24px;
+    }
+
+    .report-modal__actions {
+        flex-direction: column;
+    }
+
+    .report-modal__primary,
+    .report-modal__secondary {
+        width: 100%;
+    }
+}
+

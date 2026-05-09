@@ -22,8 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $filters = [
     'status' => trim((string) ($_GET['status'] ?? '')),
     'target_type' => trim((string) ($_GET['target_type'] ?? '')),
+    'category' => trim((string) ($_GET['category'] ?? '')),
+    'q' => trim((string) ($_GET['q'] ?? '')),
 ];
 $reports = admin_reports_db($filters);
+$reportCategories = report_category_options();
 
 admin_header('Kelola Laporan', $adminUser, 'laporan');
 ?>
@@ -46,6 +49,19 @@ admin_header('Kelola Laporan', $adminUser, 'laporan');
                 <option value="pengguna" <?= $filters['target_type'] === 'pengguna' ? 'selected' : '' ?>>Pengguna</option>
             </select>
         </label>
+        <label>
+            <span>Kategori</span>
+            <select name="category">
+                <option value="">Semua kategori</option>
+                <?php foreach ($reportCategories as $value => $label): ?>
+                    <option value="<?= e($value) ?>" <?= $filters['category'] === $value ? 'selected' : '' ?>><?= e($label) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </label>
+        <label>
+            <span>Cari</span>
+            <input type="search" name="q" placeholder="Pelapor, target, catatan" value="<?= e($filters['q']) ?>">
+        </label>
         <button type="submit">Terapkan</button>
         <a href="laporan.php">Reset</a>
     </form>
@@ -56,6 +72,7 @@ admin_header('Kelola Laporan', $adminUser, 'laporan');
                 <tr>
                     <th>Pelapor</th>
                     <th>Target</th>
+                    <th>Kategori</th>
                     <th>Alasan</th>
                     <th>Status</th>
                     <th>Tanggal</th>
@@ -87,7 +104,8 @@ admin_header('Kelola Laporan', $adminUser, 'laporan');
                                 <?php endif; ?>
                             </div>
                         </td>
-                        <td><?= e((string) $report['alasan']) ?></td>
+                        <td><?= e(report_category_label((string) ($report['kategori_laporan'] ?? 'lainnya'))) ?></td>
+                        <td><?= e((string) ($report['catatan_laporan'] ?: $report['alasan'])) ?></td>
                         <td><?= admin_badge((string) $report['status']) ?></td>
                         <td><?= e((string) $report['dibuat_pada']) ?></td>
                         <td>
@@ -113,11 +131,10 @@ admin_header('Kelola Laporan', $adminUser, 'laporan');
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($reports === []): ?>
-                    <tr><td colspan="6">Laporan tidak ditemukan.</td></tr>
+                    <tr><td colspan="7">Laporan tidak ditemukan.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
     </div>
 </section>
 <?php admin_footer(); ?>
-

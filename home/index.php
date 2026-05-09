@@ -7,6 +7,7 @@ startSession();
 
 $isAdmin = isAdmin();
 $isGuest = !empty($_SESSION['guest_mode']) && empty($_SESSION['user']);
+$currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
 $userName = $isGuest ? 'Guest' : ($_SESSION['user']['name'] ?? 'Nayaka');
 $filters = [
     'q' => trim((string) ($_GET['q'] ?? '')),
@@ -22,8 +23,8 @@ $isDefaultView = $filters['q'] === ''
     && $filters['max_time'] === ''
     && $filters['sort'] === 'newest';
 
-$recipes = recipe_catalog_filtered_db($filters, 24);
-$defaultRecipes = $isDefaultView ? recipe_catalog_from_db() : [];
+$recipes = recipe_catalog_filtered_db($filters, 24, $currentUserId > 0 ? $currentUserId : null);
+$defaultRecipes = $isDefaultView ? recipe_catalog_from_db(null, $currentUserId > 0 ? $currentUserId : null) : [];
 $topRecipes = $isDefaultView ? array_slice($defaultRecipes, 0, 4) : [];
 $bottomRecipes = $isDefaultView ? array_slice($defaultRecipes, 4) : [];
 $activeCategory = mb_strtolower($filters['category']);

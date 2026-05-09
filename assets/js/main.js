@@ -15,6 +15,11 @@ document.addEventListener("DOMContentLoaded", function () {
     var profileEditModal = document.querySelector("[data-profile-edit-modal]");
     var profileEditOpeners = document.querySelectorAll("[data-profile-edit-open]");
     var profileEditClosers = document.querySelectorAll("[data-profile-edit-close]");
+    var reportModal = document.querySelector("[data-report-modal]");
+    var reportForm = document.querySelector("[data-report-form]");
+    var reportPreview = document.querySelector("[data-report-target-preview]");
+    var reportOpeners = document.querySelectorAll("[data-report-open]");
+    var reportClosers = document.querySelectorAll("[data-report-close]");
 
     function openGuestModal() {
         if (!guestModal) {
@@ -82,6 +87,49 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.classList.remove("modal-open");
     }
 
+    function openReportModal(button) {
+        if (!reportModal || !reportForm) {
+            return;
+        }
+
+        var targetTypeInput = reportForm.querySelector('input[name="target_type"]');
+        var targetIdInput = reportForm.querySelector('input[name="target_id"]');
+        var targetType = button ? (button.dataset.reportTargetType || "") : "";
+        var targetId = button ? (button.dataset.reportTargetId || "") : "";
+        var targetLabel = button ? (button.dataset.reportTargetLabel || "target ini") : "target ini";
+
+        if (targetTypeInput) {
+            targetTypeInput.value = targetType;
+        }
+
+        if (targetIdInput) {
+            targetIdInput.value = targetId;
+        }
+
+        if (reportPreview) {
+            reportPreview.textContent = "Laporan akan dikirim untuk " + targetLabel + ".";
+        }
+
+        var title = reportModal.querySelector("#report-modal-title");
+        if (title) {
+            title.textContent = targetType === "pengguna" ? "Laporkan profil" : "Laporkan resep";
+        }
+
+        reportModal.classList.add("is-open");
+        reportModal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+    }
+
+    function closeReportModal() {
+        if (!reportModal) {
+            return;
+        }
+
+        reportModal.classList.remove("is-open");
+        reportModal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+    }
+
     profileEditOpeners.forEach(function (button) {
         button.addEventListener("click", openProfileEditModal);
     });
@@ -100,6 +148,34 @@ document.addEventListener("DOMContentLoaded", function () {
         document.addEventListener("keydown", function (event) {
             if (event.key === "Escape") {
                 closeProfileEditModal();
+            }
+        });
+    }
+
+    reportOpeners.forEach(function (button) {
+        button.addEventListener("click", function () {
+            if (guestMode) {
+                return;
+            }
+
+            openReportModal(button);
+        });
+    });
+
+    reportClosers.forEach(function (button) {
+        button.addEventListener("click", closeReportModal);
+    });
+
+    if (reportModal) {
+        reportModal.addEventListener("click", function (event) {
+            if (event.target.matches(".report-modal__backdrop")) {
+                closeReportModal();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeReportModal();
             }
         });
     }
@@ -155,6 +231,27 @@ document.addEventListener("DOMContentLoaded", function () {
         return payload;
     }
 
+    async function postReportAction(body) {
+        var response = await fetch("../api/report.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "X-CSRF-Token": csrfToken,
+            },
+            body: new URLSearchParams(body).toString(),
+        });
+
+        var payload = await response.json().catch(function () {
+            return null;
+        });
+
+        if (!response.ok || !payload) {
+            throw new Error((payload && payload.message) || "Gagal memproses laporan.");
+        }
+
+        return payload;
+    }
+
     var followButtons = document.querySelectorAll('[data-social-action="follow"]');
     var followerCount = document.querySelector("[data-follower-count]");
 
@@ -194,6 +291,48 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
+
+    if (reportForm) {
+        reportForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            var formData = new FormData(reportForm);
+            var category = String(formData.get("category") || "").trim();
+            var note = String(formData.get("note") || "").trim();
+            var targetType = String(formData.get("target_type") || "").trim();
+            var targetId = String(formData.get("target_id") || "").trim();
+
+            if (category === "" || note === "" || targetType === "" || targetId === "") {
+                alert("Lengkapi kategori dan catatan laporan.");
+                return;
+            }
+
+            var submitButton = reportForm.querySelector("button[type='submit']");
+
+            try {
+                if (submitButton) {
+                    submitButton.disabled = true;
+                }
+
+                var payload = await postReportAction({
+                    target_type: targetType,
+                    target_id: targetId,
+                    category: category,
+                    note: note,
+                });
+
+                reportForm.reset();
+                closeReportModal();
+                alert(payload.message || "Laporan berhasil dikirim.");
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                if (submitButton) {
+                    submitButton.disabled = false;
+                }
+            }
+        });
+    }
 
     if (!detailPage) {
         return;

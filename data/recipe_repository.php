@@ -105,8 +105,37 @@ function recipe_parse_list(?string $value): array
     return $items;
 }
 
-function recipe_catalog_from_db(?int $limit = null): array
+function recipe_following_user_ids_db(int $userId): array
 {
+    if ($userId <= 0) {
+        return [];
+    }
+
+    $stmt = db()->prepare(
+        'SELECT following_id_user FROM following WHERE follower_id = :user_id ORDER BY dibuat_pada DESC, following_id DESC'
+    );
+    $stmt->execute([':user_id' => $userId]);
+
+    return array_map(static fn ($value) => (int) $value, $stmt->fetchAll(PDO::FETCH_COLUMN));
+}
+
+function recipe_catalog_from_db(?int $limit = null, ?int $viewerUserId = null): array
+{
+    $priorityJoin = '';
+    $priorityOrder = 'r.dibuat_pada DESC, r.resep_id DESC';
+
+    if ($viewerUserId !== null && $viewerUserId > 0) {
+        $followingIds = recipe_following_user_ids_db($viewerUserId);
+
+        if ($followingIds !== []) {
+            $priorityJoin = 'LEFT JOIN (' . implode(' UNION ALL ', array_map(
+                static fn (int $followingId): string => 'SELECT ' . $followingId . ' AS following_user_id',
+                $followingIds
+            )) . ') fh ON fh.following_user_id = r.pengguna_id';
+            $priorityOrder = 'CASE WHEN fh.following_user_id IS NULL THEN 1 ELSE 0 END, ' . $priorityOrder;
+        }
+    }
+
     $sql = <<<SQL
         SELECT
             r.resep_id,
@@ -123,7 +152,8 @@ function recipe_catalog_from_db(?int $limit = null): array
             p.foto_profil AS author_avatar
         FROM recipes r
         INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
-        ORDER BY r.dibuat_pada ASC, r.resep_id ASC
+        $priorityJoin
+        ORDER BY $priorityOrder
     SQL;
 
     if ($limit !== null) {
@@ -517,12 +547,13 @@ function recipe_delete_db(int $id, int $userId): bool
     return $stmt->rowCount() > 0;
 }
 
-function recipe_catalog_filtered_db(array $filters = [], int $limit = 24): array
+function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $viewerUserId = null): array
 {
     $where = [];
     $params = [];
     $joins = '';
-    $orderBy = 'ORDER BY r.dibuat_pada DESC, r.resep_id DESC';
+    $priorityJoin = '';
+    $priorityOrder = 'r.dibuat_pada DESC, r.resep_id DESC';
 
     $query = trim((string) ($filters['q'] ?? ''));
     $category = trim((string) ($filters['category'] ?? ''));
@@ -583,9 +614,21 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24): array
             ) rt ON rt.resep_id = r.resep_id
         SQL;
 
-        $orderBy = 'ORDER BY COALESCE(l.like_count, 0) DESC, COALESCE(rt.avg_rating, 0) DESC, r.dibuat_pada DESC, r.resep_id DESC';
+        $priorityOrder = 'COALESCE(l.like_count, 0) DESC, COALESCE(rt.avg_rating, 0) DESC, r.dibuat_pada DESC, r.resep_id DESC';
     } elseif ($sort === 'oldest') {
-        $orderBy = 'ORDER BY r.dibuat_pada ASC, r.resep_id ASC';
+        $priorityOrder = 'r.dibuat_pada ASC, r.resep_id ASC';
+    }
+
+    if ($viewerUserId !== null && $viewerUserId > 0) {
+        $followingIds = recipe_following_user_ids_db($viewerUserId);
+
+        if ($followingIds !== []) {
+            $priorityJoin = 'LEFT JOIN (' . implode(' UNION ALL ', array_map(
+                static fn (int $followingId): string => 'SELECT ' . $followingId . ' AS following_user_id',
+                $followingIds
+            )) . ') fh ON fh.following_user_id = r.pengguna_id';
+            $priorityOrder = 'CASE WHEN fh.following_user_id IS NULL THEN 1 ELSE 0 END, ' . $priorityOrder;
+        }
     }
 
     $sql = <<<SQL
@@ -604,13 +647,14 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24): array
         FROM recipes r
         INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
         $joins
+        $priorityJoin
     SQL;
 
     if ($where !== []) {
         $sql .= ' WHERE ' . implode(' AND ', $where);
     }
 
-    $sql .= ' ' . $orderBy . ' LIMIT :limit';
+    $sql .= ' ORDER BY ' . $priorityOrder . ' LIMIT :limit';
 
     $stmt = db()->prepare($sql);
     foreach ($params as $key => $value) {
