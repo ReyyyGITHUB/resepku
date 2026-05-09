@@ -5,6 +5,10 @@ require_once __DIR__ . '/data/recipe_repository.php';
 
 startSession();
 
+if ($_GET === []) {
+    redirectTo('home/');
+}
+
 $isAdmin = isAdmin();
 $isGuest = !empty($_SESSION['guest_mode']) && empty($_SESSION['user']);
 $userName = $isGuest ? 'Guest' : ($_SESSION['user']['name'] ?? 'Nayaka');
