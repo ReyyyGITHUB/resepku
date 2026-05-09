@@ -24,7 +24,7 @@ function admin_header(string $title, array $adminUser, string $active): void
         'dashboard' => ['label' => 'Dashboard', 'href' => 'index.php'],
         'pengguna' => ['label' => 'Pengguna', 'href' => 'pengguna.php'],
         'resep' => ['label' => 'Resep', 'href' => 'resep.php'],
-        'laporan' => ['label' => 'Laporan', 'href' => 'laporan.php'],
+        'laporan' => ['label' => 'Pengaduan', 'href' => 'laporan.php'],
     ];
     $flash = admin_flash();
     ?>
@@ -93,4 +93,3 @@ function admin_badge(string $value): string
 
     return '<span class="admin-badge admin-badge--' . e($class) . '">' . e($value) . '</span>';
 }
-

@@ -32,9 +32,6 @@ $communityRecipes = !$isUnavailable ? array_values(array_filter(
     recipe_catalog_from_db(6),
     static fn (array $recipe) => (int) ($recipe['user_id'] ?? 0) !== $profileUserId
 )) : [];
-$profileReports = (!$isPublicProfile && $currentUserId > 0 && !$isUnavailable)
-    ? report_user_reports_db($currentUserId, 20)
-    : [];
 $suggestedAccounts = [];
 $reportCategoryOptions = report_category_options();
 
@@ -111,6 +108,15 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
             <?php endif; ?>
 
             <?php if ($currentUserId > 0): ?>
+                <a class="home-sidebar__report-link" href="laporan.php" aria-label="Pengaduan Saya">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm8-6V11a8 8 0 1 0-16 0v5L2 18v1h20v-1l-2-2zm-2 1H6v-6a6 6 0 1 1 12 0v6z" fill="currentColor"></path>
+                    </svg>
+                    <span class="sr-only">Pengaduan Saya</span>
+                </a>
+            <?php endif; ?>
+
+            <?php if ($currentUserId > 0): ?>
                 <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
             <?php else: ?>
                 <a href="../auth/login.php" class="home-sidebar__logout">Login</a>
@@ -127,6 +133,7 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                 <a href="../resep/myresep.php">My Recipes</a>
                 <a href="../resep/buat.php">Add Recipe</a>
                 <a href="../resep/favorite.php">Favorite</a>
+                <a href="../profil/laporan.php">Pengaduan Saya</a>
             <?php else: ?>
                 <a href="../auth/login.php">Login</a>
                 <a href="../auth/register.php">Register</a>
@@ -335,42 +342,6 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                         <?php endif; ?>
                     </section>
 
-                    <?php if (!$isPublicProfile): ?>
-                        <section class="profile-panel profile-panel--reports" aria-label="Status laporan saya">
-                            <div class="profile-panel__head">
-                                <div>
-                                    <p class="profile-panel__kicker">CS</p>
-                                    <h2>Status Laporan Saya</h2>
-                                </div>
-                            </div>
-
-                            <?php if ($profileReports === []): ?>
-                                <div class="profile-panel__empty">Belum ada laporan yang kamu kirim.</div>
-                            <?php else: ?>
-                                <div class="profile-report-list">
-                                    <?php foreach ($profileReports as $report): ?>
-                                        <?php
-                                        $targetLabel = 'Target sudah dihapus';
-                                        if ($report['target_tipe'] === 'resep' && !empty($report['target_resep_nama'])) {
-                                            $targetLabel = $report['target_resep_nama'];
-                                        } elseif ($report['target_tipe'] === 'pengguna' && !empty($report['target_pengguna_nama'])) {
-                                            $targetLabel = $report['target_pengguna_nama'];
-                                        }
-                                        ?>
-                                        <article class="profile-report-item">
-                                            <div class="profile-report-item__head">
-                                                <strong><?= e(report_category_label((string) $report['kategori_laporan'])) ?></strong>
-                                                <span><?= e((string) $report['status']) ?></span>
-                                            </div>
-                                            <p class="profile-report-item__target"><?= e(ucfirst((string) $report['target_tipe'])) ?>: <?= e($targetLabel) ?></p>
-                                            <p class="profile-report-item__note"><?= e((string) ($report['catatan_laporan'] ?: $report['alasan'])) ?></p>
-                                            <span class="profile-report-item__date"><?= e((string) $report['dibuat_pada']) ?></span>
-                                        </article>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
-                        </section>
-                    <?php endif; ?>
                 </aside>
             </section>
 
@@ -453,16 +424,22 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
     <div class="report-modal" data-report-modal aria-hidden="true">
         <div class="report-modal__backdrop" data-report-close></div>
         <div class="report-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
-            <p class="report-modal__eyebrow">Laporan CS</p>
+            <p class="report-modal__eyebrow">Pengaduan</p>
             <h2 id="report-modal-title">Laporkan profil</h2>
-            <p data-report-target-preview>Laporan akan dikirim untuk profil ini.</p>
+            <p data-report-target-preview>Pengaduan akan dikirim untuk profil ini.</p>
+            <div class="report-modal__summary">
+                <span>Diproses admin</span>
+                <span>Status awal: menunggu</span>
+            </div>
 
             <form class="report-form" data-report-form>
                 <input type="hidden" name="target_type" value="pengguna">
                 <input type="hidden" name="target_id" value="<?= e((string) $profileUserId) ?>">
 
+                <p class="report-form__note">Gunakan pengaduan ini untuk spam, akun palsu, pelecehan, pelanggaran hak cipta, atau konten yang tidak pantas.</p>
+
                 <label class="report-field">
-                    <span>Kategori</span>
+                    <span>Kategori pengaduan</span>
                     <select name="category" required>
                         <option value="">Pilih kategori</option>
                         <?php foreach ($reportCategoryOptions as $value => $label): ?>
@@ -472,13 +449,13 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                 </label>
 
                 <label class="report-field">
-                    <span>Catatan</span>
+                    <span>Detail singkat</span>
                     <textarea name="note" rows="4" maxlength="500" placeholder="Jelaskan masalahnya secara singkat dan jelas" required></textarea>
                 </label>
 
                 <div class="report-modal__actions">
                     <button type="button" class="report-modal__secondary" data-report-close>Batal</button>
-                    <button type="submit" class="report-modal__primary">Kirim laporan</button>
+                    <button type="submit" class="report-modal__primary">Kirim pengaduan</button>
                 </div>
             </form>
         </div>

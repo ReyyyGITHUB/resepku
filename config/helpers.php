@@ -76,6 +76,11 @@ function requireAdmin(string $loginPath = '../auth/login.php', string $fallbackP
     return $user;
 }
 
+function reportInboxHref(string $profilePath, string $loginPath = '../auth/login.php'): string
+{
+    return currentUser() !== null ? $profilePath : $loginPath;
+}
+
 function appUrl(string $path = ''): string
 {
     $baseUrl = rtrim((string) env('APP_URL', ''), '/');

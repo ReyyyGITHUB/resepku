@@ -10,10 +10,10 @@
 
 | Keterangan | Jumlah |
 |---|---:|
-| Total item dicek | 56 |
-| ✅ Selesai | 40 |
-| ⚠️ Sebagian | 6 |
-| ❌ Belum selesai | 10 |
+| Total item dicek | 72 |
+| ✅ Selesai | 62 |
+| ⚠️ Sebagian | 9 |
+| ❌ Belum selesai | 1 |
 
 > Catatan: status ini berdasarkan pengecekan kode/static review, belum termasuk testing manual semua flow di browser.
 
@@ -66,7 +66,7 @@
 | ✅ | Share Resep | Tombol share di detail menyalin link ke clipboard. |
 | ✅ | Following / Follower | Ada `api/follow.php`, toggle follow/unfollow, dan tombol follow di public profile. |
 | ✅ | Lihat Profil Orang Lain | Public profile bisa dibuka via `profil/?id=...` dan menerima aksi follow. |
-| ⚠️ | Feed Resep dari Following | Home masih katalog umum, belum feed khusus berdasarkan akun yang diikuti. |
+| ⚠️ | Feed Resep dari Following | Home sudah memprioritaskan resep akun yang di-follow, tapi belum feed khusus yang hanya berisi following. |
 
 ---
 
@@ -97,13 +97,16 @@
 
 ## 6. Laporan / Customer Support
 
+> Catatan: implementasi yang ada sekarang masih berupa reporting + inbox/admin handling. Scope CS ke depan diarahkan ke chatbot AI untuk tanya resep.
+
 | Status | Fitur | Bukti / Catatan |
 |---|---|---|
-| ⚠️ | Tabel Laporan CS | Tabel `cs` sudah ada di SQL. |
-| ❌ | Laporkan Resep | Belum ada form/API laporan resep. Tombol CS masih `href="#"`. |
-| ❌ | Laporkan Pengguna | Belum ada form/API laporan pengguna. |
-| ❌ | Status Laporan untuk user | Belum ada halaman daftar/status laporan milik user. |
-| ❌ | Proses status laporan | Belum ada UI admin untuk ubah `menunggu/ditolak/selesai`. |
+| ⚠️ | Tabel Laporan CS | Tabel `cs` dipakai untuk reporting, tapi belum jadi modul CS/chatbot mandiri. |
+| ⚠️ | Laporkan Resep | Ada modal laporan di detail resep dan `api/report.php`, masih bagian reporting admin. |
+| ⚠️ | Laporkan Pengguna | Ada modal laporan di profil publik dan `api/report.php`, masih bagian reporting admin. |
+| ⚠️ | Status Laporan untuk user | Ada halaman `profil/laporan.php`, tapi masih inbox reporting, bukan CS AI. |
+| ⚠️ | Proses status laporan | Ada `admin/laporan.php` untuk ubah status, tapi ini belum scope CS final. |
+| ❌ | Implementasi CS AI Chatbot | Belum ada chatbot AI untuk bantu tanya resep, rekomendasi, dan navigasi konten. |
 
 ---
 
@@ -111,12 +114,12 @@
 
 | Status | Fitur | Bukti / Catatan |
 |---|---|---|
-| ❌ | Dashboard Admin | Folder `admin/` ada, tapi belum ada file dashboard. |
-| ❌ | Kelola Pengguna | Belum ada `admin/pengguna.php`. |
-| ❌ | Kelola Resep | Belum ada `admin/resep.php`. |
-| ❌ | Kelola Laporan CS | Belum ada `admin/laporan.php`. |
-| ❌ | Statistik Konten Admin | Belum ada halaman statistik admin. |
-| ❌ | Middleware akses admin | Belum terlihat middleware cek role admin untuk folder admin. |
+| ✅ | Dashboard Admin | Ada `admin/index.php` berisi statistik dan ringkasan data terbaru. |
+| ✅ | Kelola Pengguna | Ada `admin/pengguna.php` dengan filter, toggle status, dan hapus pengguna non-admin. |
+| ✅ | Kelola Resep | Ada `admin/resep.php` dengan filter dan hapus resep. |
+| ✅ | Kelola Laporan CS | Ada `admin/laporan.php` dengan filter dan aksi ubah status. |
+| ✅ | Statistik Konten Admin | Dashboard menampilkan total pengguna, resep, komentar, likes, rating, dan laporan menunggu. |
+| ✅ | Middleware akses admin | Ada `requireAdmin()` di `config/helpers.php`. |
 
 ---
 
@@ -136,7 +139,7 @@
 | ✅ | `kategori_resep` | Ada. |
 | ✅ | `peralatan_resep` | Ada. |
 | ✅ | `password_resets` | Ada di `resepku.sql` dan tersedia skrip `sql/create_password_resets.sql` untuk setup tabel reset password. |
-| ⚠️ | Seeder akun | Data contoh masih memakai password plaintext/dummy hash yang tidak konsisten dengan standar security. |
+| ⚠️ | Seeder akun | Data contoh di `resepku.sql` masih memakai password plaintext/dummy hash. |
 
 ---
 
@@ -148,24 +151,23 @@
 | ✅ | XSS | Output banyak memakai helper `e()`/escape. |
 | ✅ | CSRF | Ada helper CSRF dan diterapkan di banyak form/API POST. |
 | ✅ | Session | Ada `session_regenerate_id()` setelah login. |
-| ❌ | Password Hash | Register belum `password_hash()`, login belum `password_verify()`. |
+| ⚠️ | Password Hash | Register dan login masih simpan/bandingkan password plaintext, belum `password_hash()` / `password_verify()`. |
 | ✅ | Upload File | Upload resep validasi ekstensi/MIME dan rename file. |
-| ❌ | Akses Admin | Belum ada panel dan middleware admin. |
+| ✅ | Akses Admin | Panel admin dan guard `requireAdmin()` sudah ada. |
 
 ---
 
 ## Prioritas Pekerjaan Berikutnya
 
-1. ❌ Buat panel admin: dashboard, pengguna, resep, laporan, dan middleware role admin.
-2. ❌ Buat laporan CS: form lapor resep/pengguna dan status laporan.
-3. ⚠️ Lengkapi feed resep dari following.
-4. ⚠️ Audit auth password: `password_hash()` saat register dan `password_verify()` saat login.
-5. ⚠️ Validasi pengiriman email reset di environment lokal/production dengan konfigurasi SMTP Gmail.
+1. ⚠️ Rancang CS chatbot AI untuk bantu tanya resep dan navigasi konten.
+2. ⚠️ Audit auth password: `password_hash()` saat register dan `password_verify()` saat login.
+3. ⚠️ Lengkapi feed resep dari following menjadi feed khusus, bukan hanya prioritas di home.
+4. ⚠️ Rapikan seed akun demo supaya format password konsisten.
 
 ---
 
 ## Kesimpulan
 
-Pekerjaan yang sudah paling kuat ada di **CRUD resep, detail resep, upload foto, database, pencarian/filter, like, rating, favorit, edit profil, dan lupa sandi**.
+Pekerjaan yang sudah paling kuat ada di **CRUD resep, detail resep, upload foto, database, pencarian/filter, like, rating, favorit, edit profil, reporting admin, dan panel admin**.
 
-Bagian yang paling belum selesai adalah **panel admin, laporan CS, feed following, konfigurasi email runtime, dan hardening password**.
+Bagian yang masih tertinggal adalah **hardening password, feed following khusus, seed data demo, dan CS AI chatbot untuk tanya resep**.

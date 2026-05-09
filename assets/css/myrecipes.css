@@ -16,13 +16,17 @@
 
 .myrecipes-topbar {
     display: grid;
-    grid-template-columns: minmax(240px, 823px) 129px 88px;
-    align-items: start;
-    gap: 32px;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 16px;
 }
 
 .myrecipes-search-form .home-search {
     border-color: #d4af37;
+}
+
+.myrecipes-search-form {
+    min-width: 0;
 }
 
 .myrecipes-hero {

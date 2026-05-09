@@ -83,6 +83,7 @@ $totalFavorites = count($recipes);
             <a href="../resep/myresep.php">My Recipes</a>
             <a href="../resep/buat.php">Add Recipe</a>
             <a class="is-active" href="../resep/favorite.php">Favorite</a>
+            <a href="../profil/laporan.php">Pengaduan Saya</a>
             <a href="../home/?sort=popular">Popular</a>
         </nav>
 
@@ -110,9 +111,9 @@ $totalFavorites = count($recipes);
                 <span>Add Recipe</span>
             </a>
 
-            <a class="home-cs" href="#">
+            <a class="home-cs" href="<?= e(reportInboxHref('../profil/laporan.php', '../auth/login.php')) ?>">
                 <img src="../assets/img/icon-cs.svg" alt="">
-                <span>Customer<br>Service</span>
+                <span>Pengaduan</span>
             </a>
         </header>
 

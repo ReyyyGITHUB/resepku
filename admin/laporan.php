@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ticketId = (int) ($_POST['ticket_id'] ?? 0);
     $status = (string) ($_POST['status'] ?? '');
     $ok = admin_update_report_status_db($ticketId, $status);
-    admin_flash($ok ? 'success' : 'error', $ok ? 'Status laporan diperbarui.' : 'Status laporan gagal diperbarui.');
+    admin_flash($ok ? 'success' : 'error', $ok ? 'Status pengaduan diperbarui.' : 'Status pengaduan gagal diperbarui.');
     redirectTo('laporan.php');
 }
 
@@ -28,7 +28,7 @@ $filters = [
 $reports = admin_reports_db($filters);
 $reportCategories = report_category_options();
 
-admin_header('Kelola Laporan', $adminUser, 'laporan');
+admin_header('Kelola Pengaduan', $adminUser, 'laporan');
 ?>
 <section class="admin-panel">
     <form class="admin-filters" method="get">
@@ -73,7 +73,7 @@ admin_header('Kelola Laporan', $adminUser, 'laporan');
                     <th>Pelapor</th>
                     <th>Target</th>
                     <th>Kategori</th>
-                    <th>Alasan</th>
+                    <th>Pengaduan</th>
                     <th>Status</th>
                     <th>Tanggal</th>
                     <th>Aksi</th>

@@ -103,6 +103,10 @@ if ($recipe === null) {
                 <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
             <?php endif; ?>
 
+            <?php if ($currentUserId > 0): ?>
+                <a href="../profil/laporan.php">Pengaduan Saya</a>
+            <?php endif; ?>
+
             <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
         </div>
 
@@ -115,6 +119,7 @@ if ($recipe === null) {
             <a href="../resep/myresep.php">My Recipes</a>
             <a href="../resep/buat.php">Add Recipe</a>
             <a href="../resep/favorite.php">Favorite</a>
+            <a href="<?= e(reportInboxHref('../profil/laporan.php', '../auth/login.php')) ?>">Pengaduan Saya</a>
             <?php if ($isAdmin): ?>
                 <a href="../admin/">Admin</a>
             <?php endif; ?>
@@ -322,16 +327,22 @@ if ($recipe === null) {
         <div class="report-modal" data-report-modal aria-hidden="true">
             <div class="report-modal__backdrop" data-report-close></div>
             <div class="report-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
-                <p class="report-modal__eyebrow">Laporan CS</p>
+                <p class="report-modal__eyebrow">Pengaduan</p>
                 <h2 id="report-modal-title">Laporkan resep</h2>
-                <p data-report-target-preview>Laporan akan dikirim untuk resep ini.</p>
+                <p data-report-target-preview>Pengaduan akan dikirim untuk resep ini.</p>
+                <div class="report-modal__summary">
+                    <span>Diproses admin</span>
+                    <span>Status awal: menunggu</span>
+                </div>
 
                 <form class="report-form" data-report-form>
                     <input type="hidden" name="target_type" value="resep">
                     <input type="hidden" name="target_id" value="<?= e((string) $recipe['id']) ?>">
 
+                    <p class="report-form__note">Gunakan pengaduan ini untuk spam, konten tidak pantas, penipuan, pelanggaran hak cipta, atau pelecehan.</p>
+
                     <label class="report-field">
-                        <span>Kategori</span>
+                        <span>Kategori pengaduan</span>
                         <select name="category" required>
                             <option value="">Pilih kategori</option>
                             <?php foreach ($reportCategoryOptions as $value => $label): ?>
@@ -341,13 +352,13 @@ if ($recipe === null) {
                     </label>
 
                     <label class="report-field">
-                        <span>Catatan</span>
+                        <span>Detail singkat</span>
                         <textarea name="note" rows="4" maxlength="500" placeholder="Jelaskan masalahnya secara singkat dan jelas" required></textarea>
                     </label>
 
                     <div class="report-modal__actions">
                         <button type="button" class="report-modal__secondary" data-report-close>Batal</button>
-                        <button type="submit" class="report-modal__primary">Kirim laporan</button>
+                        <button type="submit" class="report-modal__primary">Kirim pengaduan</button>
                     </div>
                 </form>
             </div>

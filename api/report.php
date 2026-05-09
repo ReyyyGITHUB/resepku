@@ -17,7 +17,7 @@ $note = trim((string) ($_POST['note'] ?? ''));
 try {
     $ticketId = report_create_db($reporterId, $targetType, $targetId, $category, $note);
     social_json([
-        'message' => 'Laporan berhasil dikirim.',
+        'message' => 'Pengaduan berhasil dikirim.',
         'data' => [
             'ticket_id' => $ticketId,
             'status' => 'menunggu',

@@ -731,6 +731,231 @@
     font-size: 11px;
 }
 
+.home-sidebar__report-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-top: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+    background: #ffffff;
+    color: #111111;
+}
+
+.home-sidebar__report-link svg {
+    width: 20px;
+    height: 20px;
+}
+
+.home-sidebar__report-link::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fb9b00;
+    box-shadow: 0 0 0 2px #ffffff;
+}
+
+.profile-report-page {
+    padding-right: 32px;
+}
+
+.profile-report-shell {
+    display: grid;
+    gap: 18px;
+    max-width: 1280px;
+}
+
+.profile-report-hero {
+    padding: 18px 20px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+}
+
+.profile-report-hero h1 {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.1;
+}
+
+.profile-report-hero p {
+    margin: 8px 0 0;
+    color: #5d636d;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.profile-report-layout {
+    display: grid;
+    grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.profile-report-listpanel,
+.profile-report-detailpanel {
+    min-width: 0;
+}
+
+.profile-message-list {
+    display: grid;
+    gap: 10px;
+    max-height: calc(100vh - 260px);
+    overflow: auto;
+    padding-right: 6px;
+}
+
+.profile-message-item {
+    display: grid;
+    gap: 6px;
+    padding: 14px 16px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    background: #ffffff;
+    color: inherit;
+    text-decoration: none;
+}
+
+.profile-message-item.is-active {
+    border-color: #fb9b00;
+    box-shadow: 0 10px 22px rgba(251, 155, 0, 0.12);
+    background: linear-gradient(180deg, #ffffff 0%, #fffaf0 100%);
+}
+
+.profile-message-item__meta,
+.profile-message-item__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.profile-message-item__meta strong,
+.profile-message-item__footer strong,
+.profile-message-item__footer span {
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.profile-message-item__subject {
+    display: grid;
+    gap: 2px;
+}
+
+.profile-message-item__subject strong {
+    font-size: 13px;
+}
+
+.profile-message-item__subject span {
+    color: #8a8a8a;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.profile-message-item h2 {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.3;
+}
+
+.profile-message-item p {
+    margin: 0;
+    color: #555555;
+    font-size: 12px;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.profile-report-detail {
+    padding: 22px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.06);
+}
+
+.profile-report-detail__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.profile-report-detail__head h2 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.15;
+}
+
+.profile-report-detail__head p {
+    margin: 6px 0 0;
+    color: #5d636d;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.profile-report-detail__head span {
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(251, 155, 0, 0.14);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 28px;
+    text-transform: capitalize;
+}
+
+.profile-report-detail__meta {
+    display: grid;
+    gap: 12px;
+    margin: 18px 0 0;
+}
+
+.profile-report-detail__meta div {
+    display: grid;
+    gap: 4px;
+}
+
+.profile-report-detail__meta dt {
+    color: #8a8a8a;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.profile-report-detail__meta dd {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.profile-report-detail__body {
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(251, 155, 0, 0.08), rgba(244, 241, 236, 0.38));
+    border: 1px solid rgba(251, 155, 0, 0.12);
+}
+
+.profile-report-detail__body p {
+    margin: 0;
+    color: #222222;
+    font-size: 14px;
+    line-height: 1.65;
+}
+
 @media (max-width: 1180px) {
     .profile-main {
         margin-left: 0;
@@ -790,6 +1015,15 @@
     .profile-edit-form__actions .profile-actions__primary {
         width: 100%;
     }
+
+    .profile-report-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-message-list {
+        max-height: none;
+        padding-right: 0;
+    }
 }
 
 @media (max-width: 520px) {
@@ -831,5 +1065,24 @@
 
     .profile-modal__header {
         padding-right: 0;
+    }
+
+    .profile-report-page {
+        padding-right: 14px;
+    }
+
+    .home-sidebar__report-link {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 10px;
+        padding: 0 14px;
+    }
+
+    .home-sidebar__report-link::after {
+        right: 14px;
+    }
+
+    .profile-report-detail {
+        padding: 18px;
     }
 }

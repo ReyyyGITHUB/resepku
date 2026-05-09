@@ -20,7 +20,7 @@ admin_header('Dashboard', $adminUser, 'dashboard');
         ['label' => 'Pengguna Nonaktif', 'value' => $stats['inactive_users']],
         ['label' => 'Total Resep', 'value' => $stats['total_recipes']],
         ['label' => 'Total Komentar', 'value' => $stats['total_comments']],
-        ['label' => 'Laporan Menunggu', 'value' => $stats['pending_reports']],
+        ['label' => 'Pengaduan Menunggu', 'value' => $stats['pending_reports']],
         ['label' => 'Total Likes', 'value' => $stats['total_likes']],
         ['label' => 'Rata-rata Rating', 'value' => number_format((float) $stats['average_rating'], 1)],
     ];
@@ -66,8 +66,8 @@ admin_header('Dashboard', $adminUser, 'dashboard');
 
     <article class="admin-panel">
         <div class="admin-panel__head">
-            <h2>Laporan Terbaru</h2>
-            <a href="laporan.php">Kelola laporan</a>
+            <h2>Pengaduan Terbaru</h2>
+            <a href="laporan.php">Kelola pengaduan</a>
         </div>
         <div class="admin-table-wrap">
             <table class="admin-table">
@@ -127,4 +127,3 @@ admin_header('Dashboard', $adminUser, 'dashboard');
     </article>
 </section>
 <?php admin_footer(); ?>
-

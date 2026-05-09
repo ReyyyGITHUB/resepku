@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (reportPreview) {
-            reportPreview.textContent = "Laporan akan dikirim untuk " + targetLabel + ".";
+            reportPreview.textContent = "Pengaduan akan dikirim untuk " + targetLabel + ".";
         }
 
         var title = reportModal.querySelector("#report-modal-title");
@@ -303,7 +303,7 @@ document.addEventListener("DOMContentLoaded", function () {
             var targetId = String(formData.get("target_id") || "").trim();
 
             if (category === "" || note === "" || targetType === "" || targetId === "") {
-                alert("Lengkapi kategori dan catatan laporan.");
+                alert("Lengkapi kategori dan detail pengaduan.");
                 return;
             }
 
@@ -323,7 +323,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 reportForm.reset();
                 closeReportModal();
-                alert(payload.message || "Laporan berhasil dikirim.");
+                alert(payload.message || "Pengaduan berhasil dikirim.");
             } catch (error) {
                 alert(error.message);
             } finally {

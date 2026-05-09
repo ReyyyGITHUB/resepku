@@ -67,16 +67,17 @@ input {
 .report-modal__dialog {
     position: relative;
     z-index: 1;
-    width: min(100%, 560px);
+    width: min(100%, 620px);
     padding: 28px;
-    border-radius: 18px;
-    background: #ffffff;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+    background: linear-gradient(180deg, #ffffff 0%, #fffaf1 100%);
+    box-shadow: 0 28px 72px rgba(0, 0, 0, 0.20);
 }
 
 .report-modal__eyebrow {
     margin: 0 0 8px;
-    color: #adadad;
+    color: #fb9b00;
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.16em;
@@ -96,9 +97,38 @@ input {
     line-height: 1.6;
 }
 
+.report-modal__summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.report-modal__summary span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(251, 155, 0, 0.12);
+    color: #7a4d00;
+    font-size: 12px;
+    font-weight: 700;
+}
+
 .report-form {
     display: grid;
-    gap: 16px;
+    gap: 14px;
+}
+
+.report-form__note {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.04);
+    color: #5d636d;
+    font-size: 13px;
+    line-height: 1.55;
 }
 
 .report-field {
@@ -114,11 +144,18 @@ input {
 .report-field select,
 .report-field textarea {
     width: 100%;
-    border: 1px solid #d8d8d8;
-    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    border-radius: 14px;
     padding: 12px 14px;
     font: inherit;
     background: #ffffff;
+}
+
+.report-field select:focus,
+.report-field textarea:focus {
+    outline: none;
+    border-color: #fb9b00;
+    box-shadow: 0 0 0 3px rgba(251, 155, 0, 0.12);
 }
 
 .report-field textarea {
@@ -140,7 +177,7 @@ input {
     justify-content: center;
     min-height: 42px;
     padding: 0 16px;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid #000000;
     font-size: 14px;
     cursor: pointer;
@@ -163,7 +200,7 @@ input {
 
     .report-modal__dialog {
         padding: 20px;
-        border-radius: 16px;
+        border-radius: 18px;
     }
 
     .report-modal__dialog h2 {
