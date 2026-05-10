@@ -28,7 +28,7 @@ $pageTitle = 'Customer Support - Resepku';
     <title><?= e($pageTitle) ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="cs-page" data-guest-mode="0" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="../api/" data-login-url="../auth/login.php">
+<body class="cs-page" data-guest-mode="0" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="../api/" data-login-url="../auth/login.php" data-report-success-redirect="../home/">
     <main class="cs-screen" data-node-id="76:1837">
         <section class="cs-card" aria-label="Customer support">
             <a class="cs-back" href="../home/" aria-label="Kembali">
@@ -79,6 +79,19 @@ $pageTitle = 'Customer Support - Resepku';
 
         <img class="cs-food" src="../assets/img/recipe-salad-card.png" alt="">
     </main>
+
+    <div class="cs-success" data-report-success-feedback aria-hidden="true">
+        <div class="cs-success__backdrop"></div>
+        <div class="cs-success__dialog" role="status" aria-live="polite" aria-label="Laporan berhasil dikirim">
+            <p class="cs-success__title">
+                <span><span class="is-accent">Thanks</span> For</span>
+                <span>Telling <span class="is-accent">Us</span></span>
+                <span>Your Solution</span>
+                <span class="is-accent">Needs</span>
+            </p>
+            <p class="cs-success__meta">Kembali ke home dalam <span data-report-success-countdown>5</span> detik</p>
+        </div>
+    </div>
 
     <script src="../assets/js/main.js"></script>
 </body>

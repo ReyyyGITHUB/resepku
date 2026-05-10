@@ -1222,15 +1222,21 @@ function recipe_set_rating_db(int $recipeId, int $userId, float $ratingValue): a
     }
 }
 
-function recipe_related_db(array $recipe, int $limit = 3): array
+function recipe_related_db(array $recipe, int $limit = 3, ?int $viewerUserId = null): array
 {
     $category = (string) ($recipe['category'] ?? '');
     $excludeId = (int) ($recipe['id'] ?? 0);
+    $favoritedSelect = '0 AS favorited';
+
+    if ($viewerUserId !== null && $viewerUserId > 0) {
+        $favoritedSelect = 'EXISTS(SELECT 1 FROM favorite f2 WHERE f2.pengguna_id = :viewer_user_id AND f2.resep_id = r.resep_id) AS favorited';
+    }
 
     if ($category !== '') {
         $sql = <<<SQL
             SELECT
                 r.resep_id,
+                r.pengguna_id,
                 r.nama_resep,
                 r.foto_resep,
                 r.waktu_memasak,
@@ -1238,9 +1244,28 @@ function recipe_related_db(array $recipe, int $limit = 3): array
                 r.tingkat_kesulitan,
                 r.kategori,
                 p.nama_pengguna AS author_name,
-                p.foto_profil AS author_avatar
+                p.foto_profil AS author_avatar,
+                COALESCE(rt.rating_average, 0) AS rating_average,
+                COALESCE(l.like_count, 0) AS likes_count,
+                COALESCE(ft.favorite_count, 0) AS favorites_count,
+                $favoritedSelect
             FROM recipes r
             INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
+            LEFT JOIN (
+                SELECT resep_id, AVG(rating_value) AS rating_average
+                FROM ratings
+                GROUP BY resep_id
+            ) rt ON rt.resep_id = r.resep_id
+            LEFT JOIN (
+                SELECT resep_id, COUNT(*) AS like_count
+                FROM likes
+                GROUP BY resep_id
+            ) l ON l.resep_id = r.resep_id
+            LEFT JOIN (
+                SELECT resep_id, COUNT(*) AS favorite_count
+                FROM favorite
+                GROUP BY resep_id
+            ) ft ON ft.resep_id = r.resep_id
             WHERE r.kategori = :kategori
               AND r.resep_id <> :exclude_id
             ORDER BY r.dibuat_pada DESC, r.resep_id DESC
@@ -1248,6 +1273,9 @@ function recipe_related_db(array $recipe, int $limit = 3): array
         SQL;
 
         $stmt = db()->prepare($sql);
+        if ($viewerUserId !== null && $viewerUserId > 0) {
+            $stmt->bindValue(':viewer_user_id', $viewerUserId, PDO::PARAM_INT);
+        }
         $stmt->bindValue(':kategori', $category, PDO::PARAM_STR);
         $stmt->bindValue(':exclude_id', $excludeId, PDO::PARAM_INT);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -1256,16 +1284,20 @@ function recipe_related_db(array $recipe, int $limit = 3): array
         $items = [];
         foreach ($stmt->fetchAll() as $row) {
             $items[] = recipe_row_to_card([
-        'resep_id' => $row['resep_id'],
-        'user_id' => (int) ($row['pengguna_id'] ?? 0),
-        'nama_resep' => $row['nama_resep'],
-        'foto_resep' => $row['foto_resep'],
-        'waktu_memasak' => $row['waktu_memasak'],
+                'resep_id' => $row['resep_id'],
+                'user_id' => (int) ($row['pengguna_id'] ?? 0),
+                'nama_resep' => $row['nama_resep'],
+                'foto_resep' => $row['foto_resep'],
+                'waktu_memasak' => $row['waktu_memasak'],
                 'porsi' => $row['porsi'],
                 'tingkat_kesulitan' => $row['tingkat_kesulitan'],
                 'kategori' => $row['kategori'],
                 'author' => $row['author_name'] ?? 'ResepKu Team',
                 'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+                'rating_value' => $row['rating_average'] ?? 0,
+                'likes_count' => $row['likes_count'] ?? 0,
+                'favorites_count' => $row['favorites_count'] ?? 0,
+                'favorited' => $row['favorited'] ?? false,
             ]);
         }
 
@@ -1277,6 +1309,7 @@ function recipe_related_db(array $recipe, int $limit = 3): array
     $sql = <<<SQL
         SELECT
             r.resep_id,
+            r.pengguna_id,
             r.nama_resep,
             r.foto_resep,
             r.waktu_memasak,
@@ -1284,15 +1317,37 @@ function recipe_related_db(array $recipe, int $limit = 3): array
             r.tingkat_kesulitan,
             r.kategori,
             p.nama_pengguna AS author_name,
-            p.foto_profil AS author_avatar
+            p.foto_profil AS author_avatar,
+            COALESCE(rt.rating_average, 0) AS rating_average,
+            COALESCE(l.like_count, 0) AS likes_count,
+            COALESCE(ft.favorite_count, 0) AS favorites_count,
+            $favoritedSelect
         FROM recipes r
         INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
+        LEFT JOIN (
+            SELECT resep_id, AVG(rating_value) AS rating_average
+            FROM ratings
+            GROUP BY resep_id
+        ) rt ON rt.resep_id = r.resep_id
+        LEFT JOIN (
+            SELECT resep_id, COUNT(*) AS like_count
+            FROM likes
+            GROUP BY resep_id
+        ) l ON l.resep_id = r.resep_id
+        LEFT JOIN (
+            SELECT resep_id, COUNT(*) AS favorite_count
+            FROM favorite
+            GROUP BY resep_id
+        ) ft ON ft.resep_id = r.resep_id
         WHERE r.resep_id <> :exclude_id
         ORDER BY r.dibuat_pada DESC, r.resep_id DESC
         LIMIT :limit
     SQL;
 
     $stmt = db()->prepare($sql);
+    if ($viewerUserId !== null && $viewerUserId > 0) {
+        $stmt->bindValue(':viewer_user_id', $viewerUserId, PDO::PARAM_INT);
+    }
     $stmt->bindValue(':exclude_id', $excludeId, PDO::PARAM_INT);
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
     $stmt->execute();
@@ -1301,6 +1356,7 @@ function recipe_related_db(array $recipe, int $limit = 3): array
     foreach ($stmt->fetchAll() as $row) {
         $items[] = recipe_row_to_card([
             'resep_id' => $row['resep_id'],
+            'user_id' => (int) ($row['pengguna_id'] ?? 0),
             'nama_resep' => $row['nama_resep'],
             'foto_resep' => $row['foto_resep'],
             'waktu_memasak' => $row['waktu_memasak'],
@@ -1309,6 +1365,10 @@ function recipe_related_db(array $recipe, int $limit = 3): array
             'kategori' => $row['kategori'],
             'author' => $row['author_name'] ?? 'ResepKu Team',
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+            'rating_value' => $row['rating_average'] ?? 0,
+            'likes_count' => $row['likes_count'] ?? 0,
+            'favorites_count' => $row['favorites_count'] ?? 0,
+            'favorited' => $row['favorited'] ?? false,
         ]);
     }
 

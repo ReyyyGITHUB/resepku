@@ -22,6 +22,12 @@ document.addEventListener("DOMContentLoaded", function () {
     var reportPreview = document.querySelector("[data-report-target-preview]");
     var reportOpeners = document.querySelectorAll("[data-report-open]");
     var reportClosers = document.querySelectorAll("[data-report-close]");
+    var reportSuccessFeedback = document.querySelector("[data-report-success-feedback]");
+    var reportSuccessCountdown = document.querySelector("[data-report-success-countdown]");
+    var reportSuccessRedirect = document.body.dataset.reportSuccessRedirect || "../home/";
+    var reportSuccessDuration = 5000;
+    var reportSuccessTimer = null;
+    var reportSuccessInterval = null;
 
     function openGuestModal() {
         if (!guestModal) {
@@ -130,6 +136,35 @@ document.addEventListener("DOMContentLoaded", function () {
         reportModal.classList.remove("is-open");
         reportModal.setAttribute("aria-hidden", "true");
         document.body.classList.remove("modal-open");
+    }
+
+    function showReportSuccessFeedback() {
+        if (!reportSuccessFeedback) {
+            return false;
+        }
+
+        if (reportSuccessInterval) {
+            window.clearInterval(reportSuccessInterval);
+            reportSuccessInterval = null;
+        }
+
+        if (reportSuccessCountdown) {
+            reportSuccessCountdown.textContent = "5";
+            reportSuccessInterval = window.setInterval(function () {
+                var nextValue = Math.max(Number(reportSuccessCountdown.textContent || "0") - 1, 0);
+                reportSuccessCountdown.textContent = String(nextValue);
+
+                if (nextValue <= 0 && reportSuccessInterval) {
+                    window.clearInterval(reportSuccessInterval);
+                    reportSuccessInterval = null;
+                }
+            }, 1000);
+        }
+
+        reportSuccessFeedback.classList.add("is-open");
+        reportSuccessFeedback.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+        return true;
     }
 
     profileEditOpeners.forEach(function (button) {
@@ -365,12 +400,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 reportForm.reset();
-                closeReportModal();
-                alert(payload.message || "Pengaduan berhasil dikirim.");
+                if (document.body.classList.contains("cs-page") && showReportSuccessFeedback()) {
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                    }
+
+                    reportSuccessTimer = window.setTimeout(function () {
+                        window.location.href = new URL(reportSuccessRedirect, document.baseURI).toString();
+                    }, reportSuccessDuration);
+                } else {
+                    closeReportModal();
+                    alert(payload.message || "Pengaduan berhasil dikirim.");
+                }
             } catch (error) {
                 alert(error.message);
             } finally {
-                if (submitButton) {
+                if (submitButton && !reportSuccessTimer) {
                     submitButton.disabled = false;
                 }
             }
