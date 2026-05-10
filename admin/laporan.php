@@ -63,7 +63,7 @@ admin_header('Kelola Pengaduan', $adminUser, 'laporan');
             <input type="search" name="q" placeholder="Pelapor, target, catatan" value="<?= e($filters['q']) ?>">
         </label>
         <button type="submit">Terapkan</button>
-        <a href="laporan.php">Reset</a>
+        <a href="laporan.php">Bersihkan</a>
     </form>
 
     <div class="admin-table-wrap">
@@ -91,7 +91,7 @@ admin_header('Kelola Pengaduan', $adminUser, 'laporan');
                         $targetLabel = $report['target_pengguna_nama'];
                         $targetUrl = '../profil/?id=' . (int) $report['target_pengguna_id'];
                     } elseif ($report['target_tipe'] === 'pengguna' && empty($report['target_pengguna_id'])) {
-                        $targetLabel = 'Customer Support';
+                        $targetLabel = 'Pusat Bantuan';
                     }
                     ?>
                     <tr>

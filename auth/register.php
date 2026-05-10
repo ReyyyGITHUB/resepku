@@ -30,11 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (strlen($password) < 8) {
-        $errors[] = 'Password minimal 8 karakter.';
+        $errors[] = 'Kata sandi minimal 8 karakter.';
     }
 
     if ($password !== $confirmPassword) {
-        $errors[] = 'Konfirmasi password tidak cocok.';
+        $errors[] = 'Konfirmasi kata sandi tidak cocok.';
     }
 
     if ($errors === []) {
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'password' => $password,
             ]);
 
-            $_SESSION['flash_success'] = 'Akun berhasil dibuat. Silakan login.';
+            $_SESSION['flash_success'] = 'Akun berhasil dibuat. Silakan masuk.';
             redirectTo('login.php');
         } catch (PDOException $exception) {
             if ($exception->getCode() === '23000') {
@@ -66,23 +66,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Resepku</title>
+    <title>Daftar - Resepku</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="auth-page">
     <main class="register-screen" data-node-id="1:2082" data-name="Desktop - 3">
         <img class="login-screen__bg" src="../assets/img/register-bg.png" alt="">
 
-        <a class="register-back" href="login.php" aria-label="Kembali ke login" data-node-id="1:2100">
+        <a class="register-back" href="login.php" aria-label="Kembali ke halaman masuk" data-node-id="1:2100">
             <img src="../assets/img/icon-back.svg" alt="">
         </a>
 
-        <section class="login-screen__content" aria-label="Register Resepku">
+        <section class="login-screen__content" aria-label="Daftar Resepku">
             <header class="brand register-brand" data-node-id="1:2102">
                 <img class="brand__mark" src="../assets/img/resepku-logo.png" alt="" data-node-id="1:2096">
                 <div class="brand__copy">
                     <p class="brand__name" data-node-id="1:2103">Resepku</p>
-                    <p class="brand__tagline" data-node-id="1:2104">Find recipes, Bookmarks favorite, and Cook easily</p>
+                    <p class="brand__tagline" data-node-id="1:2104">Temukan resep, simpan favorit, dan masak lebih mudah</p>
                 </div>
             </header>
 
@@ -90,8 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
 
                 <div class="register-form__intro" data-node-id="1:2097">
-                    <h1 data-node-id="1:2098">Create your account</h1>
-                    <p data-node-id="1:2099">Join with us and makes your own food creation!</p>
+                    <h1 data-node-id="1:2098">Buat akunmu</h1>
+                    <p data-node-id="1:2099">Bergabung dan mulai bagikan kreasi masakanmu sendiri!</p>
                 </div>
 
                 <?php if ($errors !== []): ?>
@@ -100,19 +100,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php endif; ?>
 
-                <label class="sr-only" for="name">Name</label>
-                <input class="login-form__input auth-form__input" id="name" name="name" type="text" placeholder="Name" autocomplete="name" value="<?= e($old['name']) ?>" required data-node-id="1:2087">
+                <label class="sr-only" for="name">Nama</label>
+                <input class="login-form__input auth-form__input" id="name" name="name" type="text" placeholder="Nama" autocomplete="name" value="<?= e($old['name']) ?>" required data-node-id="1:2087">
 
                 <label class="sr-only" for="register-email">Email</label>
                 <input class="login-form__input auth-form__input" id="register-email" name="email" type="email" placeholder="Email" autocomplete="email" value="<?= e($old['email']) ?>" required data-node-id="1:2089">
 
-                <label class="sr-only" for="register-password">Password</label>
-                <input class="login-form__input auth-form__input" id="register-password" name="password" type="password" placeholder="Password" autocomplete="new-password" required data-node-id="1:2092">
+                <label class="sr-only" for="register-password">Kata sandi</label>
+                <input class="login-form__input auth-form__input" id="register-password" name="password" type="password" placeholder="Kata sandi" autocomplete="new-password" required data-node-id="1:2092">
 
-                <label class="sr-only" for="confirm-password">Confirm Password</label>
-                <input class="login-form__input auth-form__input" id="confirm-password" name="confirm_password" type="password" placeholder="Confirm Password" autocomplete="new-password" required data-node-id="1:2094">
+                <label class="sr-only" for="confirm-password">Konfirmasi kata sandi</label>
+                <input class="login-form__input auth-form__input" id="confirm-password" name="confirm_password" type="password" placeholder="Konfirmasi kata sandi" autocomplete="new-password" required data-node-id="1:2094">
 
-                <button class="login-form__button register-form__button" type="submit" data-node-id="1:2084">Register Account</button>
+                <button class="login-form__button register-form__button" type="submit" data-node-id="1:2084">Daftar Akun</button>
             </form>
         </section>
     </main>

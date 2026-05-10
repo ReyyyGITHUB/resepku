@@ -43,9 +43,9 @@ admin_header('Kelola Pengguna', $adminUser, 'pengguna');
             <input type="search" name="q" placeholder="Nama atau email" value="<?= e($filters['q']) ?>">
         </label>
         <label>
-            <span>Role</span>
+            <span>Peran</span>
             <select name="role">
-                <option value="">Semua role</option>
+                <option value="">Semua peran</option>
                 <option value="admin" <?= $filters['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
                 <option value="pengguna" <?= $filters['role'] === 'pengguna' ? 'selected' : '' ?>>Pengguna</option>
             </select>
@@ -59,7 +59,7 @@ admin_header('Kelola Pengguna', $adminUser, 'pengguna');
             </select>
         </label>
         <button type="submit">Terapkan</button>
-        <a href="pengguna.php">Reset</a>
+        <a href="pengguna.php">Bersihkan</a>
     </form>
 
     <div class="admin-table-wrap">
@@ -68,7 +68,7 @@ admin_header('Kelola Pengguna', $adminUser, 'pengguna');
                 <tr>
                     <th>Nama</th>
                     <th>Email</th>
-                    <th>Role</th>
+                    <th>Peran</th>
                     <th>Status</th>
                     <th>Resep</th>
                     <th>Tanggal Daftar</th>

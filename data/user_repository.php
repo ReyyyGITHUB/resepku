@@ -126,7 +126,7 @@ function user_reset_password_db(int $resetId, int $userId, string $newPassword):
         $resetStmt->execute([':reset_id' => $resetId]);
 
         if ($resetStmt->rowCount() <= 0) {
-            throw new RuntimeException('Token reset tidak dapat dipakai.');
+            throw new RuntimeException('Token atur ulang tidak dapat dipakai.');
         }
 
         $pdo->commit();

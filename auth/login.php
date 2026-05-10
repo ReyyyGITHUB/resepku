@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL) || $password === '') {
-        $errors[] = 'Email atau password tidak valid.';
+        $errors[] = 'Email atau kata sandi tidak valid.';
     }
 
     if ($errors === []) {
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch();
 
             if (!$user || $password !== $user['kata_sandi']) {
-                $errors[] = 'Email atau password salah.';
+                $errors[] = 'Email atau kata sandi salah.';
             } elseif ($user['status'] !== 'aktif') {
                 $errors[] = 'Akun sedang nonaktif.';
             } else {
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 redirectTo('../home/');
             }
         } catch (PDOException) {
-            $errors[] = 'Login gagal. Periksa koneksi database.';
+            $errors[] = 'Gagal masuk. Periksa koneksi database.';
         }
     }
 }
@@ -71,19 +71,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Resepku</title>
+    <title>Masuk - Resepku</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="auth-page">
     <main class="login-screen" data-node-id="1:2054" data-name="member">
         <img class="login-screen__bg" src="../assets/img/login-bg.png" alt="">
 
-        <section class="login-screen__content" aria-label="Login Resepku">
+        <section class="login-screen__content" aria-label="Masuk Resepku">
             <header class="brand" data-node-id="1:2056">
                 <img class="brand__mark" src="../assets/img/resepku-logo.png" alt="" data-node-id="1:2055">
                 <div class="brand__copy">
                     <p class="brand__name" data-node-id="1:2057">Resepku</p>
-                    <p class="brand__tagline" data-node-id="1:2058">Find recipes, Bookmarks favorite, and Cook easily</p>
+                    <p class="brand__tagline" data-node-id="1:2058">Temukan resep, simpan favorit, dan masak lebih mudah</p>
                 </div>
             </header>
 
@@ -91,8 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
 
                 <h1 class="login-form__title" data-node-id="1:2067">
-                    <span>Welcome!</span>
-                    <span>Ready to makes something?</span>
+                    <span>Selamat datang!</span>
+                    <span>Siap membuat sesuatu?</span>
                 </h1>
 
                 <?php if ($flashSuccess): ?>
@@ -110,20 +110,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label class="sr-only" for="email">Email</label>
                 <input class="login-form__input auth-form__input" id="email" name="email" type="email" placeholder="Email" autocomplete="email" value="<?= e($old['email']) ?>" required data-node-id="1:2066">
 
-                <label class="sr-only" for="password">Password</label>
-                <input class="login-form__input auth-form__input" id="password" name="password" type="password" placeholder="Password" autocomplete="current-password" required data-node-id="1:2065">
+                <label class="sr-only" for="password">Kata sandi</label>
+                <input class="login-form__input auth-form__input" id="password" name="password" type="password" placeholder="Kata sandi" autocomplete="current-password" required data-node-id="1:2065">
 
-                <button class="login-form__button" type="submit" data-node-id="1:2061">Login</button>
+                <button class="login-form__button" type="submit" data-node-id="1:2061">Masuk</button>
 
                 <p class="login-form__forgot">
-                    <a href="lupa-sandi.php">Forgot password?</a>
+                    <a href="lupa-sandi.php">Lupa kata sandi?</a>
                 </p>
 
-                <button class="login-form__guest" type="submit" name="guest_login" value="1" formnovalidate>Login as Guest</button>
+                <button class="login-form__guest" type="submit" name="guest_login" value="1" formnovalidate>Masuk sebagai Tamu</button>
 
                 <p class="login-form__signup" data-node-id="1:2068">
-                    <span>Don't have an account?</span>
-                    <a href="register.php" data-node-id="1:2069">Create one!</a>
+                    <span>Belum punya akun?</span>
+                    <a href="register.php" data-node-id="1:2069">Buat akun!</a>
                 </p>
             </form>
         </section>

@@ -21,7 +21,7 @@ function admin_flash(?string $type = null, ?string $message = null): ?array
 function admin_header(string $title, array $adminUser, string $active): void
 {
     $items = [
-        'dashboard' => ['label' => 'Dashboard', 'href' => 'index.php'],
+        'dashboard' => ['label' => 'Dasbor', 'href' => 'index.php'],
         'pengguna' => ['label' => 'Pengguna', 'href' => 'pengguna.php'],
         'resep' => ['label' => 'Resep', 'href' => 'resep.php'],
         'laporan' => ['label' => 'Pengaduan', 'href' => 'laporan.php'],
@@ -42,7 +42,7 @@ function admin_header(string $title, array $adminUser, string $active): void
             <img src="../assets/img/resepku-logo.png" alt="" class="admin-brand__logo">
             <div>
                 <strong>ResepKu</strong>
-                <span>Admin Panel</span>
+                <span>Panel Admin</span>
             </div>
         </div>
 
@@ -53,8 +53,8 @@ function admin_header(string $title, array $adminUser, string $active): void
         </nav>
 
         <div class="admin-sidebar__footer">
-            <a href="../home/">Kembali ke Home</a>
-            <a href="../auth/logout.php">Logout</a>
+            <a href="../home/">Kembali ke Beranda</a>
+            <a href="../auth/logout.php">Keluar</a>
         </div>
     </aside>
 

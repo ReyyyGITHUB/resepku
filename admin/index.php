@@ -10,7 +10,7 @@ $recentUsers = admin_recent_users_db(5);
 $recentRecipes = admin_recent_recipes_db(5);
 $recentReports = admin_reports_db([], 5);
 
-admin_header('Dashboard', $adminUser, 'dashboard');
+admin_header('Dasbor', $adminUser, 'dashboard');
 ?>
 <section class="admin-stats" aria-label="Statistik platform">
     <?php
@@ -21,7 +21,7 @@ admin_header('Dashboard', $adminUser, 'dashboard');
         ['label' => 'Total Resep', 'value' => $stats['total_recipes']],
         ['label' => 'Total Komentar', 'value' => $stats['total_comments']],
         ['label' => 'Pengaduan Menunggu', 'value' => $stats['pending_reports']],
-        ['label' => 'Total Likes', 'value' => $stats['total_likes']],
+        ['label' => 'Total Suka', 'value' => $stats['total_likes']],
         ['label' => 'Rata-rata Rating', 'value' => number_format((float) $stats['average_rating'], 1)],
     ];
     ?>
@@ -44,7 +44,7 @@ admin_header('Dashboard', $adminUser, 'dashboard');
                 <thead>
                     <tr>
                         <th>Judul</th>
-                        <th>Author</th>
+                        <th>Pembuat</th>
                         <th>Kategori</th>
                     </tr>
                 </thead>
@@ -105,7 +105,7 @@ admin_header('Dashboard', $adminUser, 'dashboard');
                     <tr>
                         <th>Nama</th>
                         <th>Email</th>
-                        <th>Role</th>
+                        <th>Peran</th>
                         <th>Status</th>
                     </tr>
                 </thead>

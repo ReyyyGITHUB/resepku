@@ -16,7 +16,7 @@ function social_require_user(): array
     startSession();
 
     if (empty($_SESSION['user'])) {
-        social_json(['message' => 'Silakan login terlebih dahulu.'], 401);
+        social_json(['message' => 'Silakan masuk terlebih dahulu.'], 401);
     }
 
     return $_SESSION['user'];

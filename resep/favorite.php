@@ -45,7 +45,7 @@ $totalFavorites = count($recipes);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Favorite - Resepku</title>
+    <title>Favorit - Resepku</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="myrecipes-page">
@@ -55,7 +55,7 @@ $totalFavorites = count($recipes);
                 <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
                 <div>
                     <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status">Signed in</p>
+                    <p class="home-sidebar__status">Sudah masuk</p>
                 </div>
             </div>
 
@@ -68,23 +68,23 @@ $totalFavorites = count($recipes);
             </div>
 
             <?php if ($isAdmin): ?>
-                <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+                <a href="../admin/" class="home-sidebar__admin-panel">Panel Admin</a>
             <?php endif; ?>
 
-            <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
+            <a href="../auth/logout.php" class="home-sidebar__logout">Keluar</a>
         </div>
 
         <div class="home-sidebar__divider"></div>
 
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Favorit">
-            <a href="../home/">Home</a>
-            <a href="../profil/">Profile</a>
-            <a href="../resep/myresep.php">My Recipes</a>
-            <a href="../resep/buat.php">Add Recipe</a>
-            <a class="is-active" href="../resep/favorite.php">Favorite</a>
+            <a href="../home/">Beranda</a>
+            <a href="../profil/">Profil</a>
+            <a href="../resep/myresep.php">Resep Saya</a>
+            <a href="../resep/buat.php">Tambah Resep</a>
+            <a class="is-active" href="../resep/favorite.php">Favorit</a>
             <a href="../profil/laporan.php">Pengaduan Saya</a>
-            <a href="../home/?sort=popular">Popular</a>
+            <a href="../home/?sort=popular">Populer</a>
         </nav>
 
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
@@ -93,13 +93,13 @@ $totalFavorites = count($recipes);
     <main class="myrecipes-main">
         <header class="myrecipes-topbar">
             <form class="home-search-form myrecipes-search-form" method="get" action="../resep/favorite.php">
-                <label class="sr-only" for="favorite-search">Search favorite recipes</label>
-                <input id="favorite-search" class="home-search" type="search" name="q" placeholder="Search favorites..." value="<?= e(trim((string) ($_GET['q'] ?? ''))) ?>">
+                <label class="sr-only" for="favorite-search">Cari resep favorit</label>
+                <input id="favorite-search" class="home-search" type="search" name="q" placeholder="Cari favorit..." value="<?= e(trim((string) ($_GET['q'] ?? ''))) ?>">
             </form>
 
             <a class="home-add" href="../resep/buat.php">
                 <img src="../assets/img/icon-add-recipe.svg" alt="">
-                <span>Add Recipe</span>
+                <span>Tambah Resep</span>
             </a>
 
             <a class="home-cs" href="<?= e(reportInboxHref('../profil/laporan.php', '../auth/login.php')) ?>">
@@ -110,8 +110,8 @@ $totalFavorites = count($recipes);
 
         <section class="myrecipes-hero">
             <div>
-                <p class="myrecipes-hero__eyebrow">Saved recipes</p>
-                <h1>Favorite</h1>
+                <p class="myrecipes-hero__eyebrow">Resep tersimpan</p>
+                <h1>Favorit</h1>
                 <p class="myrecipes-hero__copy">Resep yang kamu simpan ke favorit tersusun dari yang paling baru difavoritkan.</p>
             </div>
 
@@ -135,7 +135,7 @@ $totalFavorites = count($recipes);
             </section>
         <?php endif; ?>
 
-        <section class="recipe-grid myrecipes-grid" aria-label="Daftar favorit">
+        <section class="recipe-grid myrecipes-grid favorite-grid" aria-label="Daftar favorit">
             <?php if ($recipes === []): ?>
                 <article class="myrecipes-empty">
                     <h2>Belum ada favorit</h2>
@@ -146,7 +146,7 @@ $totalFavorites = count($recipes);
                 <?php foreach ($recipes as $recipe): ?>
                     <article class="myrecipe-card">
                         <a class="myrecipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
-                            <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
+                            <span class="sr-only">Buka resep <?= e($recipe['title']) ?></span>
                         </a>
                         <img class="myrecipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
                         <div class="myrecipe-card__body">
@@ -161,18 +161,18 @@ $totalFavorites = count($recipes);
                             <div class="myrecipe-card__meta">
                                 <span><?= e($recipe['cook_time']) ?></span>
                                 <span>★ <?= number_format((float) $recipe['rating'], 1) ?></span>
-                                <span><?= e((string) ($recipe['likes_count'] ?? 0)) ?> likes</span>
+                                <span><?= e((string) ($recipe['likes_count'] ?? 0)) ?> suka</span>
                             </div>
 
                             <p class="myrecipe-card__summary"><?= e($recipe['summary'] !== '' ? $recipe['summary'] : 'Belum ada deskripsi singkat.') ?></p>
 
                             <div class="myrecipe-card__actions">
-                                <a href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">View</a>
+                                <a href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">Lihat</a>
                                 <form method="post" onsubmit="return confirm('Hapus dari favorit?');">
                                     <input type="hidden" name="_token" value="<?= e(csrfToken()) ?>">
                                     <input type="hidden" name="action" value="remove">
                                     <input type="hidden" name="recipe_id" value="<?= e((string) $recipe['id']) ?>">
-                                    <button type="submit">Remove</button>
+                                    <button type="submit">Hapus</button>
                                 </form>
                             </div>
                         </div>

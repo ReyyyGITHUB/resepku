@@ -27,11 +27,12 @@ $isUnavailable = $profile === null || ($isPublicProfile && $profile['status'] !=
 $isFollowingProfile = !$isUnavailable && $isPublicProfile && $currentUserId > 0
     ? recipe_is_following_db($currentUserId, $profileUserId)
     : false;
-$recentRecipes = !$isUnavailable ? recipe_user_recipes_db($profileUserId, 8) : [];
+$recentRecipes = !$isUnavailable ? recipe_user_recipes_db($profileUserId, 9) : [];
 $communityRecipes = !$isUnavailable ? array_values(array_filter(
-    recipe_catalog_from_db(6),
+    recipe_catalog_from_db(7),
     static fn (array $recipe) => (int) ($recipe['user_id'] ?? 0) !== $profileUserId
 )) : [];
+$trendingRecipes = !$isUnavailable ? recipe_catalog_filtered_db(['sort' => 'popular'], 7, $currentUserId > 0 ? $currentUserId : null) : [];
 $suggestedAccounts = [];
 $reportCategoryOptions = report_category_options();
 
@@ -64,13 +65,13 @@ if (!$isUnavailable) {
     $suggestedAccounts = $accountStmt->fetchAll() ?: [];
 }
 $sidebarProfile = $currentUserId > 0 ? recipe_user_profile_db($currentUserId) : null;
-$sidebarName = $sidebarProfile['name'] ?? 'Guest';
+$sidebarName = $sidebarProfile['name'] ?? 'Tamu';
 $sidebarAvatar = $sidebarProfile['avatar'] ?? '../assets/img/home-profile.png';
 $sidebarBio = $sidebarProfile['bio'] ?? '';
-$pageTitle = $isPublicProfile && !$isUnavailable ? $profile['name'] . ' - Resepku' : 'Profile - Resepku';
+$pageTitle = $isPublicProfile && !$isUnavailable ? $profile['name'] . ' - Resepku' : 'Profil - Resepku';
 $profileRoleLabel = !$isUnavailable
-    ? ($profile['role'] === 'admin' ? 'Admin Community' : 'Member Community')
-    : 'Profile unavailable';
+    ? ($profile['role'] === 'admin' ? 'Admin Komunitas' : 'Anggota Komunitas')
+    : 'Profil tidak tersedia';
 $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
     ? date('d M Y', strtotime($profile['joined_at']))
     : '-';
@@ -84,14 +85,14 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
     <title><?= e($pageTitle) ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="profile-page" data-guest-mode="<?= $currentUserId > 0 ? '0' : '1' ?>" data-csrf-token="<?= e(csrfToken()) ?>">
+<body class="profile-page <?= $isPublicProfile ? 'profile-page--public' : 'profile-page--own' ?>" data-guest-mode="<?= $currentUserId > 0 ? '0' : '1' ?>" data-csrf-token="<?= e(csrfToken()) ?>">
     <aside class="home-sidebar profile-sidebar" data-node-id="16:154">
         <div class="home-sidebar__profile">
             <div class="home-sidebar__brand">
                 <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
                 <div>
                     <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status"><?= $currentUserId > 0 ? 'Signed in' : 'Guest mode' ?></p>
+                    <p class="home-sidebar__status"><?= $currentUserId > 0 ? 'Sudah masuk' : 'Mode tamu' ?></p>
                 </div>
             </div>
 
@@ -104,7 +105,7 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
             </div>
 
             <?php if ($isAdmin): ?>
-                <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+                <a href="../admin/" class="home-sidebar__admin-panel">Panel Admin</a>
             <?php endif; ?>
 
             <?php if ($currentUserId > 0): ?>
@@ -117,9 +118,9 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
             <?php endif; ?>
 
             <?php if ($currentUserId > 0): ?>
-                <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
+                <a href="../auth/logout.php" class="home-sidebar__logout">Keluar</a>
             <?php else: ?>
-                <a href="../auth/login.php" class="home-sidebar__logout">Login</a>
+                <a href="../auth/login.php" class="home-sidebar__logout">Masuk</a>
             <?php endif; ?>
         </div>
 
@@ -127,16 +128,16 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
 
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Profil">
-            <a href="../home/">Home</a>
+            <a href="../home/">Beranda</a>
             <?php if ($currentUserId > 0): ?>
-                <a class="<?= !$isPublicProfile ? 'is-active' : '' ?>" href="../profil/">Profile</a>
-                <a href="../resep/myresep.php">My Recipes</a>
-                <a href="../resep/buat.php">Add Recipe</a>
-                <a href="../resep/favorite.php">Favorite</a>
+                <a class="<?= !$isPublicProfile ? 'is-active' : '' ?>" href="../profil/">Profil</a>
+                <a href="../resep/myresep.php">Resep Saya</a>
+                <a href="../resep/buat.php">Tambah Resep</a>
+                <a href="../resep/favorite.php">Favorit</a>
                 <a href="../profil/laporan.php">Pengaduan Saya</a>
             <?php else: ?>
-                <a href="../auth/login.php">Login</a>
-                <a href="../auth/register.php">Register</a>
+                <a href="../auth/login.php">Masuk</a>
+                <a href="../auth/register.php">Daftar</a>
             <?php endif; ?>
         </nav>
 
@@ -150,130 +151,276 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
             </div>
         <?php endif; ?>
 
+        <header class="profile-topbar" aria-label="Alat profil">
+            <form class="home-search-form profile-search" method="get" action="../cari.php" data-empty-action="../home/">
+                <label class="sr-only" for="profile-search">Cari resep, pengguna, atau bahan</label>
+                <input id="profile-search" class="profile-search__input" type="search" name="q" placeholder="Cari resep, pengguna, atau bahan...">
+                <input type="hidden" name="category" value="">
+                <input type="hidden" name="difficulty" value="">
+                <input type="hidden" name="sort" value="newest">
+                <button class="profile-search__button" type="submit" aria-label="Cari">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="m21 21-4.35-4.35m1.35-5.15a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="profile-topbar__account">
+                <?php if ($currentUserId > 0): ?>
+                    <a class="profile-topbar__notice" href="../profil/laporan.php" aria-label="Pengaduan Saya">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm8-6V11a8 8 0 1 0-16 0v5L2 18v1h20v-1l-2-2zm-2 1H6v-6a6 6 0 1 1 12 0v6z" fill="currentColor"></path>
+                        </svg>
+                    </a>
+                    <img class="profile-topbar__avatar" src="<?= e($sidebarAvatar) ?>" alt="<?= e($sidebarName) ?>">
+                    <strong><?= e($sidebarName) ?></strong>
+                <?php else: ?>
+                    <a class="profile-topbar__login" href="../auth/login.php">Masuk</a>
+                <?php endif; ?>
+            </div>
+        </header>
+
         <?php if ($isUnavailable): ?>
             <section class="profile-empty-state" aria-label="Profil tidak tersedia">
                 <div class="profile-empty-state__card">
                     <img class="profile-empty-state__avatar" src="../assets/img/home-profile.png" alt="">
-                    <p class="profile-empty-state__eyebrow">Profile</p>
-                    <h1>Profile tidak tersedia</h1>
-                    <p>User tidak aktif, tidak bisa melihat profile.</p>
+                    <p class="profile-empty-state__eyebrow">Profil</p>
+                    <h1>Profil tidak tersedia</h1>
+                    <p>Pengguna tidak aktif, profil tidak bisa dilihat.</p>
                     <div class="profile-actions">
-                        <a class="profile-actions__primary" href="../home/">Kembali ke Home</a>
+                        <a class="profile-actions__primary" href="../home/">Kembali ke Beranda</a>
                     </div>
                 </div>
             </section>
         <?php else: ?>
-            <section class="profile-summary" aria-label="Profil pengguna">
-                <div class="profile-summary__card">
-                    <div class="profile-summary__avatar-wrap">
-                        <img class="profile-summary__avatar" src="<?= e($profile['avatar']) ?>" alt="<?= e($profile['name']) ?>">
-                    </div>
-
-                    <div class="profile-summary__content">
-                        <div class="profile-summary__header">
-                            <div>
-                                <h1 class="profile-summary__name"><?= e($profile['name']) ?></h1>
-                                <div class="profile-summary__badge"><?= e($profileRoleLabel) ?></div>
+            <?php if ($isPublicProfile): ?>
+            <section class="profile-shell" aria-label="Konten profil">
+                <div class="profile-shell__main">
+                    <section class="profile-summary" aria-label="Profil pengguna">
+                        <div class="profile-summary__card">
+                            <div class="profile-summary__avatar-wrap">
+                                <img class="profile-summary__avatar" src="<?= e($profile['avatar']) ?>" alt="<?= e($profile['name']) ?>">
                             </div>
 
-                            <?php if ($isPublicProfile): ?>
-                                <div class="profile-summary__actions">
-                                    <button
-                                        class="profile-summary__follow<?= $isFollowingProfile ? ' is-active' : '' ?>"
-                                        type="button"
-                                        data-guest-gate
-                                        data-social-action="follow"
-                                        data-user-id="<?= e((string) $profileUserId) ?>"
-                                        data-follow-label="Follow"
-                                        data-followed-label="Following"
-                                    ><?= $isFollowingProfile ? 'Following' : 'Follow' ?></button>
-                                    <button
-                                        class="profile-summary__report"
-                                        type="button"
-                                        data-guest-gate
-                                        data-report-open
-                                        data-report-target-type="pengguna"
-                                        data-report-target-id="<?= e((string) $profileUserId) ?>"
-                                        data-report-target-label="<?= e($profile['name']) ?>"
-                                    >Laporkan</button>
+                            <div class="profile-summary__content">
+                                <div class="profile-summary__header">
+                                    <div>
+                                        <h1 class="profile-summary__name"><?= e($profile['name']) ?></h1>
+                                        <div class="profile-summary__badge">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                <path d="M16 11a4 4 0 1 0-8 0m8 0a4 4 0 1 1-8 0m8 0c2.8.7 5 2.5 5 5v1H3v-1c0-2.5 2.2-4.3 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                                            </svg>
+                                            <?= e($profileRoleLabel) ?>
+                                        </div>
+                                    </div>
+
+                                    <?php if ($isPublicProfile): ?>
+                                        <div class="profile-summary__actions">
+                                            <button
+                                                class="profile-summary__follow<?= $isFollowingProfile ? ' is-active' : '' ?>"
+                                                type="button"
+                                                data-guest-gate
+                                                data-social-action="follow"
+                                                data-user-id="<?= e((string) $profileUserId) ?>"
+                                                data-follow-label="Ikuti"
+                                                data-followed-label="Mengikuti"
+                                            >
+                                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                    <path d="M15 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM3 21c0-3.1 3.6-5 8-5m7-2v6m3-3h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                                                </svg>
+                                                <?= $isFollowingProfile ? 'Mengikuti' : 'Ikuti' ?>
+                                            </button>
+                                            <button
+                                                class="profile-summary__report"
+                                                type="button"
+                                                data-guest-gate
+                                                data-report-open
+                                                data-report-target-type="pengguna"
+                                                data-report-target-id="<?= e((string) $profileUserId) ?>"
+                                                data-report-target-label="<?= e($profile['name']) ?>"
+                                            >Laporkan</button>
+                                        </div>
+                                    <?php else: ?>
+                                        <button class="profile-summary__edit" type="button" data-profile-edit-open>Edit Profil</button>
+                                    <?php endif; ?>
                                 </div>
-                            <?php else: ?>
-                                <button class="profile-summary__edit" type="button" data-profile-edit-open>Edit Profile</button>
-                            <?php endif; ?>
+
+                                <?php if (trim((string) ($profile['bio'] ?? '')) !== ''): ?>
+                                    <p class="profile-summary__bio"><?= e((string) $profile['bio']) ?></p>
+                                <?php else: ?>
+                                    <p class="profile-summary__bio profile-summary__bio--muted">
+                                        Profil ini belum punya bio. Tambahkan deskripsi singkat untuk memperjelas identitas akun.
+                                    </p>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="profile-summary__stats" aria-label="Statistik profil">
+                                <div class="profile-stat profile-stat--recipes">
+                                    <span class="profile-stat__icon">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                            <path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H20v16H8.5A3.5 3.5 0 0 0 5 21.5v-16Zm0 0A3.5 3.5 0 0 1 8.5 2M5 5.5v16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="profile-stat__copy">
+                                        <em class="profile-stat__label">Resep</em>
+                                        <strong><?= e((string) $profile['recipe_count']) ?></strong>
+                                        <span class="profile-stat__unit">resep</span>
+                                    </span>
+                                </div>
+                                <div class="profile-stat profile-stat--followers">
+                                    <span class="profile-stat__icon">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                            <path d="M16 11a4 4 0 1 0-8 0m11 9c0-3.3-3.6-5-7-5s-7 1.7-7 5m14-9a3 3 0 1 0-1.5-5.6m2.5 14.6c0-2.1-1.2-3.6-3.2-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="profile-stat__copy">
+                                        <em class="profile-stat__label">Pengikut</em>
+                                        <strong data-follower-count><?= e((string) $profile['follower_count']) ?></strong>
+                                        <span class="profile-stat__unit">orang</span>
+                                    </span>
+                                </div>
+                                <div class="profile-stat profile-stat--following">
+                                    <span class="profile-stat__icon">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8c0-3.3 3.1-6 7-6s7 2.7 7 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="profile-stat__copy">
+                                        <em class="profile-stat__label">Mengikuti</em>
+                                        <strong><?= e((string) $profile['following_count']) ?></strong>
+                                        <span class="profile-stat__unit">orang</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="profile-panel profile-panel--recipes" aria-label="Daftar resep profil">
+                        <div class="profile-tabs" aria-label="Bagian profil">
+                            <button class="is-active" type="button">Resep</button>
+                            <button type="button">Tentang</button>
+                            <button type="button">Aktivitas</button>
                         </div>
 
-                        <?php if (trim((string) ($profile['bio'] ?? '')) !== ''): ?>
-                            <p class="profile-summary__bio"><?= e((string) $profile['bio']) ?></p>
-                        <?php else: ?>
-                            <p class="profile-summary__bio profile-summary__bio--muted">
-                                Profil ini belum punya bio. Tambahkan deskripsi singkat untuk memperjelas identitas akun.
-                            </p>
-                        <?php endif; ?>
-
-                        <div class="profile-summary__stats" aria-label="Statistik profil">
-                            <div class="profile-stat">
-                                <strong><?= e((string) $profile['recipe_count']) ?></strong>
-                                <span>Recipe</span>
+                        <div class="profile-filterbar" aria-label="Filter resep">
+                            <button type="button">Semua Resep</button>
+                            <span class="profile-filterbar__spacer"></span>
+                            <button type="button">Terbaru</button>
+                            <div class="profile-view-toggle" aria-label="Mode tampilan">
+                                <button class="is-active" type="button" aria-label="Tampilan grid">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                        <path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" aria-label="Tampilan daftar">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                        <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                                    </svg>
+                                </button>
                             </div>
-                            <div class="profile-stat">
-                                <strong data-follower-count><?= e((string) $profile['follower_count']) ?></strong>
-                                <span>Follower</span>
-                            </div>
-                            <div class="profile-stat">
-                                <strong><?= e((string) $profile['following_count']) ?></strong>
-                                <span>Following</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="profile-bento" aria-label="Profile content">
-                <div class="profile-bento__main">
-                    <section class="profile-panel profile-panel--recent" aria-label="Recent recipes">
-                        <div class="profile-panel__head">
-                            <div>
-                                <p class="profile-panel__kicker">Recent Recipes</p>
-                                <h2>Recent Recipes</h2>
-                            </div>
-                            <a href="../home/" class="profile-panel__link">Lihat semua →</a>
                         </div>
 
                         <?php if ($recentRecipes === []): ?>
                             <div class="profile-panel__empty">Belum ada resep untuk ditampilkan.</div>
                         <?php else: ?>
-                            <section class="profile-recipe-grid" aria-label="Recent recipes list">
+                            <section class="profile-recipe-grid" aria-label="Daftar resep terbaru">
                                 <?php foreach ($recentRecipes as $recipe): ?>
                                     <article class="profile-recipe-card">
                                         <?php if (!empty($recipe['id'])): ?>
                                             <a class="profile-recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
-                                                <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
+                                                <span class="sr-only">Buka resep <?= e($recipe['title']) ?></span>
                                             </a>
                                         <?php endif; ?>
-                                        <button class="profile-recipe-card__bookmark" type="button" aria-label="Simpan resep">
+                                        <button class="profile-recipe-card__bookmark<?= !empty($recipe['favorited']) ? ' is-active' : '' ?>" type="button" aria-label="Simpan resep" aria-pressed="<?= !empty($recipe['favorited']) ? 'true' : 'false' ?>" data-card-favorite data-recipe-id="<?= e((string) ($recipe['id'] ?? 0)) ?>">
                                             <img src="../assets/img/icon-bookmark.svg" alt="">
                                         </button>
-                                        <img class="profile-recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                                        <div class="profile-recipe-card__media">
+                                            <img class="profile-recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                                        </div>
                                         <div class="profile-recipe-card__body">
                                             <h3><?= e($recipe['title']) ?></h3>
-                                            <div class="profile-recipe-card__rating">★★★★☆</div>
-                                            <span><?= e($recipe['cook_time']) ?></span>
+                                            <div class="profile-recipe-card__meta">
+                                                <span class="profile-recipe-card__rating">★ <?= e(number_format((float) ($recipe['rating'] ?? 0), 1)) ?></span>
+                                                <span><?= e($recipe['cook_time']) ?></span>
+                                            </div>
                                         </div>
                                     </article>
                                 <?php endforeach; ?>
                             </section>
                         <?php endif; ?>
+
+                        <div class="profile-public-feature" data-figma-node="76:2631" aria-hidden="true"></div>
                     </section>
                 </div>
 
-                <aside class="profile-bento__aside">
-                    <section class="profile-panel profile-panel--activity" aria-label="Community activity">
+                <aside class="profile-shell__rail">
+                    <section class="profile-panel profile-panel--suggested" aria-label="Akun yang disarankan">
                         <div class="profile-panel__head">
-                            <div>
-                                <p class="profile-panel__kicker">Community Activity</p>
-                                <h2>Community Activity</h2>
+                        <h2>Disarankan untuk kamu</h2>
+                        <a href="../home/" class="profile-panel__link">Lihat semua</a>
+                        </div>
+
+                        <?php if ($suggestedAccounts === []): ?>
+                            <div class="profile-panel__empty">Belum ada akun yang disarankan.</div>
+                        <?php else: ?>
+                            <div class="profile-account-list">
+                                <?php foreach ($suggestedAccounts as $account): ?>
+                                    <?php $accountId = (int) ($account['user_id'] ?? 0); ?>
+                                    <article class="profile-account-item">
+                                        <a class="profile-account-item__profile" href="../profil/?id=<?= e((string) $accountId) ?>">
+                                            <img class="profile-account-item__avatar" src="<?= e(recipe_asset_path($account['avatar'] ?? null)) ?>" alt="<?= e($account['name'] ?? 'Pengguna') ?>">
+                                            <span class="profile-account-item__copy">
+                                                <strong><?= e($account['name'] ?? 'Pengguna') ?></strong>
+                                            <span><?= e((string) ($account['follower_count'] ?? 0)) ?> pengikut</span>
+                                            </span>
+                                        </a>
+                                        <button
+                                            class="profile-account-item__follow"
+                                            type="button"
+                                            data-guest-gate
+                                            data-social-action="follow"
+                                            data-user-id="<?= e((string) $accountId) ?>"
+                                            data-follow-label="Ikuti"
+                                            data-followed-label="Diikuti"
+                                        >Ikuti</button>
+                                    </article>
+                                <?php endforeach; ?>
                             </div>
-                            <a href="../home/" class="profile-panel__link">View all</a>
+                        <?php endif; ?>
+                    </section>
+
+                    <section class="profile-panel profile-panel--trending" aria-label="Resep populer">
+                        <div class="profile-panel__head">
+                        <h2>Resep Populer</h2>
+                        <a href="../cari.php?sort=popular" class="profile-panel__link">Lihat semua</a>
+                        </div>
+
+                        <?php if ($trendingRecipes === []): ?>
+                            <div class="profile-panel__empty">Belum ada resep trending.</div>
+                        <?php else: ?>
+                            <div class="profile-activity-list">
+                                <?php foreach ($trendingRecipes as $recipe): ?>
+                                    <article class="profile-activity-item profile-activity-item--recipe">
+                                        <?php if (!empty($recipe['id'])): ?>
+                                            <a class="profile-activity-item__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
+                                <span class="sr-only">Buka resep <?= e($recipe['title']) ?></span>
+                                            </a>
+                                        <?php endif; ?>
+                                        <img class="profile-activity-item__avatar profile-activity-item__avatar--square" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                                        <div class="profile-activity-item__copy">
+                                            <strong><?= e($recipe['title']) ?></strong>
+                                            <span>★ <?= e(number_format((float) ($recipe['rating'] ?? 0), 1)) ?></span>
+                                        </div>
+                                        <time><?= e($recipe['cook_time']) ?></time>
+                                    </article>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </section>
+
+                    <section class="profile-panel profile-panel--activity" aria-label="Aktivitas terbaru">
+                        <div class="profile-panel__head">
+                            <h2>Aktivitas Terbaru</h2>
                         </div>
 
                         <?php if ($communityRecipes === []): ?>
@@ -284,69 +431,182 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                                     <article class="profile-activity-item">
                                         <?php if (!empty($recipe['id'])): ?>
                                             <a class="profile-activity-item__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
-                                                <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
+                                                <span class="sr-only">Buka resep <?= e($recipe['title']) ?></span>
                                             </a>
                                         <?php endif; ?>
-                                        <img class="profile-activity-item__avatar" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                                        <img class="profile-activity-item__avatar" src="<?= e($recipe['author_avatar'] ?? '../assets/img/home-profile.png') ?>" alt="<?= e($recipe['author'] ?? 'Pengguna') ?>">
                                         <div class="profile-activity-item__copy">
+                                            <span><?= e($recipe['author'] ?? 'Pengguna') ?> menyukai resepmu</span>
                                             <strong><?= e($recipe['title']) ?></strong>
-                                            <span><?= e($recipe['cook_time']) ?></span>
                                         </div>
+                                        <time>2h</time>
                                     </article>
                                 <?php endforeach; ?>
                             </div>
+                            <a class="profile-panel__footer-link" href="../home/">Lihat semua aktivitas</a>
                         <?php endif; ?>
                     </section>
-
-                    <section class="profile-panel profile-panel--suggested" aria-label="Suggested accounts">
-                        <div class="profile-panel__head">
-                            <div>
-                                <p class="profile-panel__kicker">Suggested for you</p>
-                                <h2>Suggested for you</h2>
-                            </div>
-                            <a href="../home/" class="profile-panel__link">See all</a>
-                        </div>
-
-                        <?php if ($suggestedAccounts === []): ?>
-                            <div class="profile-panel__empty">Belum ada akun yang disarankan.</div>
-                        <?php else: ?>
-                            <div class="profile-account-list">
-                                <?php foreach ($suggestedAccounts as $account): ?>
-                                    <?php $accountId = (int) ($account['user_id'] ?? 0); ?>
-                                    <article class="profile-account-item">
-                                        <img class="profile-account-item__avatar" src="<?= e(recipe_asset_path($account['avatar'] ?? null)) ?>" alt="<?= e($account['name'] ?? 'User') ?>">
-                                        <div class="profile-account-item__copy">
-                                            <strong><?= e($account['name'] ?? 'User') ?></strong>
-                                            <span><?= e((string) ($account['follower_count'] ?? 0)) ?> mutual friends</span>
-                                        </div>
-                                        <button
-                                            class="profile-account-item__follow"
-                                            type="button"
-                                            data-guest-gate
-                                            data-social-action="follow"
-                                            data-user-id="<?= e((string) $accountId) ?>"
-                                            data-follow-label="Follow"
-                                            data-followed-label="Followed"
-                                        >Follow</button>
-                                    </article>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                    </section>
-
                 </aside>
             </section>
+            <?php else: ?>
+                <section class="profile-summary" aria-label="Profil pengguna">
+                    <div class="profile-summary__card">
+                        <div class="profile-summary__avatar-wrap">
+                            <img class="profile-summary__avatar" src="<?= e($profile['avatar']) ?>" alt="<?= e($profile['name']) ?>">
+                        </div>
+
+                        <div class="profile-summary__content">
+                            <div class="profile-summary__header">
+                                <div>
+                                    <h1 class="profile-summary__name"><?= e($profile['name']) ?></h1>
+                                    <div class="profile-summary__badge"><?= e($profileRoleLabel) ?></div>
+                                </div>
+
+                                <button class="profile-summary__edit" type="button" data-profile-edit-open>Edit Profil</button>
+                            </div>
+
+                            <?php if (trim((string) ($profile['bio'] ?? '')) !== ''): ?>
+                                <p class="profile-summary__bio"><?= e((string) $profile['bio']) ?></p>
+                            <?php else: ?>
+                                <p class="profile-summary__bio profile-summary__bio--muted">
+                                    Profil ini belum punya bio. Tambahkan deskripsi singkat untuk memperjelas identitas akun.
+                                </p>
+                            <?php endif; ?>
+
+                            <div class="profile-summary__stats" aria-label="Statistik profil">
+                                <div class="profile-stat">
+                                    <strong><?= e((string) $profile['recipe_count']) ?></strong>
+                                    <span>Resep</span>
+                                </div>
+                                <div class="profile-stat">
+                                    <strong data-follower-count><?= e((string) $profile['follower_count']) ?></strong>
+                                    <span>Pengikut</span>
+                                </div>
+                                <div class="profile-stat">
+                                    <strong><?= e((string) $profile['following_count']) ?></strong>
+                                    <span>Mengikuti</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="profile-bento" aria-label="Konten profil">
+                    <div class="profile-bento__main">
+                        <section class="profile-panel profile-panel--recent" aria-label="Resep terbaru">
+                            <div class="profile-panel__head">
+                                <div>
+                                    <h2>Resep Terbaru</h2>
+                                </div>
+                                <a href="../resep/myresep.php" class="profile-panel__link">Lihat semua →</a>
+                            </div>
+
+                            <?php if ($recentRecipes === []): ?>
+                                <div class="profile-panel__empty">Belum ada resep untuk ditampilkan.</div>
+                            <?php else: ?>
+                                <section class="profile-recipe-grid" aria-label="Daftar resep terbaru">
+                                    <?php foreach ($recentRecipes as $recipe): ?>
+                                        <article class="profile-recipe-card">
+                                            <?php if (!empty($recipe['id'])): ?>
+                                                <a class="profile-recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
+                                                    <span class="sr-only">Buka resep <?= e($recipe['title']) ?></span>
+                                                </a>
+                                            <?php endif; ?>
+                                            <button class="profile-recipe-card__bookmark<?= !empty($recipe['favorited']) ? ' is-active' : '' ?>" type="button" aria-label="Simpan resep" aria-pressed="<?= !empty($recipe['favorited']) ? 'true' : 'false' ?>" data-card-favorite data-recipe-id="<?= e((string) ($recipe['id'] ?? 0)) ?>">
+                                                <img src="../assets/img/icon-bookmark.svg" alt="">
+                                            </button>
+                                            <img class="profile-recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                                            <div class="profile-recipe-card__body">
+                                                <h3><?= e($recipe['title']) ?></h3>
+                                                <div class="profile-recipe-card__rating">★★★★☆</div>
+                                                <span><?= e($recipe['cook_time']) ?></span>
+                                            </div>
+                                        </article>
+                                    <?php endforeach; ?>
+                                </section>
+                            <?php endif; ?>
+                        </section>
+                    </div>
+
+                    <aside class="profile-bento__aside">
+                        <section class="profile-panel profile-panel--activity" aria-label="Aktivitas komunitas">
+                            <div class="profile-panel__head">
+                                <div>
+                                    <h2>Aktivitas Komunitas</h2>
+                                </div>
+                                <a href="../home/" class="profile-panel__link">Lihat semua</a>
+                            </div>
+
+                            <?php if ($communityRecipes === []): ?>
+                                <div class="profile-panel__empty">Belum ada aktivitas komunitas.</div>
+                            <?php else: ?>
+                                <div class="profile-activity-list">
+                                    <?php foreach ($communityRecipes as $recipe): ?>
+                                        <article class="profile-activity-item">
+                                            <?php if (!empty($recipe['id'])): ?>
+                                                <a class="profile-activity-item__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
+                                                    <span class="sr-only">Buka resep <?= e($recipe['title']) ?></span>
+                                                </a>
+                                            <?php endif; ?>
+                                            <img class="profile-activity-item__avatar" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                                            <div class="profile-activity-item__copy">
+                                                <strong><?= e($recipe['title']) ?></strong>
+                                                <span><?= e($recipe['cook_time']) ?></span>
+                                            </div>
+                                        </article>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </section>
+
+                        <section class="profile-panel profile-panel--suggested" aria-label="Akun yang disarankan">
+                            <div class="profile-panel__head">
+                                <div>
+                                    <h2>Disarankan untuk kamu</h2>
+                                </div>
+                                <a href="../home/" class="profile-panel__link">Lihat semua</a>
+                            </div>
+
+                            <?php if ($suggestedAccounts === []): ?>
+                                <div class="profile-panel__empty">Belum ada akun yang disarankan.</div>
+                            <?php else: ?>
+                                <div class="profile-account-list">
+                                    <?php foreach ($suggestedAccounts as $account): ?>
+                                        <?php $accountId = (int) ($account['user_id'] ?? 0); ?>
+                                        <article class="profile-account-item">
+                                            <img class="profile-account-item__avatar" src="<?= e(recipe_asset_path($account['avatar'] ?? null)) ?>" alt="<?= e($account['name'] ?? 'Pengguna') ?>">
+                                            <div class="profile-account-item__copy">
+                                                <strong><?= e($account['name'] ?? 'Pengguna') ?></strong>
+                                                <span><?= e((string) ($account['follower_count'] ?? 0)) ?> pengikut</span>
+                                            </div>
+                                            <button
+                                                class="profile-account-item__follow"
+                                                type="button"
+                                                data-guest-gate
+                                                data-social-action="follow"
+                                                data-user-id="<?= e((string) $accountId) ?>"
+                                                data-follow-label="Ikuti"
+                                                data-followed-label="Diikuti"
+                                            >Ikuti</button>
+                                        </article>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </section>
+                    </aside>
+                </section>
+            <?php endif; ?>
 
             <?php if (!$isPublicProfile): ?>
                 <div class="profile-modal" data-profile-edit-modal aria-hidden="true">
                     <div class="profile-modal__backdrop" data-profile-edit-close></div>
                     <section class="profile-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title">
-                        <button class="profile-modal__close" type="button" aria-label="Close" data-profile-edit-close>×</button>
+                        <button class="profile-modal__close" type="button" aria-label="Tutup" data-profile-edit-close>×</button>
 
                         <div class="profile-modal__header">
-                            <p class="profile-modal__eyebrow">Edit profile</p>
-                            <h2 id="profile-edit-title">Edit Profile</h2>
-                            <p>Ubah nama, bio, dan password dari popup ini.</p>
+                            <p class="profile-modal__eyebrow">Edit profil</p>
+                            <h2 id="profile-edit-title">Edit Profil</h2>
+                            <p>Ubah nama, bio, dan kata sandi dari jendela ini.</p>
                         </div>
 
                         <form class="profile-edit-form" action="../profil/edit.php" method="post">
@@ -372,8 +632,8 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                             <details class="profile-accordion">
                                 <summary class="profile-accordion__summary">
                                     <div>
-                                        <h3>Ganti Password</h3>
-                                        <p>Buka hanya kalau ingin mengganti password.</p>
+                                        <h3>Ganti Kata Sandi</h3>
+                                        <p>Buka hanya kalau ingin mengganti kata sandi.</p>
                                     </div>
                                     <svg class="profile-accordion__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                         <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -383,17 +643,17 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                                 <div class="profile-accordion__body">
                                     <div class="profile-edit-form__grid">
                                         <label class="profile-field">
-                                            <span>Password Sekarang</span>
+                                            <span>Kata Sandi Sekarang</span>
                                             <input class="profile-input" type="password" name="current_password" autocomplete="current-password">
                                         </label>
 
                                         <label class="profile-field">
-                                            <span>Password Baru</span>
+                                            <span>Kata Sandi Baru</span>
                                             <input class="profile-input" type="password" name="new_password" autocomplete="new-password">
                                         </label>
 
                                         <label class="profile-field">
-                                            <span>Konfirmasi Password Baru</span>
+                                            <span>Konfirmasi Kata Sandi Baru</span>
                                             <input class="profile-input" type="password" name="confirm_password" autocomplete="new-password">
                                         </label>
                                     </div>

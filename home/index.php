@@ -8,7 +8,7 @@ startSession();
 $isAdmin = isAdmin();
 $isGuest = !empty($_SESSION['guest_mode']) && empty($_SESSION['user']);
 $currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
-$userName = $isGuest ? 'Guest' : ($_SESSION['user']['name'] ?? 'Nayaka');
+$userName = $isGuest ? 'Tamu' : ($_SESSION['user']['name'] ?? 'Nayaka');
 $filters = [
     'q' => trim((string) ($_GET['q'] ?? '')),
     'category' => trim((string) ($_GET['category'] ?? '')),
@@ -35,48 +35,48 @@ if ($isDefaultView && $defaultRecipes !== [] && count($bottomRecipes) < 8) {
 $activeCategory = mb_strtolower($filters['category']);
 
 $categoryPills = [
-    ['label' => 'Foods', 'value' => 'food'],
-    ['label' => 'Salads', 'value' => 'salad'],
-    ['label' => 'Dessert', 'value' => 'dessert'],
-    ['label' => 'Drinks', 'value' => 'drinks'],
+    ['label' => 'Makanan', 'value' => 'food'],
+    ['label' => 'Salad', 'value' => 'salad'],
+    ['label' => 'Makanan Penutup', 'value' => 'dessert'],
+    ['label' => 'Minuman', 'value' => 'drinks'],
 ];
 
 $difficultyOptions = [
-    ['label' => 'All difficulty', 'value' => ''],
-    ['label' => 'Easy', 'value' => 'mudah'],
-    ['label' => 'Medium', 'value' => 'sedang'],
-    ['label' => 'Hard', 'value' => 'sulit'],
+    ['label' => 'Semua tingkat', 'value' => ''],
+    ['label' => 'Mudah', 'value' => 'mudah'],
+    ['label' => 'Sedang', 'value' => 'sedang'],
+    ['label' => 'Sulit', 'value' => 'sulit'],
 ];
 
 $timeOptions = [
-    ['label' => 'Any time', 'value' => ''],
-    ['label' => '< 15 mins', 'value' => '15'],
-    ['label' => '< 30 mins', 'value' => '30'],
-    ['label' => '< 60 mins', 'value' => '60'],
+    ['label' => 'Semua waktu', 'value' => ''],
+    ['label' => '< 15 menit', 'value' => '15'],
+    ['label' => '< 30 menit', 'value' => '30'],
+    ['label' => '< 60 menit', 'value' => '60'],
 ];
 
 $sortOptions = [
-    ['label' => 'Newest', 'value' => 'newest'],
-    ['label' => 'Popular', 'value' => 'popular'],
-    ['label' => 'Oldest', 'value' => 'oldest'],
+    ['label' => 'Terbaru', 'value' => 'newest'],
+    ['label' => 'Populer', 'value' => 'popular'],
+    ['label' => 'Terlama', 'value' => 'oldest'],
 ];
 
 $featured = [
-    'title' => 'Special Salad Chicken',
+    'title' => 'Salad Ayam Spesial',
     'image' => '../assets/img/recipe-salad-hero.png',
-    'summary' => 'Enjoy the perfect combination of protein-rich grilled chicken breast and a selection of fresh vegetables (such as romaine lettuce, cherry tomatoes, cucumbers, and purple cabbage). Served with a light and appetizing special dressing, this dish is not only delicious, but also healthy and filling. The perfect choice for your healthy lifestyle.',
-    'cook_time' => '20 mins',
+    'summary' => 'Nikmati perpaduan dada ayam panggang kaya protein dengan sayuran segar seperti selada romaine, tomat ceri, timun, dan kol ungu. Disajikan dengan dressing spesial yang ringan dan menggugah selera, hidangan ini enak, sehat, dan mengenyangkan.',
+    'cook_time' => '20 menit',
     'id' => null,
 ];
 
 $sideRecipes = [
     [
-        'title' => 'Japanese Macha',
+        'title' => 'Matcha Jepang',
         'image' => '../assets/img/recipe-matcha-card.png',
         'id' => null,
     ],
     [
-        'title' => 'Sweet Strawberry Cake',
+        'title' => 'Kue Stroberi Manis',
         'image' => '../assets/img/recipe-strawberry-cake-card.png',
         'id' => null,
     ],
@@ -98,7 +98,7 @@ if ($recipes === []) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Resepku</title>
+    <title>Beranda - Resepku</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="home-page" data-guest-mode="<?= $isGuest ? '1' : '0' ?>" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="../api/" data-login-url="../auth/login.php">
@@ -108,7 +108,7 @@ if ($recipes === []) {
                 <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
                 <div>
                     <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status"><?= $isGuest ? 'Guest mode' : 'Signed in' ?></p>
+                    <p class="home-sidebar__status"><?= $isGuest ? 'Mode tamu' : 'Sudah masuk' ?></p>
                 </div>
             </div>
 
@@ -116,28 +116,28 @@ if ($recipes === []) {
                 <img src="../assets/img/home-profile.png" alt="" class="home-sidebar__avatar">
                 <div class="home-sidebar__welcome">
                     <strong><?= e($userName) ?></strong>
-                    <span><?= $isGuest ? 'Login untuk simpan resep dan kelola profil.' : 'Akses resep pribadi dan aktivitas akun.' ?></span>
+                    <span><?= $isGuest ? 'Masuk untuk simpan resep dan kelola profil.' : 'Akses resep pribadi dan aktivitas akun.' ?></span>
                 </div>
             </div>
 
             <?php if ($isAdmin): ?>
-                <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+                <a href="../admin/" class="home-sidebar__admin-panel">Panel Admin</a>
             <?php endif; ?>
 
-            <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
+            <a href="../auth/logout.php" class="home-sidebar__logout">Keluar</a>
         </div>
 
         <div class="home-sidebar__divider"></div>
 
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Home">
-            <a class="is-active" href="../home/">Home</a>
-            <a href="../profil/">Profile</a>
-            <a href="../resep/myresep.php">My Recipes</a>
-            <a href="../resep/buat.php">Add Recipe</a>
-            <a href="../resep/favorite.php">Favorite</a>
+            <a class="is-active" href="../home/">Beranda</a>
+            <a href="../profil/">Profil</a>
+            <a href="../resep/myresep.php">Resep Saya</a>
+            <a href="../resep/buat.php">Tambah Resep</a>
+            <a href="../resep/favorite.php">Favorit</a>
             <a href="../profil/laporan.php">Pengaduan Saya</a>
-            <a href="../cari.php">Search</a>
+            <a href="../cari.php">Cari</a>
         </nav>
 
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
@@ -146,8 +146,8 @@ if ($recipes === []) {
     <main class="home-main" data-node-id="1:312">
         <header class="home-topbar">
             <form class="home-search-form" method="get" action="../cari.php" data-empty-action="../home/">
-                <label class="sr-only" for="recipe-search">Search recipes</label>
-                <input id="recipe-search" class="home-search" type="search" name="q" placeholder="Search Recipes....." value="<?= e($filters['q']) ?>">
+                <label class="sr-only" for="recipe-search">Cari resep</label>
+                <input id="recipe-search" class="home-search" type="search" name="q" placeholder="Cari resep..." value="<?= e($filters['q']) ?>">
                 <input type="hidden" name="category" value="<?= e($filters['category']) ?>">
                 <input type="hidden" name="difficulty" value="<?= e($filters['difficulty']) ?>">
                 <input type="hidden" name="max_time" value="<?= e($filters['max_time']) ?>">
@@ -156,7 +156,7 @@ if ($recipes === []) {
 
             <a class="home-add" href="../resep/buat.php">
                 <img src="../assets/img/icon-add-recipe.svg" alt="">
-                <span>Add Recipe</span>
+                <span>Tambah Resep</span>
             </a>
 
             <a class="home-cs" href="<?= e(reportInboxHref('../profil/laporan.php', '../auth/login.php')) ?>">
@@ -167,7 +167,7 @@ if ($recipes === []) {
 
         <section class="home-hero">
             <div>
-                <h1>Learn, Cook, &amp; Eat Your Food</h1>
+                <h1>Belajar, Masak, dan Nikmati Hidanganmu</h1>
                 <div class="home-filters" aria-label="Kategori resep">
                     <?php foreach ($categoryPills as $pill): ?>
                         <?php
@@ -187,7 +187,7 @@ if ($recipes === []) {
                     <input type="hidden" name="category" value="<?= e($filters['category']) ?>">
 
                     <label class="home-select">
-                        <span>Difficulty</span>
+                        <span>Kesulitan</span>
                         <select name="difficulty" class="home-select__field" onchange="this.form.submit()">
                             <?php foreach ($difficultyOptions as $option): ?>
                                 <option value="<?= e($option['value']) ?>" <?= $filters['difficulty'] === $option['value'] ? 'selected' : '' ?>>
@@ -198,7 +198,7 @@ if ($recipes === []) {
                     </label>
 
                     <label class="home-select">
-                        <span>Time</span>
+                        <span>Waktu</span>
                         <select name="max_time" class="home-select__field" onchange="this.form.submit()">
                             <?php foreach ($timeOptions as $option): ?>
                                 <option value="<?= e($option['value']) ?>" <?= $filters['max_time'] === $option['value'] ? 'selected' : '' ?>>
@@ -209,7 +209,7 @@ if ($recipes === []) {
                     </label>
 
                     <label class="home-select">
-                        <span>Sort</span>
+                        <span>Urutkan</span>
                         <select name="sort" class="home-select__field" onchange="this.form.submit()">
                             <?php foreach ($sortOptions as $option): ?>
                                 <option value="<?= e($option['value']) ?>" <?= $filters['sort'] === $option['value'] ? 'selected' : '' ?>>
@@ -220,15 +220,15 @@ if ($recipes === []) {
                     </label>
 
                     <div class="home-controls__actions">
-                        <button class="home-controls__apply" type="submit">Apply filters</button>
-                        <a class="home-controls__clear" href="../home/">Clear filter</a>
+                        <button class="home-controls__apply" type="submit">Terapkan filter</button>
+                        <a class="home-controls__clear" href="../home/">Hapus filter</a>
                     </div>
                 </form>
             </div>
 
             <div class="home-stats">
                 <strong>+19</strong>
-                <span>new recipes</span>
+                <span>resep baru</span>
             </div>
         </section>
 
@@ -238,7 +238,7 @@ if ($recipes === []) {
                     <article class="recipe-card" data-node-id="16:155">
                         <?php if (!empty($recipe['id'])): ?>
                             <a class="recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
-                                <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
+                                <span class="sr-only">Buka resep <?= e($recipe['title']) ?></span>
                             </a>
                         <?php endif; ?>
                         <div class="recipe-card__panel"></div>
@@ -264,8 +264,8 @@ if ($recipes === []) {
                         <h2><?= e($featured['title']) ?></h2>
                         <p><?= e($featured['summary']) ?></p>
                         <div class="feature-card__footer">
-                            <a href="#">Get the recipe</a>
-                            <span>Cook Time : <?= e($featured['cook_time']) ?></span>
+                            <a href="#">Lihat resep</a>
+                            <span>Waktu memasak: <?= e($featured['cook_time']) ?></span>
                         </div>
                     </div>
                 </article>
@@ -278,9 +278,9 @@ if ($recipes === []) {
                             <div class="side-recipe-card__content">
                                 <h3 class="side-recipe-card__title"><?= e($recipe['title']) ?></h3>
                                 <?php if (!empty($recipe['id'])): ?>
-                                    <a class="side-recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">Get the recipe</a>
+                                    <a class="side-recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">Lihat resep</a>
                                 <?php else: ?>
-                                    <span class="side-recipe-card__link side-recipe-card__link--static">Get the recipe</span>
+                                    <span class="side-recipe-card__link side-recipe-card__link--static">Lihat resep</span>
                                 <?php endif; ?>
                             </div>
                         </article>
@@ -294,7 +294,7 @@ if ($recipes === []) {
                     <article class="recipe-card" data-node-id="16:155">
                         <?php if (!empty($recipe['id'])): ?>
                             <a class="recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
-                                <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
+                                <span class="sr-only">Buka resep <?= e($recipe['title']) ?></span>
                             </a>
                         <?php endif; ?>
                         <div class="recipe-card__panel"></div>
@@ -318,14 +318,14 @@ if ($recipes === []) {
                     <article class="recipe-grid__empty">
                         <h2>Resep tidak ditemukan</h2>
                         <p>Coba ubah kata kunci, kategori, atau filter lain.</p>
-                        <a href="../home/">Reset filter</a>
+                        <a href="../home/">Atur ulang filter</a>
                     </article>
                 <?php endif; ?>
                 <?php foreach ($recipes as $recipe): ?>
                     <article class="recipe-card" data-node-id="16:155">
                         <?php if (!empty($recipe['id'])): ?>
                             <a class="recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
-                                <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
+                                <span class="sr-only">Buka resep <?= e($recipe['title']) ?></span>
                             </a>
                         <?php endif; ?>
                         <div class="recipe-card__panel"></div>

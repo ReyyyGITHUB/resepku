@@ -34,10 +34,10 @@ function recipe_row_to_card(array $row): array
     return [
         'id' => $id,
         'user_id' => (int) ($row['user_id'] ?? 0),
-        'title' => $title !== '' ? $title : 'Untitled Recipe',
+        'title' => $title !== '' ? $title : 'Resep Tanpa Judul',
         'slug' => $row['slug'] ?? ($id > 0 ? 'recipe-' . $id : 'recipe-preview'),
         'image' => $image,
-        'author' => $row['author'] ?? 'ResepKu Team',
+        'author' => $row['author'] ?? 'Tim ResepKu',
         'author_avatar' => recipe_asset_path($row['author_avatar'] ?? '../assets/img/home-profile.png'),
         'cook_time' => recipe_format_cook_time($row['waktu_memasak'] ?? null),
         'servings' => recipe_format_servings($row['porsi'] ?? null),
@@ -62,7 +62,7 @@ function recipe_format_cook_time(mixed $minutes): string
         return '-';
     }
 
-    return ((int) $minutes) . ' mins';
+    return ((int) $minutes) . ' menit';
 }
 
 function recipe_format_servings(mixed $servings): string
@@ -72,15 +72,15 @@ function recipe_format_servings(mixed $servings): string
     }
 
     $servings = (int) $servings;
-    return $servings . ($servings === 1 ? ' serving' : ' servings');
+    return $servings . ' porsi';
 }
 
 function recipe_format_difficulty(mixed $difficulty): string
 {
     return match ((string) $difficulty) {
-        'mudah' => 'Easy',
-        'sedang' => 'Medium',
-        'sulit' => 'Hard',
+        'mudah' => 'Mudah',
+        'sedang' => 'Sedang',
+        'sulit' => 'Sulit',
         default => '-',
     };
 }
@@ -253,7 +253,7 @@ function recipe_catalog_from_db(?int $limit = null, ?int $viewerUserId = null): 
             'kategori' => $row['kategori'],
             'summary' => $row['deskripsi'] ?? '',
             'deskripsi' => $row['deskripsi'] ?? '',
-            'author' => $row['author_name'] ?? 'ResepKu Team',
+            'author' => $row['author_name'] ?? 'Tim ResepKu',
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
             'favorited' => $row['favorited'] ?? false,
             'ingredients' => [],
@@ -407,7 +407,7 @@ function recipe_user_recipes_db(int $userId, int $limit = 12): array
             'kategori' => $row['kategori'],
             'summary' => $row['deskripsi'] ?? '',
             'deskripsi' => $row['deskripsi'] ?? '',
-            'author' => $row['author_name'] ?? 'ResepKu Team',
+            'author' => $row['author_name'] ?? 'Tim ResepKu',
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
             'ingredients' => [],
             'tools' => [],
@@ -481,7 +481,7 @@ function recipe_user_favorites_db(int $userId, int $limit = 100): array
             'favorites_count' => $row['favorites_count'],
             'summary' => $row['deskripsi'] ?? '',
             'deskripsi' => $row['deskripsi'] ?? '',
-            'author' => $row['author_name'] ?? 'ResepKu Team',
+            'author' => $row['author_name'] ?? 'Tim ResepKu',
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
             'ingredients' => [],
             'tools' => [],
@@ -756,7 +756,7 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $
             'kategori' => $row['kategori'],
             'summary' => $row['deskripsi'] ?? '',
             'deskripsi' => $row['deskripsi'] ?? '',
-            'author' => $row['author_name'] ?? 'ResepKu Team',
+            'author' => $row['author_name'] ?? 'Tim ResepKu',
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
             'favorited' => $row['favorited'] ?? false,
             'ingredients' => [],
@@ -850,7 +850,7 @@ function recipe_find_db(int $id): ?array
         'kategori' => $row['kategori'],
         'summary' => $summary,
         'deskripsi' => $row['deskripsi'] ?? '',
-        'author' => $row['author_name'] ?? 'ResepKu Team',
+        'author' => $row['author_name'] ?? 'Tim ResepKu',
         'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
         'ingredients' => $ingredients,
         'tools' => $tools,
@@ -930,7 +930,7 @@ function recipe_add_comment_db(int $recipeId, int $userId, string $content): arr
         'content' => $content,
         'created_at' => date('Y-m-d H:i:s'),
         'created_at_label' => date('d M Y, H:i'),
-        'author' => 'User',
+        'author' => 'Pengguna',
         'avatar' => '../assets/img/home-profile.png',
     ];
 }
@@ -1118,15 +1118,15 @@ function recipe_follow_state_db(int $targetUserId, ?int $followerId = null): arr
 function recipe_toggle_follow_db(int $targetUserId, int $followerId): array
 {
     if ($targetUserId <= 0) {
-        throw new InvalidArgumentException('User tidak valid.');
+        throw new InvalidArgumentException('Pengguna tidak valid.');
     }
 
     if ($followerId <= 0) {
-        throw new InvalidArgumentException('Silakan login terlebih dahulu.');
+        throw new InvalidArgumentException('Silakan masuk terlebih dahulu.');
     }
 
     if ($targetUserId === $followerId) {
-        throw new InvalidArgumentException('Kamu tidak bisa follow profile sendiri.');
+        throw new InvalidArgumentException('Kamu tidak bisa mengikuti profil sendiri.');
     }
 
     $profile = recipe_user_profile_db($targetUserId);
@@ -1292,7 +1292,7 @@ function recipe_related_db(array $recipe, int $limit = 3, ?int $viewerUserId = n
                 'porsi' => $row['porsi'],
                 'tingkat_kesulitan' => $row['tingkat_kesulitan'],
                 'kategori' => $row['kategori'],
-                'author' => $row['author_name'] ?? 'ResepKu Team',
+                'author' => $row['author_name'] ?? 'Tim ResepKu',
                 'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
                 'rating_value' => $row['rating_average'] ?? 0,
                 'likes_count' => $row['likes_count'] ?? 0,
@@ -1363,7 +1363,7 @@ function recipe_related_db(array $recipe, int $limit = 3, ?int $viewerUserId = n
             'porsi' => $row['porsi'],
             'tingkat_kesulitan' => $row['tingkat_kesulitan'],
             'kategori' => $row['kategori'],
-            'author' => $row['author_name'] ?? 'ResepKu Team',
+            'author' => $row['author_name'] ?? 'Tim ResepKu',
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
             'rating_value' => $row['rating_average'] ?? 0,
             'likes_count' => $row['likes_count'] ?? 0,

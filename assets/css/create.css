@@ -10,10 +10,18 @@
 .recipe-create__preview {
     display: grid;
     gap: 16px;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+    box-shadow: none;
 }
 
 .recipe-create__preview-frame {
     position: relative;
+    width: 100%;
     padding: 18px;
     border-radius: 20px;
     background: #ffffff;
@@ -25,6 +33,7 @@
     display: block;
     width: 100%;
     height: 360px;
+    max-height: none;
     object-fit: contain;
     object-position: center;
 }

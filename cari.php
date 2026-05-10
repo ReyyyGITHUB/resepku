@@ -12,7 +12,7 @@ if ($_GET === []) {
 $isAdmin = isAdmin();
 $isGuest = !empty($_SESSION['guest_mode']) && empty($_SESSION['user']);
 $currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
-$userName = $isGuest ? 'Guest' : ($_SESSION['user']['name'] ?? 'Nayaka');
+$userName = $isGuest ? 'Tamu' : ($_SESSION['user']['name'] ?? 'Nayaka');
 
 $filters = [
     'q' => trim((string) ($_GET['q'] ?? '')),
@@ -27,23 +27,23 @@ $hasQuery = $filters['q'] !== '';
 $hasFilters = $filters['category'] !== '' || $filters['difficulty'] !== '' || $filters['sort'] !== 'newest';
 
 $categoryPills = [
-    ['label' => 'All', 'value' => ''],
-    ['label' => 'Food', 'value' => 'food'],
+    ['label' => 'Semua', 'value' => ''],
+    ['label' => 'Makanan', 'value' => 'food'],
     ['label' => 'Salad', 'value' => 'salad'],
-    ['label' => 'Dessert', 'value' => 'dessert'],
-    ['label' => 'Drinks', 'value' => 'drinks'],
+    ['label' => 'Makanan Penutup', 'value' => 'dessert'],
+    ['label' => 'Minuman', 'value' => 'drinks'],
 ];
 
 $difficultyOptions = [
-    ['label' => 'All difficulty', 'value' => ''],
-    ['label' => 'Easy', 'value' => 'mudah'],
-    ['label' => 'Medium', 'value' => 'sedang'],
-    ['label' => 'Hard', 'value' => 'sulit'],
+    ['label' => 'Semua tingkat', 'value' => ''],
+    ['label' => 'Mudah', 'value' => 'mudah'],
+    ['label' => 'Sedang', 'value' => 'sedang'],
+    ['label' => 'Sulit', 'value' => 'sulit'],
 ];
 
 $sortOptions = [
-    ['label' => 'Newest', 'value' => 'newest'],
-    ['label' => 'Popular', 'value' => 'popular'],
+    ['label' => 'Terbaru', 'value' => 'newest'],
+    ['label' => 'Populer', 'value' => 'popular'],
 ];
 
 $searchHint = $hasQuery
@@ -71,7 +71,7 @@ function search_asset_path(string $path): string
                 <img src="assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
                 <div>
                     <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status"><?= $isGuest ? 'Guest mode' : 'Signed in' ?></p>
+                    <p class="home-sidebar__status"><?= $isGuest ? 'Mode tamu' : 'Sudah masuk' ?></p>
                 </div>
             </div>
 
@@ -79,30 +79,30 @@ function search_asset_path(string $path): string
                 <img src="assets/img/home-profile.png" alt="" class="home-sidebar__avatar">
                 <div class="home-sidebar__welcome">
                     <strong><?= e($userName) ?></strong>
-                    <span><?= $isGuest ? 'Login untuk simpan resep dan kelola profil.' : 'Akses resep pribadi dan aktivitas akun.' ?></span>
+                    <span><?= $isGuest ? 'Masuk untuk simpan resep dan kelola profil.' : 'Akses resep pribadi dan aktivitas akun.' ?></span>
                 </div>
             </div>
 
             <?php if ($isAdmin): ?>
-                <a href="admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+                <a href="admin/" class="home-sidebar__admin-panel">Panel Admin</a>
             <?php endif; ?>
 
-            <a href="auth/logout.php" class="home-sidebar__logout">Log Out</a>
+            <a href="auth/logout.php" class="home-sidebar__logout">Keluar</a>
         </div>
 
         <div class="home-sidebar__divider"></div>
 
         <p class="home-sidebar__label">Navigasi utama</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Search">
-            <a href="home/">Home</a>
-            <a href="profil/">Profile</a>
-            <a href="resep/myresep.php">My Recipes</a>
-            <a href="resep/buat.php">Add Recipe</a>
-            <a href="resep/favorite.php">Favorite</a>
+        <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi pencarian">
+            <a href="home/">Beranda</a>
+            <a href="profil/">Profil</a>
+            <a href="resep/myresep.php">Resep Saya</a>
+            <a href="resep/buat.php">Tambah Resep</a>
+            <a href="resep/favorite.php">Favorit</a>
             <?php if (!$isGuest): ?>
                 <a href="profil/laporan.php">Pengaduan Saya</a>
             <?php endif; ?>
-            <a class="is-active" href="cari.php">Search</a>
+            <a class="is-active" href="cari.php">Cari</a>
         </nav>
 
         <img src="assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
@@ -111,8 +111,8 @@ function search_asset_path(string $path): string
     <main class="home-main">
         <header class="home-topbar">
             <form class="home-search-form" method="get" action="cari.php" data-empty-action="home/">
-                <label class="sr-only" for="recipe-search">Search recipes</label>
-                <input id="recipe-search" class="home-search" type="search" name="q" placeholder="Search Recipes....." value="<?= e($filters['q']) ?>">
+                <label class="sr-only" for="recipe-search">Cari resep</label>
+                <input id="recipe-search" class="home-search" type="search" name="q" placeholder="Cari resep..." value="<?= e($filters['q']) ?>">
                 <input type="hidden" name="category" value="<?= e($filters['category']) ?>">
                 <input type="hidden" name="difficulty" value="<?= e($filters['difficulty']) ?>">
                 <input type="hidden" name="sort" value="<?= e($filters['sort']) ?>">
@@ -120,7 +120,7 @@ function search_asset_path(string $path): string
 
             <a class="home-add" href="resep/buat.php">
                 <img src="assets/img/icon-add-recipe.svg" alt="">
-                <span>Add Recipe</span>
+                <span>Tambah Resep</span>
             </a>
 
             <a class="home-cs" href="<?= e(reportInboxHref('profil/laporan.php', 'auth/login.php')) ?>">
@@ -150,7 +150,7 @@ function search_asset_path(string $path): string
                     <input type="hidden" name="category" value="<?= e($filters['category']) ?>">
 
                     <label class="home-select">
-                        <span>Difficulty</span>
+                        <span>Kesulitan</span>
                         <select name="difficulty" class="home-select__field" onchange="this.form.submit()">
                             <?php foreach ($difficultyOptions as $option): ?>
                                 <option value="<?= e($option['value']) ?>" <?= $filters['difficulty'] === $option['value'] ? 'selected' : '' ?>>
@@ -161,7 +161,7 @@ function search_asset_path(string $path): string
                     </label>
 
                     <label class="home-select">
-                        <span>Sort</span>
+                        <span>Urutkan</span>
                         <select name="sort" class="home-select__field" onchange="this.form.submit()">
                             <?php foreach ($sortOptions as $option): ?>
                                 <option value="<?= e($option['value']) ?>" <?= $filters['sort'] === $option['value'] ? 'selected' : '' ?>>
@@ -172,15 +172,15 @@ function search_asset_path(string $path): string
                     </label>
 
                     <div class="home-controls__actions">
-                        <button class="home-controls__apply" type="submit">Apply filters</button>
-                        <a class="home-controls__clear" href="?">Clear filter</a>
+                        <button class="home-controls__apply" type="submit">Terapkan filter</button>
+                        <a class="home-controls__clear" href="?">Hapus filter</a>
                     </div>
                 </form>
             </div>
 
             <div class="home-stats">
                 <strong><?= e((string) $resultCount) ?></strong>
-                <span>results</span>
+                <span>hasil</span>
             </div>
         </section>
 
@@ -196,13 +196,13 @@ function search_asset_path(string $path): string
                 <article class="recipe-grid__empty">
                     <h2>Resep tidak ditemukan</h2>
                     <p><?= e($searchHint) ?> belum punya hasil. Coba kata lain atau ubah filter.</p>
-                    <a href="?">Reset filter</a>
+                    <a href="?">Atur ulang filter</a>
                     </article>
             <?php else: ?>
                 <?php foreach ($recipes as $recipe): ?>
                     <article class="recipe-card">
                         <a class="recipe-card__link" href="resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
-                            <span class="sr-only">Open recipe <?= e($recipe['title']) ?></span>
+                            <span class="sr-only">Buka resep <?= e($recipe['title']) ?></span>
                         </a>
                         <div class="recipe-card__panel"></div>
                         <img class="recipe-card__image" src="<?= e(search_asset_path($recipe['image'])) ?>" alt="<?= e($recipe['title']) ?>">

@@ -31,27 +31,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $reset = user_create_password_reset_db($user['id'], $user['email']);
                 $resetLink = appUrl('auth/reset-sandi.php?token=' . urlencode($reset['token']));
 
-                $subject = 'Reset Password Resepku';
+                $subject = 'Atur Ulang Kata Sandi Resepku';
                 $message = implode("\n", [
                     'Halo ' . $user['name'] . ',',
                     '',
-                    'Kami menerima permintaan reset password untuk akun Resepku milik kamu.',
-                    'Silakan buka link berikut untuk membuat password baru:',
+                    'Kami menerima permintaan atur ulang kata sandi untuk akun Resepku milik kamu.',
+                    'Silakan buka tautan berikut untuk membuat kata sandi baru:',
                     $resetLink,
                     '',
-                    'Link ini berlaku sampai: ' . $reset['expires_at'],
+                    'Tautan ini berlaku sampai: ' . $reset['expires_at'],
                     '',
-                    'Kalau kamu tidak meminta reset password, abaikan email ini.',
+                    'Kalau kamu tidak meminta atur ulang kata sandi, abaikan email ini.',
                 ]);
 
                 sendSmtpMail($user['email'], $subject, $message);
             }
 
-            $successMessage = 'Jika email terdaftar, kami sudah mengirim link reset password.';
+            $successMessage = 'Jika email terdaftar, kami sudah mengirim tautan atur ulang kata sandi.';
         } catch (PDOException) {
             $errors[] = 'Gagal memproses permintaan. Periksa koneksi database.';
         } catch (RuntimeException) {
-            $errors[] = 'Gagal mengirim email reset. Coba lagi nanti.';
+            $errors[] = 'Gagal mengirim email atur ulang kata sandi. Coba lagi nanti.';
         }
     }
 }
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <img class="brand__mark" src="../assets/img/resepku-logo.png" alt="">
                 <div class="brand__copy">
                     <p class="brand__name">Resepku</p>
-                    <p class="brand__tagline">Find recipes, Bookmarks favorite, and Cook easily</p>
+                    <p class="brand__tagline">Temukan resep, simpan favorit, dan masak lebih mudah</p>
                 </div>
             </header>
 
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="reset-form__intro">
                     <h1>Lupa sandi</h1>
-                    <p>Masukkan email akun kamu untuk menerima link reset password.</p>
+                    <p>Masukkan email akun kamu untuk menerima tautan atur ulang kata sandi.</p>
                 </div>
 
                 <?php if ($successMessage): ?>
@@ -101,10 +101,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label class="sr-only" for="email">Email</label>
                 <input class="login-form__input auth-form__input" id="email" name="email" type="email" placeholder="Email" autocomplete="email" value="<?= e($old['email']) ?>" required>
 
-                <button class="login-form__button reset-form__button" type="submit">Kirim Link Reset</button>
+                <button class="login-form__button reset-form__button" type="submit">Kirim Tautan Atur Ulang</button>
 
                 <p class="login-form__signup">
-                    <a href="login.php">Kembali ke login</a>
+                    <a href="login.php">Kembali ke halaman masuk</a>
                 </p>
             </form>
         </section>

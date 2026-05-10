@@ -144,7 +144,7 @@ function recipe_store_uploaded_image(
     ];
 
     if (($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-        $errors[] = $label . ' gagal diupload.';
+        $errors[] = $label . ' gagal diunggah.';
         return null;
     }
 
@@ -342,7 +342,7 @@ function old(string $key, array $old): string
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Recipe - Resepku</title>
+    <title>Edit Resep - Resepku</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="recipe-create-page">
@@ -352,7 +352,7 @@ function old(string $key, array $old): string
                 <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
                 <div>
                     <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status">Signed in</p>
+                    <p class="home-sidebar__status">Sudah masuk</p>
                 </div>
             </div>
 
@@ -365,31 +365,31 @@ function old(string $key, array $old): string
             </div>
 
             <?php if ($isAdmin): ?>
-                <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+                <a href="../admin/" class="home-sidebar__admin-panel">Panel Admin</a>
             <?php endif; ?>
 
-            <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
+            <a href="../auth/logout.php" class="home-sidebar__logout">Keluar</a>
         </div>
 
         <div class="home-sidebar__divider"></div>
 
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Resep">
-            <a href="../home/">Home</a>
-            <a href="../profil/">Profile</a>
-            <a class="is-active" href="../resep/myresep.php">My Recipes</a>
-            <a href="../resep/buat.php">Add Recipe</a>
-            <a href="../resep/favorite.php">Favorite</a>
-            <a href="../cari.php">Search</a>
+            <a href="../home/">Beranda</a>
+            <a href="../profil/">Profil</a>
+            <a class="is-active" href="../resep/myresep.php">Resep Saya</a>
+            <a href="../resep/buat.php">Tambah Resep</a>
+            <a href="../resep/favorite.php">Favorit</a>
+            <a href="../cari.php">Cari</a>
         </nav>
 
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
     </aside>
 
     <main class="detail-main recipe-create-main">
-        <a class="detail-back" href="../resep/myresep.php" aria-label="Kembali ke halaman my recipes">
+        <a class="detail-back" href="../resep/myresep.php" aria-label="Kembali ke halaman resep saya">
             <span aria-hidden="true">←</span>
-            <span>Back</span>
+            <span>Kembali</span>
         </a>
 
         <form class="recipe-create" id="recipe-create-form" method="post" enctype="multipart/form-data">
@@ -399,8 +399,8 @@ function old(string $key, array $old): string
             <div class="detail-hero recipe-create__hero">
                 <div class="detail-hero__media recipe-create__preview">
                     <div class="recipe-create__preview-frame">
-                        <img src="<?= e($recipe['image']) ?>" alt="Preview resep" class="recipe-create__preview-image" data-preview-image>
-                        <div class="recipe-create__preview-badge">Preview</div>
+                        <img src="<?= e($recipe['image']) ?>" alt="Pratinjau resep" class="recipe-create__preview-image" data-preview-image>
+                        <div class="recipe-create__preview-badge">Pratinjau</div>
                     </div>
                     <label class="recipe-create__upload">
                         <strong data-preview-upload-label>Ganti foto resep</strong>
@@ -409,7 +409,7 @@ function old(string $key, array $old): string
                 </div>
 
                 <div class="detail-hero__panel">
-                    <p class="detail-hero__eyebrow">Edit Recipe</p>
+                    <p class="detail-hero__eyebrow">Edit Resep</p>
                     <h1 data-preview-title><?= old('nama_resep', $old) ?></h1>
                     <p class="recipe-create__lede">Perbarui informasi resep dengan layout yang sama seperti halaman tambah resep: foto dan ringkasan di atas, lalu detail bahan, alat, dan langkah memasak di bawah.</p>
 
@@ -422,10 +422,10 @@ function old(string $key, array $old): string
                     <?php endif; ?>
 
                     <div class="detail-meta recipe-create__meta">
-                        <span data-preview-time><?= $old['waktu_memasak'] !== '' ? e($old['waktu_memasak']) . ' mins' : 'Cook time' ?></span>
-                        <span data-preview-porsi><?= $old['porsi'] !== '' ? e($old['porsi']) . ' servings' : 'Servings' ?></span>
+                    <span data-preview-time><?= $old['waktu_memasak'] !== '' ? e($old['waktu_memasak']) . ' menit' : 'Waktu memasak' ?></span>
+                    <span data-preview-porsi><?= $old['porsi'] !== '' ? e($old['porsi']) . ' porsi' : 'Porsi' ?></span>
                         <span data-preview-difficulty><?= e(ucfirst($old['tingkat_kesulitan'])) ?></span>
-                        <span data-preview-category><?= $old['kategori'] !== '' ? e($old['kategori']) : 'Category' ?></span>
+                    <span data-preview-category><?= $old['kategori'] !== '' ? e($old['kategori']) : 'Kategori' ?></span>
                     </div>
 
                     <div class="recipe-create__grid recipe-create__grid--two">
@@ -458,18 +458,18 @@ function old(string $key, array $old): string
             </div>
 
             <section class="detail-panel recipe-create__section">
-                <p class="detail-panel__label">About</p>
+                    <p class="detail-panel__label">Tentang</p>
                 <h2>Deskripsi</h2>
                 <label class="recipe-create__full">
                     <span>Jelaskan rasa, isi, atau karakter resep</span>
                     <textarea name="deskripsi" rows="5" required data-preview-input="description"><?= old('deskripsi', $old) ?></textarea>
                 </label>
-                <p class="recipe-create__preview-text" data-preview-description><?= old('deskripsi', $old) !== '' ? old('deskripsi', $old) : 'Your recipe description will appear here.' ?></p>
+                    <p class="recipe-create__preview-text" data-preview-description><?= old('deskripsi', $old) !== '' ? old('deskripsi', $old) : 'Deskripsi resepmu akan tampil di sini.' ?></p>
             </section>
 
             <div class="detail-duo recipe-create__duo">
                 <section class="detail-panel recipe-create__section">
-                    <p class="detail-panel__label">Ingredients</p>
+                    <p class="detail-panel__label">Bahan</p>
                     <div class="recipe-create__section-head">
                         <h2>Bahan</h2>
                         <button type="button" class="recipe-create__ghost" data-add-row="ingredient">Tambah bahan</button>
@@ -488,7 +488,7 @@ function old(string $key, array $old): string
                 </section>
 
                 <section class="detail-panel recipe-create__section">
-                    <p class="detail-panel__label">Tools</p>
+                    <p class="detail-panel__label">Peralatan</p>
                     <div class="recipe-create__section-head">
                         <h2>Peralatan</h2>
                         <button type="button" class="recipe-create__ghost" data-add-row="tool">Tambah peralatan</button>
@@ -505,7 +505,7 @@ function old(string $key, array $old): string
             </div>
 
             <section class="detail-panel recipe-create__section">
-                <p class="detail-panel__label">Steps</p>
+                    <p class="detail-panel__label">Langkah</p>
                 <div class="recipe-create__section-head">
                     <div>
                         <h2>Langkah memasak</h2>
@@ -519,7 +519,7 @@ function old(string $key, array $old): string
                             <div class="recipe-create__step-media">
                                 <div class="recipe-create__step-preview<?= $step['existing_image'] !== '' ? ' has-image' : '' ?>">
                                     <?php if ($step['existing_image'] !== ''): ?>
-                                        <img src="<?= e(recipe_asset_path($step['existing_image'])) ?>" alt="Preview langkah <?= e((string) ($index + 1)) ?>" data-step-preview>
+                                        <img src="<?= e(recipe_asset_path($step['existing_image'])) ?>" alt="Pratinjau langkah <?= e((string) ($index + 1)) ?>" data-step-preview>
                                     <?php else: ?>
                                         <span data-step-empty>Belum ada gambar</span>
                                         <img src="" alt="" hidden data-step-preview>
@@ -532,7 +532,7 @@ function old(string $key, array $old): string
                                 </label>
                             </div>
                             <div class="recipe-create__step-body">
-                                <span class="recipe-create__step-label">Step <span data-step-number><?= e((string) ($index + 1)) ?></span></span>
+                                <span class="recipe-create__step-label">Langkah <span data-step-number><?= e((string) ($index + 1)) ?></span></span>
                                 <textarea name="steps[<?= $index ?>][text]" rows="5" placeholder="Jelaskan apa yang harus dilakukan pada langkah ini..." required><?= e($step['text']) ?></textarea>
                             </div>
                             <button type="button" class="recipe-create__remove recipe-create__remove--step" data-remove-row aria-label="Hapus langkah">Hapus</button>
@@ -579,7 +579,7 @@ function old(string $key, array $old): string
                 </label>
             </div>
             <div class="recipe-create__step-body">
-                <span class="recipe-create__step-label">Step <span data-step-number>__NUMBER__</span></span>
+                <span class="recipe-create__step-label">Langkah <span data-step-number>__NUMBER__</span></span>
                 <textarea name="steps[__INDEX__][text]" rows="5" placeholder="Jelaskan apa yang harus dilakukan pada langkah ini..." required></textarea>
             </div>
             <button type="button" class="recipe-create__remove recipe-create__remove--step" data-remove-row aria-label="Hapus langkah">Hapus</button>
@@ -618,13 +618,13 @@ function old(string $key, array $old): string
                 const normalized = value.trim();
                 switch (normalized) {
                     case 'mudah':
-                        return 'Easy';
+                        return 'Mudah';
                     case 'sedang':
-                        return 'Medium';
+                        return 'Sedang';
                     case 'sulit':
-                        return 'Hard';
+                        return 'Sulit';
                     default:
-                        return 'Difficulty';
+                        return 'Kesulitan';
                 }
             }
 
@@ -633,19 +633,19 @@ function old(string $key, array $old): string
                     setText(previewTitle, titleInput.value, 'Edit resep');
                 }
                 if (timeInput) {
-                    setText(previewTime, timeInput.value ? `${timeInput.value} mins` : '', 'Cook time');
+                    setText(previewTime, timeInput.value ? `${timeInput.value} menit` : '', 'Waktu memasak');
                 }
                 if (porsiInput) {
-                    setText(previewPorsi, porsiInput.value ? `${porsiInput.value} servings` : '', 'Servings');
+                    setText(previewPorsi, porsiInput.value ? `${porsiInput.value} porsi` : '', 'Porsi');
                 }
                 if (difficultyInput) {
-                    setText(previewDifficulty, formatDifficulty(difficultyInput.value), 'Difficulty');
+                    setText(previewDifficulty, formatDifficulty(difficultyInput.value), 'Kesulitan');
                 }
                 if (categoryInput) {
-                    setText(previewCategory, categoryInput.value, 'Category');
+                    setText(previewCategory, categoryInput.value, 'Kategori');
                 }
                 if (descriptionInput) {
-                    setText(previewDescription, descriptionInput.value, 'Your recipe description will appear here.');
+                    setText(previewDescription, descriptionInput.value, 'Deskripsi resepmu akan tampil di sini.');
                 }
             }
 

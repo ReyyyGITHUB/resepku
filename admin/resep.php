@@ -38,7 +38,7 @@ admin_header('Kelola Resep', $adminUser, 'resep');
     <form class="admin-filters" method="get">
         <label>
             <span>Cari</span>
-            <input type="search" name="q" placeholder="Judul atau author" value="<?= e($filters['q']) ?>">
+            <input type="search" name="q" placeholder="Judul atau pembuat" value="<?= e($filters['q']) ?>">
         </label>
         <label>
             <span>Kategori</span>
@@ -59,7 +59,7 @@ admin_header('Kelola Resep', $adminUser, 'resep');
             </select>
         </label>
         <label>
-            <span>Sort</span>
+            <span>Urutkan</span>
             <select name="sort">
                 <option value="newest" <?= $filters['sort'] === 'newest' ? 'selected' : '' ?>>Terbaru</option>
                 <option value="oldest" <?= $filters['sort'] === 'oldest' ? 'selected' : '' ?>>Terlama</option>
@@ -67,7 +67,7 @@ admin_header('Kelola Resep', $adminUser, 'resep');
             </select>
         </label>
         <button type="submit">Terapkan</button>
-        <a href="resep.php">Reset</a>
+        <a href="resep.php">Bersihkan</a>
     </form>
 
     <div class="admin-table-wrap">
@@ -75,11 +75,11 @@ admin_header('Kelola Resep', $adminUser, 'resep');
             <thead>
                 <tr>
                     <th>Judul</th>
-                    <th>Author</th>
+                    <th>Pembuat</th>
                     <th>Kategori</th>
                     <th>Kesulitan</th>
                     <th>Waktu</th>
-                    <th>Likes</th>
+                    <th>Suka</th>
                     <th>Komentar</th>
                     <th>Rating</th>
                     <th>Tanggal</th>
@@ -119,4 +119,3 @@ admin_header('Kelola Resep', $adminUser, 'resep');
     </div>
 </section>
 <?php admin_footer(); ?>
-

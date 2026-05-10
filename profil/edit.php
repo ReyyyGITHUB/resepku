@@ -61,15 +61,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($needsPasswordUpdate) {
         if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
-            $errors[] = 'Untuk ganti password, email, password sekarang, dan password baru wajib diisi.';
+            $errors[] = 'Untuk ganti kata sandi, email, kata sandi sekarang, dan kata sandi baru wajib diisi.';
         } elseif ($newPassword !== $confirmPassword) {
-            $errors[] = 'Konfirmasi password baru tidak cocok.';
+            $errors[] = 'Konfirmasi kata sandi baru tidak cocok.';
         } elseif ($formValues['email'] !== (string) ($account['email'] ?? '')) {
-            $errors[] = 'Email tidak sesuai dengan akun yang sedang login.';
+            $errors[] = 'Email tidak sesuai dengan akun yang sedang masuk.';
         } elseif ($currentPassword !== (string) ($account['kata_sandi'] ?? '')) {
-            $errors[] = 'Password sekarang salah.';
+            $errors[] = 'Kata sandi sekarang salah.';
         } elseif (strlen($newPassword) < 8) {
-            $errors[] = 'Password baru minimal 8 karakter.';
+            $errors[] = 'Kata sandi baru minimal 8 karakter.';
         }
     }
 
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user']['name'] = $formValues['name'];
             $_SESSION['user']['email'] = $formValues['email'];
             $_SESSION['flash_success'] = $needsPasswordUpdate
-                ? 'Profil dan password berhasil diperbarui.'
+                ? 'Profil dan kata sandi berhasil diperbarui.'
                 : 'Profil berhasil diperbarui.';
             redirectTo('../profil/');
         } catch (PDOException) {
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile - Resepku</title>
+    <title>Edit Profil - Resepku</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="profile-page" data-guest-mode="0" data-csrf-token="<?= e(csrfToken()) ?>">
@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
                 <div>
                     <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status">Signed in</p>
+                    <p class="home-sidebar__status">Sudah masuk</p>
                 </div>
             </div>
 
@@ -125,21 +125,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <?php if ($isAdmin): ?>
-                <a href="../admin/" class="home-sidebar__admin-panel">Admin Panel</a>
+                <a href="../admin/" class="home-sidebar__admin-panel">Panel Admin</a>
             <?php endif; ?>
 
-            <a href="../auth/logout.php" class="home-sidebar__logout">Log Out</a>
+            <a href="../auth/logout.php" class="home-sidebar__logout">Keluar</a>
         </div>
 
         <div class="home-sidebar__divider"></div>
 
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Profil">
-            <a href="../home/">Home</a>
-            <a class="is-active" href="../profil/">Profile</a>
-            <a href="../resep/myresep.php">My Recipes</a>
-            <a href="../resep/buat.php">Add Recipe</a>
-            <a href="../resep/favorite.php">Favorite</a>
+            <a href="../home/">Beranda</a>
+            <a class="is-active" href="../profil/">Profil</a>
+            <a href="../resep/myresep.php">Resep Saya</a>
+            <a href="../resep/buat.php">Tambah Resep</a>
+            <a href="../resep/favorite.php">Favorit</a>
         </nav>
 
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
@@ -158,11 +158,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
 
-        <section class="profile-edit-layout" aria-label="Edit profile">
+        <section class="profile-edit-layout" aria-label="Edit profil">
             <header class="profile-edit-hero">
-                <p class="profile-section__kicker">Settings</p>
-                <h1>Edit Profile</h1>
-                <p>Ubah nama, bio, dan password dari satu panel yang lebih rapi.</p>
+                <p class="profile-section__kicker">Pengaturan</p>
+                <h1>Edit Profil</h1>
+                <p>Ubah nama, bio, dan kata sandi dari satu panel yang lebih rapi.</p>
             </header>
 
             <div class="profile-edit-layout__grid">
@@ -171,19 +171,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <img src="<?= e($profile['avatar']) ?>" alt="<?= e($profile['name']) ?>">
                     </div>
                     <h2><?= e($profile['name']) ?></h2>
-                    <p><?= $profile['bio'] !== '' ? e($profile['bio']) : 'Tambahkan bio singkat agar profile terlihat lebih hidup.' ?></p>
+                    <p><?= $profile['bio'] !== '' ? e($profile['bio']) : 'Tambahkan bio singkat agar profil terlihat lebih hidup.' ?></p>
 
                     <dl class="profile-details profile-details--compact">
                         <div>
-                            <dt>Recipe</dt>
+                            <dt>Resep</dt>
                             <dd><?= e((string) $profile['recipe_count']) ?></dd>
                         </div>
                         <div>
-                            <dt>Follower</dt>
+                            <dt>Pengikut</dt>
                             <dd><?= e((string) $profile['follower_count']) ?></dd>
                         </div>
                         <div>
-                            <dt>Following</dt>
+                            <dt>Mengikuti</dt>
                             <dd><?= e((string) $profile['following_count']) ?></dd>
                         </div>
                     </dl>
@@ -213,25 +213,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <details class="profile-accordion"<?= $passwordSectionOpen ? ' open' : '' ?>>
                             <summary class="profile-accordion__summary">
                                 <div>
-                                    <h3>Ganti Password</h3>
-                                    <p>Isi hanya kalau ingin mengganti password.</p>
+                                    <h3>Ganti Kata Sandi</h3>
+                                    <p>Isi hanya kalau ingin mengganti kata sandi.</p>
                                 </div>
                             </summary>
 
                             <div class="profile-accordion__body">
                                 <div class="profile-form__grid">
                                     <label class="profile-field">
-                                        <span>Password Sekarang</span>
+                                        <span>Kata Sandi Sekarang</span>
                                         <input class="profile-input" type="password" name="current_password" autocomplete="current-password">
                                     </label>
 
                                     <label class="profile-field">
-                                        <span>Password Baru</span>
+                                        <span>Kata Sandi Baru</span>
                                         <input class="profile-input" type="password" name="new_password" autocomplete="new-password">
                                     </label>
 
                                     <label class="profile-field">
-                                        <span>Konfirmasi Password Baru</span>
+                                        <span>Konfirmasi Kata Sandi Baru</span>
                                         <input class="profile-input" type="password" name="confirm_password" autocomplete="new-password">
                                     </label>
                                 </div>
@@ -239,7 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </details>
 
                         <div class="profile-form__actions">
-                            <a class="profile-actions__secondary" href="../profil/">Cancel</a>
+                            <a class="profile-actions__secondary" href="../profil/">Batal</a>
                             <button class="profile-actions__primary" type="submit">Simpan Perubahan</button>
                         </div>
                     </form>

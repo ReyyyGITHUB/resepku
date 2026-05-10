@@ -119,6 +119,11 @@
     margin-top: 24px;
 }
 
+.favorite-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 260px));
+    justify-content: start;
+}
+
 .myrecipe-card {
     position: relative;
     overflow: hidden;

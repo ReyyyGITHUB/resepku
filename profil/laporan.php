@@ -17,7 +17,7 @@ if ($profile === null) {
 }
 
 $reportCategories = report_category_options();
-$pageTitle = 'Customer Support - Resepku';
+$pageTitle = 'Pusat Bantuan - Resepku';
 
 ?>
 <!DOCTYPE html>
@@ -30,15 +30,15 @@ $pageTitle = 'Customer Support - Resepku';
 </head>
 <body class="cs-page" data-guest-mode="0" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="../api/" data-login-url="../auth/login.php" data-report-success-redirect="../home/">
     <main class="cs-screen" data-node-id="76:1837">
-        <section class="cs-card" aria-label="Customer support">
+        <section class="cs-card" aria-label="Pusat bantuan">
             <a class="cs-back" href="../home/" aria-label="Kembali">
                 <img src="../assets/img/icon-back.svg" alt="">
             </a>
 
             <div class="cs-copy">
-                <p class="cs-eyebrow">WE'RE HERE TO HELP YOU!</p>
-                <h1><span>Tell</span> Your Solution Needs With Us!</h1>
-                <p class="cs-description">Tell us <strong>ANYTHING</strong> about what you feel when using our website!</p>
+                <p class="cs-eyebrow">KAMI SIAP MEMBANTU!</p>
+                <h1><span>Ceritakan</span> Kendalamu Kepada Kami!</h1>
+                <p class="cs-description">Sampaikan <strong>apa pun</strong> yang kamu rasakan saat menggunakan website ini.</p>
             </div>
 
             <form class="cs-form" data-report-form>
@@ -46,19 +46,19 @@ $pageTitle = 'Customer Support - Resepku';
                 <input type="hidden" name="target_id" value="0">
 
                 <label class="cs-field">
-                    <span>Name</span>
+                    <span>Nama</span>
                     <input type="text" value="<?= e($profile['name']) ?>" readonly>
                 </label>
 
                 <label class="cs-field">
                     <span>Email</span>
-                    <input type="email" value="<?= e((string) ($_SESSION['user']['email'] ?? '')) ?>" placeholder="your@email.com" readonly>
+                    <input type="email" value="<?= e((string) ($_SESSION['user']['email'] ?? '')) ?>" placeholder="email@contoh.com" readonly>
                 </label>
 
                 <label class="cs-field">
-                    <span>Category</span>
+                    <span>Kategori</span>
                     <select name="category" required>
-                        <option value="">Ex: Functional, Account, Content , etc.</option>
+                        <option value="">Contoh: fitur, akun, konten, dan lainnya.</option>
                         <?php foreach ($reportCategories as $value => $label): ?>
                             <option value="<?= e($value) ?>"><?= e($label) ?></option>
                         <?php endforeach; ?>
@@ -66,13 +66,13 @@ $pageTitle = 'Customer Support - Resepku';
                 </label>
 
                 <label class="cs-field">
-                    <span>Massage</span>
-                    <textarea name="note" placeholder="Type your massage....." required></textarea>
+                    <span>Pesan</span>
+                    <textarea name="note" placeholder="Tulis pesan kamu..." required></textarea>
                 </label>
 
                 <button class="cs-send" type="submit">
                     <span class="cs-send__icon" aria-hidden="true">-&gt;</span>
-                    <span>Send</span>
+                    <span>Kirim</span>
                 </button>
             </form>
         </section>
@@ -84,12 +84,12 @@ $pageTitle = 'Customer Support - Resepku';
         <div class="cs-success__backdrop"></div>
         <div class="cs-success__dialog" role="status" aria-live="polite" aria-label="Laporan berhasil dikirim">
             <p class="cs-success__title">
-                <span><span class="is-accent">Thanks</span> For</span>
-                <span>Telling <span class="is-accent">Us</span></span>
-                <span>Your Solution</span>
-                <span class="is-accent">Needs</span>
+                <span><span class="is-accent">Terima kasih</span></span>
+                <span>Sudah memberi tahu <span class="is-accent">kami</span></span>
+                <span>tentang kendalamu</span>
+                <span class="is-accent">di Resepku</span>
             </p>
-            <p class="cs-success__meta">Kembali ke home dalam <span data-report-success-countdown>5</span> detik</p>
+            <p class="cs-success__meta">Kembali ke beranda dalam <span data-report-success-countdown>5</span> detik</p>
         </div>
     </div>
 

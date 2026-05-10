@@ -381,7 +381,7 @@ function report_create_db(int $reporterId, string $targetType, int $targetId, st
         }
     }
 
-    $summary = ($isGeneralSupport ? 'Customer Support' : report_category_label($category)) . ': ' . $note;
+    $summary = ($isGeneralSupport ? 'Pusat Bantuan' : report_category_label($category)) . ': ' . $note;
 
     $stmt = $pdo->prepare(
         'INSERT INTO cs (pelapor_id, target_tipe, target_resep_id, target_pengguna_id, kategori_laporan, catatan_laporan, alasan, status)

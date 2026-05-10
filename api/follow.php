@@ -8,7 +8,7 @@ social_require_csrf();
 $targetUserId = (int) ($_POST['user_id'] ?? $_GET['user_id'] ?? 0);
 
 if ($targetUserId <= 0) {
-    social_json(['message' => 'User tidak valid.'], 422);
+    social_json(['message' => 'Pengguna tidak valid.'], 422);
 }
 
 try {
