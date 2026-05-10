@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", function () {
     var guestModal = document.querySelector("[data-guest-modal]");
     var guestTriggers = document.querySelectorAll("[data-guest-gate]");
     var csrfToken = document.body.dataset.csrfToken || "";
+    var apiBase = document.body.dataset.apiBase || "../api/";
+    var loginUrl = document.body.dataset.loginUrl || "../auth/login.php";
     var detailPage = document.body.classList.contains("detail-page");
     var profileEditModal = document.querySelector("[data-profile-edit-modal]");
     var profileEditOpeners = document.querySelectorAll("[data-profile-edit-open]");
@@ -211,7 +213,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     async function postSocialAction(endpoint, body) {
-        var response = await fetch("../api/" + endpoint, {
+        var normalizedBase = apiBase.endsWith("/") ? apiBase : apiBase + "/";
+        var response = await fetch(new URL(normalizedBase + endpoint, document.baseURI).toString(), {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -232,7 +235,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function postReportAction(body) {
-        var response = await fetch("../api/report.php", {
+        var normalizedBase = apiBase.endsWith("/") ? apiBase : apiBase + "/";
+        var response = await fetch(new URL(normalizedBase + "report.php", document.baseURI).toString(), {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -274,7 +278,7 @@ document.addEventListener("DOMContentLoaded", function () {
     followButtons.forEach(function (followButton) {
         followButton.addEventListener("click", async function () {
             if (guestMode) {
-                window.location.href = "../auth/login.php";
+                window.location.href = new URL(loginUrl, document.baseURI).toString();
                 return;
             }
 
@@ -288,6 +292,45 @@ document.addEventListener("DOMContentLoaded", function () {
             } finally {
                 followButton.disabled = false;
                 followButton.classList.remove("profile-actions__primary--disabled");
+            }
+        });
+    });
+
+    function updateCardFavoriteButtons(recipeId, favorited) {
+        document.querySelectorAll('[data-card-favorite][data-recipe-id="' + recipeId + '"]').forEach(function (button) {
+            button.classList.toggle("is-active", favorited);
+            button.setAttribute("aria-pressed", favorited ? "true" : "false");
+        });
+    }
+
+    document.querySelectorAll("[data-card-favorite]").forEach(function (favoriteButton) {
+        favoriteButton.addEventListener("click", async function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (guestMode) {
+                window.location.href = new URL(loginUrl, document.baseURI).toString();
+                return;
+            }
+
+            var recipeId = favoriteButton.dataset.recipeId || "";
+
+            if (recipeId === "") {
+                return;
+            }
+
+            try {
+                favoriteButton.disabled = true;
+                var payload = await postSocialAction("favorite.php", { recipe_id: recipeId });
+                var state = payload.data || {};
+
+                if (typeof state.favorited !== "undefined") {
+                    updateCardFavoriteButtons(recipeId, !!state.favorited);
+                }
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                favoriteButton.disabled = false;
             }
         });
     });

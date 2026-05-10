@@ -80,7 +80,7 @@ if ($recipe === null) {
     <title><?= e($recipe['title']) ?> - Resepku</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="detail-page" data-guest-mode="<?= $isGuest ? '1' : '0' ?>" data-csrf-token="<?= e(csrfToken()) ?>">
+<body class="detail-page" data-guest-mode="<?= $isGuest ? '1' : '0' ?>" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="../api/" data-login-url="../auth/login.php">
     <aside class="home-sidebar detail-sidebar">
         <div class="home-sidebar__profile">
             <div class="home-sidebar__brand">

@@ -64,20 +64,20 @@ $sortOptions = [
 $featured = [
     'title' => 'Special Salad Chicken',
     'image' => '../assets/img/recipe-salad-hero.png',
-    'summary' => 'Enjoy the perfect combination of protein-rich grilled chicken breast and fresh vegetables.',
+    'summary' => 'Enjoy the perfect combination of protein-rich grilled chicken breast and a selection of fresh vegetables (such as romaine lettuce, cherry tomatoes, cucumbers, and purple cabbage). Served with a light and appetizing special dressing, this dish is not only delicious, but also healthy and filling. The perfect choice for your healthy lifestyle.',
     'cook_time' => '20 mins',
     'id' => null,
 ];
 
 $sideRecipes = [
     [
-        'title' => 'Fresh Salad Bowl',
-        'image' => '../assets/img/recipe-salad-card.png',
+        'title' => 'Japanese Macha',
+        'image' => '../assets/img/recipe-matcha-card.png',
         'id' => null,
     ],
     [
-        'title' => 'Green Matcha Drink',
-        'image' => '../assets/img/recipe-salad-card.png',
+        'title' => 'Sweet Strawberry Cake',
+        'image' => '../assets/img/recipe-strawberry-cake-card.png',
         'id' => null,
     ],
 ];
@@ -101,7 +101,7 @@ if ($recipes === []) {
     <title>Home - Resepku</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="home-page">
+<body class="home-page" data-guest-mode="<?= $isGuest ? '1' : '0' ?>" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="../api/" data-login-url="../auth/login.php">
     <aside class="home-sidebar" data-node-id="16:154">
         <div class="home-sidebar__profile">
             <div class="home-sidebar__brand">
@@ -243,7 +243,7 @@ if ($recipes === []) {
                         <?php endif; ?>
                         <div class="recipe-card__panel"></div>
                         <img class="recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
-                        <button class="recipe-card__bookmark" type="button" aria-label="Simpan resep">
+                        <button class="recipe-card__bookmark<?= !empty($recipe['favorited']) ? ' is-active' : '' ?>" type="button" aria-label="Simpan resep" aria-pressed="<?= !empty($recipe['favorited']) ? 'true' : 'false' ?>" data-card-favorite data-recipe-id="<?= e((string) $recipe['id']) ?>">
                             <img src="../assets/img/icon-bookmark.svg" alt="">
                         </button>
                         <h2><?= e($recipe['title']) ?></h2>
@@ -299,7 +299,7 @@ if ($recipes === []) {
                         <?php endif; ?>
                         <div class="recipe-card__panel"></div>
                         <img class="recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
-                        <button class="recipe-card__bookmark" type="button" aria-label="Simpan resep">
+                        <button class="recipe-card__bookmark<?= !empty($recipe['favorited']) ? ' is-active' : '' ?>" type="button" aria-label="Simpan resep" aria-pressed="<?= !empty($recipe['favorited']) ? 'true' : 'false' ?>" data-card-favorite data-recipe-id="<?= e((string) $recipe['id']) ?>">
                             <img src="../assets/img/icon-bookmark.svg" alt="">
                         </button>
                         <h2><?= e($recipe['title']) ?></h2>
@@ -330,7 +330,7 @@ if ($recipes === []) {
                         <?php endif; ?>
                         <div class="recipe-card__panel"></div>
                         <img class="recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
-                        <button class="recipe-card__bookmark" type="button" aria-label="Simpan resep">
+                        <button class="recipe-card__bookmark<?= !empty($recipe['favorited']) ? ' is-active' : '' ?>" type="button" aria-label="Simpan resep" aria-pressed="<?= !empty($recipe['favorited']) ? 'true' : 'false' ?>" data-card-favorite data-recipe-id="<?= e((string) $recipe['id']) ?>">
                             <img src="../assets/img/icon-bookmark.svg" alt="">
                         </button>
                         <h2><?= e($recipe['title']) ?></h2>

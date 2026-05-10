@@ -11,6 +11,7 @@ if ($_GET === []) {
 
 $isAdmin = isAdmin();
 $isGuest = !empty($_SESSION['guest_mode']) && empty($_SESSION['user']);
+$currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
 $userName = $isGuest ? 'Guest' : ($_SESSION['user']['name'] ?? 'Nayaka');
 
 $filters = [
@@ -20,7 +21,7 @@ $filters = [
     'sort' => trim((string) ($_GET['sort'] ?? 'newest')),
 ];
 
-$recipes = recipe_catalog_filtered_db($filters, 24);
+$recipes = recipe_catalog_filtered_db($filters, 24, $currentUserId > 0 ? $currentUserId : null);
 $resultCount = count($recipes);
 $hasQuery = $filters['q'] !== '';
 $hasFilters = $filters['category'] !== '' || $filters['difficulty'] !== '' || $filters['sort'] !== 'newest';
@@ -63,7 +64,7 @@ function search_asset_path(string $path): string
     <title>Cari Resep - Resepku</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body class="home-page">
+<body class="home-page" data-guest-mode="<?= $isGuest ? '1' : '0' ?>" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="api/" data-login-url="auth/login.php">
     <aside class="home-sidebar">
         <div class="home-sidebar__profile">
             <div class="home-sidebar__brand">
@@ -97,7 +98,7 @@ function search_asset_path(string $path): string
             <a href="profil/">Profile</a>
             <a href="resep/myresep.php">My Recipes</a>
             <a href="resep/buat.php">Add Recipe</a>
-            <a href="#" aria-disabled="true" tabindex="-1">Favorite</a>
+            <a href="resep/favorite.php">Favorite</a>
             <?php if (!$isGuest): ?>
                 <a href="profil/laporan.php">Pengaduan Saya</a>
             <?php endif; ?>
@@ -205,7 +206,7 @@ function search_asset_path(string $path): string
                         </a>
                         <div class="recipe-card__panel"></div>
                         <img class="recipe-card__image" src="<?= e(search_asset_path($recipe['image'])) ?>" alt="<?= e($recipe['title']) ?>">
-                        <button class="recipe-card__bookmark" type="button" aria-label="Simpan resep">
+                        <button class="recipe-card__bookmark<?= !empty($recipe['favorited']) ? ' is-active' : '' ?>" type="button" aria-label="Simpan resep" aria-pressed="<?= !empty($recipe['favorited']) ? 'true' : 'false' ?>" data-card-favorite data-recipe-id="<?= e((string) $recipe['id']) ?>">
                             <img src="assets/img/icon-bookmark.svg" alt="">
                         </button>
                         <h2><?= e($recipe['title']) ?></h2>

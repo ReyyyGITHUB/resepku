@@ -45,6 +45,7 @@ function recipe_row_to_card(array $row): array
         'rating' => isset($row['rating_value']) ? (float) $row['rating_value'] : 0.0,
         'likes_count' => (int) ($row['likes_count'] ?? 0),
         'favorites_count' => (int) ($row['favorites_count'] ?? 0),
+        'favorited' => (bool) ($row['favorited'] ?? false),
         'summary' => (string) ($row['summary'] ?? ''),
         'description' => (string) ($row['deskripsi'] ?? ''),
         'ingredients' => $row['ingredients'] ?? [],
@@ -123,8 +124,10 @@ function recipe_catalog_from_db(?int $limit = null, ?int $viewerUserId = null): 
 {
     $priorityJoin = '';
     $priorityOrder = 'r.dibuat_pada DESC, r.resep_id DESC';
+    $favoritedSelect = '0 AS favorited';
 
     if ($viewerUserId !== null && $viewerUserId > 0) {
+        $favoritedSelect = 'EXISTS(SELECT 1 FROM favorite f WHERE f.pengguna_id = :viewer_user_id AND f.resep_id = r.resep_id) AS favorited';
         $followingIds = recipe_following_user_ids_db($viewerUserId);
 
         if ($followingIds !== []) {
@@ -149,7 +152,8 @@ function recipe_catalog_from_db(?int $limit = null, ?int $viewerUserId = null): 
             r.deskripsi,
             r.langkah_resep,
             p.nama_pengguna AS author_name,
-            p.foto_profil AS author_avatar
+            p.foto_profil AS author_avatar,
+            $favoritedSelect
         FROM recipes r
         INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
         $priorityJoin
@@ -161,6 +165,9 @@ function recipe_catalog_from_db(?int $limit = null, ?int $viewerUserId = null): 
     }
 
     $stmt = db()->prepare($sql);
+    if ($viewerUserId !== null && $viewerUserId > 0) {
+        $stmt->bindValue(':viewer_user_id', $viewerUserId, PDO::PARAM_INT);
+    }
     if ($limit !== null) {
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
     }
@@ -181,6 +188,7 @@ function recipe_catalog_from_db(?int $limit = null, ?int $viewerUserId = null): 
             'deskripsi' => $row['deskripsi'] ?? '',
             'author' => $row['author_name'] ?? 'ResepKu Team',
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+            'favorited' => $row['favorited'] ?? false,
             'ingredients' => [],
             'tools' => [],
             'steps' => recipe_parse_list($row['langkah_resep'] ?? ''),
@@ -554,6 +562,7 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $
     $joins = '';
     $priorityJoin = '';
     $priorityOrder = 'r.dibuat_pada DESC, r.resep_id DESC';
+    $favoritedSelect = '0 AS favorited';
 
     $query = trim((string) ($filters['q'] ?? ''));
     $category = trim((string) ($filters['category'] ?? ''));
@@ -620,6 +629,7 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $
     }
 
     if ($viewerUserId !== null && $viewerUserId > 0) {
+        $favoritedSelect = 'EXISTS(SELECT 1 FROM favorite f WHERE f.pengguna_id = :viewer_user_id AND f.resep_id = r.resep_id) AS favorited';
         $followingIds = recipe_following_user_ids_db($viewerUserId);
 
         if ($followingIds !== []) {
@@ -643,7 +653,8 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $
             r.deskripsi,
             r.langkah_resep,
             p.nama_pengguna AS author_name,
-            p.foto_profil AS author_avatar
+            p.foto_profil AS author_avatar,
+            $favoritedSelect
         FROM recipes r
         INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
         $joins
@@ -657,6 +668,9 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $
     $sql .= ' ORDER BY ' . $priorityOrder . ' LIMIT :limit';
 
     $stmt = db()->prepare($sql);
+    if ($viewerUserId !== null && $viewerUserId > 0) {
+        $stmt->bindValue(':viewer_user_id', $viewerUserId, PDO::PARAM_INT);
+    }
     foreach ($params as $key => $value) {
         $stmt->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
     }
@@ -677,6 +691,7 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $
             'deskripsi' => $row['deskripsi'] ?? '',
             'author' => $row['author_name'] ?? 'ResepKu Team',
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+            'favorited' => $row['favorited'] ?? false,
             'ingredients' => [],
             'tools' => [],
             'steps' => recipe_parse_list($row['langkah_resep'] ?? ''),
