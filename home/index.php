@@ -25,8 +25,13 @@ $isDefaultView = $filters['q'] === ''
 
 $recipes = recipe_catalog_filtered_db($filters, 24, $currentUserId > 0 ? $currentUserId : null);
 $defaultRecipes = $isDefaultView ? recipe_catalog_from_db(null, $currentUserId > 0 ? $currentUserId : null) : [];
-$topRecipes = $isDefaultView ? array_slice($defaultRecipes, 0, 4) : [];
-$bottomRecipes = $isDefaultView ? array_slice($defaultRecipes, 4) : [];
+$topRecipes = $isDefaultView ? array_slice($defaultRecipes, 0, 8) : [];
+$bottomRecipes = $isDefaultView ? array_slice($defaultRecipes, 8, 8) : [];
+
+if ($isDefaultView && $defaultRecipes !== [] && count($bottomRecipes) < 8) {
+    $bottomRecipes = array_merge($bottomRecipes, array_slice($defaultRecipes, 0, 8 - count($bottomRecipes)));
+}
+
 $activeCategory = mb_strtolower($filters['category']);
 
 $categoryPills = [
