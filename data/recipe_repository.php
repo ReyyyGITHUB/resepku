@@ -106,6 +106,73 @@ function recipe_parse_list(?string $value): array
     return $items;
 }
 
+function recipe_normalize_step_item(mixed $step): ?array
+{
+    if (is_array($step)) {
+        $text = trim((string) ($step['text'] ?? $step['description'] ?? ''));
+        $image = trim((string) ($step['image'] ?? ''));
+    } else {
+        $text = trim((string) $step);
+        $image = '';
+    }
+
+    if ($text === '') {
+        return null;
+    }
+
+    return [
+        'text' => $text,
+        'image' => $image !== '' ? $image : null,
+    ];
+}
+
+function recipe_parse_steps(mixed $value): array
+{
+    $value = trim((string) $value);
+
+    if ($value === '') {
+        return [];
+    }
+
+    $decoded = json_decode($value, true);
+    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+        $steps = [];
+        foreach ($decoded as $step) {
+            $normalized = recipe_normalize_step_item($step);
+            if ($normalized !== null) {
+                $steps[] = $normalized;
+            }
+        }
+
+        if ($steps !== []) {
+            return $steps;
+        }
+    }
+
+    return array_values(array_filter(array_map(
+        static fn (string $step): ?array => recipe_normalize_step_item($step),
+        recipe_parse_list($value)
+    )));
+}
+
+function recipe_encode_steps(array $steps): string
+{
+    $normalized = [];
+
+    foreach ($steps as $step) {
+        $item = recipe_normalize_step_item($step);
+        if ($item !== null) {
+            $normalized[] = $item;
+        }
+    }
+
+    if ($normalized === []) {
+        return '';
+    }
+
+    return (string) json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+}
+
 function recipe_following_user_ids_db(int $userId): array
 {
     if ($userId <= 0) {
@@ -191,7 +258,7 @@ function recipe_catalog_from_db(?int $limit = null, ?int $viewerUserId = null): 
             'favorited' => $row['favorited'] ?? false,
             'ingredients' => [],
             'tools' => [],
-            'steps' => recipe_parse_list($row['langkah_resep'] ?? ''),
+            'steps' => recipe_parse_steps($row['langkah_resep'] ?? ''),
         ]);
     }
 
@@ -344,7 +411,7 @@ function recipe_user_recipes_db(int $userId, int $limit = 12): array
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
             'ingredients' => [],
             'tools' => [],
-            'steps' => recipe_parse_list($row['langkah_resep'] ?? ''),
+            'steps' => recipe_parse_steps($row['langkah_resep'] ?? ''),
         ]);
     }
 
@@ -418,7 +485,7 @@ function recipe_user_favorites_db(int $userId, int $limit = 100): array
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
             'ingredients' => [],
             'tools' => [],
-            'steps' => recipe_parse_list($row['langkah_resep'] ?? ''),
+            'steps' => recipe_parse_steps($row['langkah_resep'] ?? ''),
         ]);
     }
 
@@ -694,7 +761,7 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $
             'favorited' => $row['favorited'] ?? false,
             'ingredients' => [],
             'tools' => [],
-            'steps' => recipe_parse_list($row['langkah_resep'] ?? ''),
+            'steps' => recipe_parse_steps($row['langkah_resep'] ?? ''),
         ]);
     }
 
@@ -769,7 +836,7 @@ function recipe_find_db(int $id): ?array
         }
     }
 
-    $steps = recipe_parse_list((string) ($row['langkah_resep'] ?? ''));
+    $steps = recipe_parse_steps((string) ($row['langkah_resep'] ?? ''));
     $summary = trim((string) ($row['deskripsi'] ?? ''));
 
     return recipe_row_to_card([

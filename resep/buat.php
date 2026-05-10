@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . "/../config/helpers.php";
-require_once __DIR__ . "/../config/db.php";
+require_once __DIR__ . "/../data/recipe_repository.php";
 
 startSession();
 
@@ -17,7 +17,6 @@ $success = null;
 $old = [
     "nama_resep" => "",
     "deskripsi" => "",
-    "langkah_resep" => "",
     "waktu_memasak" => "",
     "porsi" => "",
     "kategori" => "",
@@ -31,6 +30,103 @@ $ingredients = array_fill(0, 3, [
     "keterangan" => "",
 ]);
 $tools = array_fill(0, 3, ["nama_peralatan" => ""]);
+$steps = [["text" => "", "existing_image" => ""]];
+
+function recipe_form_step_rows(array $steps): array
+{
+    $rows = [];
+
+    foreach ($steps as $step) {
+        if (is_array($step)) {
+            $rows[] = [
+                "text" => trim((string) ($step["text"] ?? "")),
+                "existing_image" => trim((string) ($step["existing_image"] ?? $step["image"] ?? "")),
+            ];
+            continue;
+        }
+
+        $text = trim((string) $step);
+        if ($text !== "") {
+            $rows[] = ["text" => $text, "existing_image" => ""];
+        }
+    }
+
+    return $rows !== [] ? $rows : [["text" => "", "existing_image" => ""]];
+}
+
+function recipe_uploaded_file_at(?array $files, int $index): ?array
+{
+    if (
+        $files === null ||
+        !isset($files["name"]) ||
+        !is_array($files["name"]) ||
+        !array_key_exists($index, $files["name"])
+    ) {
+        return null;
+    }
+
+    return [
+        "name" => (string) ($files["name"][$index] ?? ""),
+        "type" => (string) ($files["type"][$index] ?? ""),
+        "tmp_name" => (string) ($files["tmp_name"][$index] ?? ""),
+        "error" => (int) ($files["error"][$index] ?? UPLOAD_ERR_NO_FILE),
+        "size" => (int) ($files["size"][$index] ?? 0),
+    ];
+}
+
+function recipe_store_uploaded_image(
+    ?array $upload,
+    string $prefix,
+    string $label,
+    array &$errors,
+): ?string {
+    if (
+        $upload === null ||
+        (($upload["error"] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) ||
+        trim((string) ($upload["name"] ?? "")) === ""
+    ) {
+        return null;
+    }
+
+    $allowedTypes = [
+        "image/jpeg" => "jpg",
+        "image/png" => "png",
+        "image/webp" => "webp",
+    ];
+
+    if (($upload["error"] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        $errors[] = $label . " gagal diupload.";
+        return null;
+    }
+
+    $mimeType = mime_content_type((string) $upload["tmp_name"]);
+    if (!isset($allowedTypes[$mimeType])) {
+        $errors[] = $label . " harus berformat JPG, PNG, atau WEBP.";
+        return null;
+    }
+
+    $uploadDir = __DIR__ . "/../uploads/recipes";
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0775, true);
+    }
+
+    $fileName =
+        $prefix .
+        "-" .
+        time() .
+        "-" .
+        bin2hex(random_bytes(4)) .
+        "." .
+        $allowedTypes[$mimeType];
+    $target = $uploadDir . "/" . $fileName;
+
+    if (!move_uploaded_file((string) $upload["tmp_name"], $target)) {
+        $errors[] = $label . " tidak bisa disimpan.";
+        return null;
+    }
+
+    return "uploads/recipes/" . $fileName;
+}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!verifyCsrf($_POST["_token"] ?? null)) {
@@ -39,7 +135,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $old["nama_resep"] = trim((string) ($_POST["nama_resep"] ?? ""));
     $old["deskripsi"] = trim((string) ($_POST["deskripsi"] ?? ""));
-    $old["langkah_resep"] = trim((string) ($_POST["langkah_resep"] ?? ""));
     $old["waktu_memasak"] = trim((string) ($_POST["waktu_memasak"] ?? ""));
     $old["porsi"] = trim((string) ($_POST["porsi"] ?? ""));
     $old["kategori"] = trim((string) ($_POST["kategori"] ?? ""));
@@ -48,6 +143,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $ingredientRows = $_POST["ingredients"] ?? [];
     $toolRows = $_POST["tools"] ?? [];
+    $stepRows = $_POST["steps"] ?? [];
+    $steps = recipe_form_step_rows($stepRows);
 
     if ($old["nama_resep"] === "") {
         $errors[] = "Nama resep wajib diisi.";
@@ -55,10 +152,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($old["deskripsi"] === "") {
         $errors[] = "Deskripsi resep wajib diisi.";
-    }
-
-    if ($old["langkah_resep"] === "") {
-        $errors[] = "Langkah memasak wajib diisi.";
     }
 
     if ($old["kategori"] === "") {
@@ -118,105 +211,79 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors[] = "Minimal satu peralatan wajib diisi.";
     }
 
-    $imagePath = null;
-    if (!empty($_FILES["foto_resep"]["name"])) {
-        $upload = $_FILES["foto_resep"];
-        $allowedTypes = [
-            "image/jpeg" => "jpg",
-            "image/png" => "png",
-            "image/webp" => "webp",
-        ];
+    $normalizedSteps = [];
+    $stepFormIndex = 0;
+    foreach ($stepRows as $index => $row) {
+        $stepNumber = (int) $index + 1;
+        $text = trim((string) ($row["text"] ?? ""));
+        $existingImage = trim((string) ($row["existing_image"] ?? ""));
+        $stepImage = recipe_uploaded_file_at($_FILES["step_images"] ?? null, (int) $index);
 
-        if (($upload["error"] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-            $errors[] = "Upload foto resep gagal.";
-        } else {
-            $mimeType = mime_content_type($upload["tmp_name"]);
-            if (!isset($allowedTypes[$mimeType])) {
-                $errors[] = "Foto resep harus berformat JPG, PNG, atau WEBP.";
-            } else {
-                $uploadDir = __DIR__ . "/../uploads/recipes";
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0775, true);
-                }
+        $hasUploadedFile =
+            $stepImage !== null &&
+            (($stepImage["error"] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) &&
+            trim((string) ($stepImage["name"] ?? "")) !== "";
 
-                $fileName =
-                    "recipe-" .
-                    time() .
-                    "-" .
-                    bin2hex(random_bytes(4)) .
-                    "." .
-                    $allowedTypes[$mimeType];
-                $target = $uploadDir . "/" . $fileName;
+        if ($text === "" && $existingImage === "" && !$hasUploadedFile) {
+            continue;
+        }
 
-                if (!move_uploaded_file($upload["tmp_name"], $target)) {
-                    $errors[] = "Foto resep tidak bisa disimpan.";
-                } else {
-                    $imagePath = "uploads/recipes/" . $fileName;
-                }
+        if ($text === "") {
+            $errors[] = "Deskripsi langkah " . $stepNumber . " wajib diisi.";
+            continue;
+        }
+
+        $storedImage = recipe_store_uploaded_image(
+            $stepImage,
+            "recipe-step",
+            "Gambar langkah " . $stepNumber,
+            $errors,
+        );
+        if ($storedImage !== null) {
+            $existingImage = $storedImage;
+            if (isset($steps[$stepFormIndex])) {
+                $steps[$stepFormIndex]["existing_image"] = $storedImage;
             }
         }
+
+        $normalizedSteps[] = [
+            "text" => $text,
+            "image" => $existingImage !== "" ? $existingImage : null,
+        ];
+        $stepFormIndex++;
     }
 
+    if ($normalizedSteps === []) {
+        $errors[] = "Minimal satu langkah memasak wajib diisi.";
+    }
+
+    $imagePath = null;
+    $imagePath = recipe_store_uploaded_image(
+        $_FILES["foto_resep"] ?? null,
+        "recipe",
+        "Foto resep",
+        $errors,
+    );
+
     if ($errors === []) {
-        $pdo = db();
-        $pdo->beginTransaction();
-
         try {
-            $stmt = $pdo->prepare(
-                'INSERT INTO recipes (pengguna_id, nama_resep, deskripsi, langkah_resep, waktu_memasak, porsi, foto_resep, kategori, tingkat_kesulitan)
-                 VALUES (:pengguna_id, :nama_resep, :deskripsi, :langkah_resep, :waktu_memasak, :porsi, :foto_resep, :kategori, :tingkat_kesulitan)',
+            $recipeId = recipe_create_db(
+                (int) $user["id"],
+                [
+                    "nama_resep" => $old["nama_resep"],
+                    "deskripsi" => $old["deskripsi"],
+                    "langkah_resep" => recipe_encode_steps($normalizedSteps),
+                    "waktu_memasak" => (int) $old["waktu_memasak"],
+                    "porsi" => (int) $old["porsi"],
+                    "foto_resep" => $imagePath,
+                    "kategori" => $old["kategori"],
+                    "tingkat_kesulitan" => $old["tingkat_kesulitan"],
+                ],
+                $normalizedIngredients,
+                $normalizedTools,
             );
-            $stmt->execute([
-                ":pengguna_id" => (int) $user["id"],
-                ":nama_resep" => $old["nama_resep"],
-                ":deskripsi" => $old["deskripsi"],
-                ":langkah_resep" => $old["langkah_resep"],
-                ":waktu_memasak" => (int) $old["waktu_memasak"],
-                ":porsi" => (int) $old["porsi"],
-                ":foto_resep" => $imagePath,
-                ":kategori" => $old["kategori"],
-                ":tingkat_kesulitan" => $old["tingkat_kesulitan"],
-            ]);
-
-            $recipeId = (int) $pdo->lastInsertId();
-
-            $ingredientStmt = $pdo->prepare(
-                'INSERT INTO bahan_resep (resep_id, nama_bahan, jumlah, satuan, keterangan)
-                 VALUES (:resep_id, :nama_bahan, :jumlah, :satuan, :keterangan)',
-            );
-            foreach ($normalizedIngredients as $ingredient) {
-                $amount =
-                    $ingredient["jumlah"] === "" ? null : $ingredient["jumlah"];
-                $unit =
-                    $ingredient["satuan"] === "" ? null : $ingredient["satuan"];
-                $note =
-                    $ingredient["keterangan"] === ""
-                        ? null
-                        : $ingredient["keterangan"];
-
-                $ingredientStmt->execute([
-                    ":resep_id" => $recipeId,
-                    ":nama_bahan" => $ingredient["nama_bahan"],
-                    ":jumlah" => $amount,
-                    ":satuan" => $unit,
-                    ":keterangan" => $note,
-                ]);
-            }
-
-            $toolStmt = $pdo->prepare(
-                "INSERT INTO peralatan_resep (resep_id, nama_peralatan) VALUES (:resep_id, :nama_peralatan)",
-            );
-            foreach ($normalizedTools as $tool) {
-                $toolStmt->execute([
-                    ":resep_id" => $recipeId,
-                    ":nama_peralatan" => $tool,
-                ]);
-            }
-
-            $pdo->commit();
             redirectTo("../resep/detail.php?id=" . $recipeId);
         } catch (Throwable $throwable) {
-            $pdo->rollBack();
             $errors[] = "Gagal menyimpan resep. Coba lagi.";
         }
     }
@@ -449,14 +516,39 @@ function old(string $key, array $old): string
 
             <section class="detail-panel recipe-create__section">
                 <p class="detail-panel__label">Steps</p>
-                <h2>Langkah memasak</h2>
-                <label class="recipe-create__full">
-                    <span>Tulis langkah per baris</span>
-                    <textarea name="langkah_resep" rows="8" placeholder="1. Panaskan minyak&#10;2. Tumis bawang" required><?= old(
-                        "langkah_resep",
-                        $old,
-                    ) ?></textarea>
-                </label>
+                <div class="recipe-create__section-head">
+                    <div>
+                        <h2>Langkah memasak</h2>
+                        <p class="recipe-create__steps-note">Setiap langkah bisa punya gambar sendiri dan penjelasan terpisah.</p>
+                    </div>
+                    <button type="button" class="recipe-create__ghost" data-add-row="step">Tambah langkah</button>
+                </div>
+                <div class="recipe-create__rows recipe-create__rows--steps" data-rows="steps">
+                    <?php foreach ($steps as $index => $step): ?>
+                        <div class="recipe-create__row recipe-create__row--step">
+                            <div class="recipe-create__step-media">
+                                <div class="recipe-create__step-preview<?= $step["existing_image"] !== "" ? " has-image" : "" ?>">
+                                    <?php if ($step["existing_image"] !== ""): ?>
+                                        <img src="<?= e(recipe_asset_path($step["existing_image"])) ?>" alt="Preview langkah <?= e((string) ($index + 1)) ?>" data-step-preview>
+                                    <?php else: ?>
+                                        <span data-step-empty>Belum ada gambar</span>
+                                        <img src="" alt="" hidden data-step-preview>
+                                    <?php endif; ?>
+                                </div>
+                                <label class="recipe-create__step-upload">
+                                    <span>Gambar langkah</span>
+                                    <input type="hidden" name="steps[<?= $index ?>][existing_image]" value="<?= e($step["existing_image"]) ?>">
+                                    <input type="file" name="step_images[<?= $index ?>]" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-step-file>
+                                </label>
+                            </div>
+                            <div class="recipe-create__step-body">
+                                <span class="recipe-create__step-label">Step <span data-step-number><?= e((string) ($index + 1)) ?></span></span>
+                                <textarea name="steps[<?= $index ?>][text]" rows="5" placeholder="Jelaskan apa yang harus dilakukan pada langkah ini..." required><?= e($step["text"]) ?></textarea>
+                            </div>
+                            <button type="button" class="recipe-create__remove recipe-create__remove--step" data-remove-row aria-label="Hapus langkah">Hapus</button>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
             </section>
 
             <div class="recipe-create__actions">
@@ -480,6 +572,27 @@ function old(string $key, array $old): string
         <div class="recipe-create__row recipe-create__row--tool">
             <input type="text" name="tools[__INDEX__][nama_peralatan]" placeholder="Nama peralatan" required>
             <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus peralatan">Hapus</button>
+        </div>
+    </template>
+
+    <template id="step-template">
+        <div class="recipe-create__row recipe-create__row--step">
+            <div class="recipe-create__step-media">
+                <div class="recipe-create__step-preview">
+                    <span data-step-empty>Belum ada gambar</span>
+                    <img src="" alt="" hidden data-step-preview>
+                </div>
+                <label class="recipe-create__step-upload">
+                    <span>Gambar langkah</span>
+                    <input type="hidden" name="steps[__INDEX__][existing_image]" value="">
+                    <input type="file" name="step_images[__INDEX__]" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-step-file>
+                </label>
+            </div>
+            <div class="recipe-create__step-body">
+                <span class="recipe-create__step-label">Step <span data-step-number>__NUMBER__</span></span>
+                <textarea name="steps[__INDEX__][text]" rows="5" placeholder="Jelaskan apa yang harus dilakukan pada langkah ini..." required></textarea>
+            </div>
+            <button type="button" class="recipe-create__remove recipe-create__remove--step" data-remove-row aria-label="Hapus langkah">Hapus</button>
         </div>
     </template>
 
@@ -583,20 +696,84 @@ function old(string $key, array $old): string
             syncPreview();
 
             const addRowButtons = document.querySelectorAll('[data-add-row]');
+            const rowTargets = {
+                ingredient: 'ingredients',
+                tool: 'tools',
+                step: 'steps',
+            };
+
+            function syncStepNumbers() {
+                document.querySelectorAll('[data-rows="steps"] .recipe-create__row--step').forEach((row, index) => {
+                    const numberTarget = row.querySelector('[data-step-number]');
+                    if (numberTarget) {
+                        numberTarget.textContent = String(index + 1);
+                    }
+                });
+            }
+
+            function bindStepPreview(row) {
+                const fileInput = row.querySelector('[data-step-file]');
+                const preview = row.querySelector('[data-step-preview]');
+                const emptyState = row.querySelector('[data-step-empty]');
+
+                if (!fileInput || !preview) {
+                    return;
+                }
+
+                fileInput.addEventListener('change', () => {
+                    const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+                    if (!file) {
+                        if (preview.dataset.objectUrl) {
+                            URL.revokeObjectURL(preview.dataset.objectUrl);
+                            delete preview.dataset.objectUrl;
+                        }
+                        preview.hidden = true;
+                        preview.removeAttribute('src');
+                        if (emptyState) {
+                            emptyState.hidden = false;
+                        }
+                        preview.closest('.recipe-create__step-preview')?.classList.remove('has-image');
+                        return;
+                    }
+
+                    if (preview.dataset.objectUrl) {
+                        URL.revokeObjectURL(preview.dataset.objectUrl);
+                    }
+
+                    const objectUrl = URL.createObjectURL(file);
+                    preview.src = objectUrl;
+                    preview.hidden = false;
+                    preview.dataset.objectUrl = objectUrl;
+                    if (emptyState) {
+                        emptyState.hidden = true;
+                    }
+                    preview.closest('.recipe-create__step-preview')?.classList.add('has-image');
+                });
+            }
+
+            document.querySelectorAll('[data-rows="steps"] .recipe-create__row--step').forEach(bindStepPreview);
+            syncStepNumbers();
 
             addRowButtons.forEach((button) => {
                 button.addEventListener('click', () => {
                     const type = button.dataset.addRow;
                     const template = document.getElementById(`${type}-template`);
-                    const container = document.querySelector(`[data-rows="${type === 'ingredient' ? 'ingredients' : 'tools'}"]`);
+                    const container = document.querySelector(`[data-rows="${rowTargets[type] || type}"]`);
 
                     if (!template || !container) {
                         return;
                     }
 
                     const index = container.children.length;
-                    const html = template.innerHTML.replaceAll('__INDEX__', String(index));
+                    const html = template.innerHTML
+                        .replaceAll('__INDEX__', String(index))
+                        .replaceAll('__NUMBER__', String(index + 1));
                     container.insertAdjacentHTML('beforeend', html);
+                    const newRow = container.lastElementChild;
+                    if (newRow && type === 'step') {
+                        bindStepPreview(newRow);
+                        syncStepNumbers();
+                    }
                 });
             });
 
@@ -613,13 +790,30 @@ function old(string $key, array $old): string
                 }
 
                 if (container.children.length <= 1) {
-                    row.querySelectorAll('input').forEach((input) => {
+                    row.querySelectorAll('input, textarea').forEach((input) => {
                         input.value = '';
+                    });
+                    row.querySelectorAll('[data-step-preview]').forEach((preview) => {
+                        if (preview.dataset.objectUrl) {
+                            URL.revokeObjectURL(preview.dataset.objectUrl);
+                            delete preview.dataset.objectUrl;
+                        }
+                        preview.hidden = true;
+                        preview.removeAttribute('src');
+                    });
+                    row.querySelectorAll('[data-step-empty]').forEach((emptyState) => {
+                        emptyState.hidden = false;
+                    });
+                    row.querySelectorAll('.recipe-create__step-preview').forEach((wrapper) => {
+                        wrapper.classList.remove('has-image');
                     });
                     return;
                 }
 
                 row.remove();
+                if (container.dataset.rows === 'steps') {
+                    syncStepNumbers();
+                }
             });
         })();
 

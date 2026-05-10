@@ -956,6 +956,195 @@
     line-height: 1.65;
 }
 
+.cs-page {
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    background: #d9d9d9;
+    color: #000000;
+}
+
+.cs-screen {
+    position: relative;
+    min-height: 100vh;
+    padding: clamp(56px, 11vh, 113px) clamp(32px, 9vw, 130px);
+}
+
+.cs-card {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(260px, 394px) 448px;
+    column-gap: clamp(54px, 8vw, 112px);
+    align-items: center;
+    width: min(100%, 1179px);
+    min-height: 804px;
+    padding: 86px 118px 86px 114px;
+    border-radius: 15px;
+    background: rgba(245, 245, 245, 0.93);
+}
+
+.cs-back {
+    position: absolute;
+    top: 31px;
+    left: 29px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 20px;
+}
+
+.cs-back img {
+    display: block;
+    width: 24px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.cs-copy {
+    align-self: start;
+    padding-top: 76px;
+}
+
+.cs-eyebrow {
+    margin: 0 0 12px;
+    font-size: 20px;
+    font-weight: 200;
+    line-height: 1.5;
+}
+
+.cs-copy h1 {
+    width: 394px;
+    max-width: 100%;
+    margin: 0;
+    font-size: 48px;
+    font-weight: 400;
+    line-height: 1.42;
+}
+
+.cs-copy h1 span,
+.cs-description strong {
+    color: #ffa501;
+    font-weight: 700;
+}
+
+.cs-description {
+    width: 339px;
+    max-width: 100%;
+    margin: 12px 0 0;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+.cs-form {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    align-self: start;
+    width: 448px;
+    min-height: 559px;
+    padding: 34px 39px 27px 16px;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.cs-field {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 20px;
+}
+
+.cs-field span {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.cs-field input,
+.cs-field select,
+.cs-field textarea {
+    width: 100%;
+    border: 0;
+    border-radius: 10px;
+    background: #f5f5f5;
+    color: #898787;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+    outline: none;
+}
+
+.cs-field input,
+.cs-field select {
+    height: 33px;
+    padding: 0 10px;
+}
+
+.cs-field select {
+    appearance: none;
+}
+
+.cs-field textarea {
+    min-height: 78px;
+    padding: 10px;
+    resize: none;
+}
+
+.cs-field input:focus,
+.cs-field select:focus,
+.cs-field textarea:focus {
+    box-shadow: 0 0 0 2px rgba(255, 165, 1, 0.26);
+}
+
+.cs-send {
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    width: 145px;
+    height: 45px;
+    margin-top: 3px;
+    padding: 3px 9px 5px;
+    border: 0;
+    border-radius: 100px;
+    background: #ffa501;
+    color: #ffffff;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.cs-send__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 37px;
+    height: 34px;
+    border-radius: 600px;
+    background: #ffffff;
+    color: #ffa501;
+    font-size: 19px;
+    line-height: 1;
+}
+
+.cs-send:disabled {
+    cursor: wait;
+    opacity: 0.72;
+}
+
+.cs-food {
+    position: absolute;
+    z-index: 0;
+    top: -20px;
+    right: -313px;
+    width: 1069px;
+    height: 1069px;
+    object-fit: cover;
+    filter: blur(15px) drop-shadow(11px 12px 36px rgba(0, 0, 0, 0.1));
+    pointer-events: none;
+}
+
 @media (max-width: 1180px) {
     .profile-main {
         margin-left: 0;
@@ -964,6 +1153,29 @@
     .profile-bento,
     .profile-recipe-grid {
         grid-template-columns: 1fr;
+    }
+
+    .cs-screen {
+        padding: 48px 32px;
+    }
+
+    .cs-card {
+        grid-template-columns: 1fr;
+        row-gap: 36px;
+        min-height: auto;
+        padding: 84px 64px 64px;
+    }
+
+    .cs-copy {
+        padding-top: 0;
+    }
+
+    .cs-form {
+        width: min(100%, 448px);
+    }
+
+    .cs-food {
+        right: -560px;
     }
 }
 
@@ -975,6 +1187,44 @@
     .profile-summary__card {
         grid-template-columns: 1fr;
         justify-items: start;
+    }
+
+    .cs-page {
+        overflow: auto;
+    }
+
+    .cs-screen {
+        padding: 28px 16px;
+    }
+
+    .cs-card {
+        padding: 72px 24px 30px;
+    }
+
+    .cs-eyebrow {
+        font-size: 15px;
+    }
+
+    .cs-copy h1 {
+        font-size: 34px;
+        line-height: 1.35;
+    }
+
+    .cs-description {
+        font-size: 18px;
+    }
+
+    .cs-form {
+        min-height: auto;
+        padding: 28px 18px;
+    }
+
+    .cs-food {
+        top: 44px;
+        right: -460px;
+        width: 720px;
+        height: 720px;
+        opacity: 0.55;
     }
 
     .profile-summary__stats {

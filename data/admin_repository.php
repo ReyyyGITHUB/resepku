@@ -326,7 +326,7 @@ function report_category_label(string $value): string
 
 function report_create_db(int $reporterId, string $targetType, int $targetId, string $category, string $note): int
 {
-    if ($reporterId <= 0 || $targetId <= 0) {
+    if ($reporterId <= 0) {
         throw new InvalidArgumentException('Target laporan tidak valid.');
     }
 
@@ -336,6 +336,12 @@ function report_create_db(int $reporterId, string $targetType, int $targetId, st
 
     if (!in_array($targetType, ['resep', 'pengguna'], true)) {
         throw new InvalidArgumentException('Tipe target tidak valid.');
+    }
+
+    $isGeneralSupport = $targetType === 'pengguna' && $targetId <= 0;
+
+    if (!$isGeneralSupport && $targetId <= 0) {
+        throw new InvalidArgumentException('Target laporan tidak valid.');
     }
 
     $options = report_category_options();
@@ -361,7 +367,7 @@ function report_create_db(int $reporterId, string $targetType, int $targetId, st
         if ((int) ($target['pengguna_id'] ?? 0) === $reporterId) {
             throw new InvalidArgumentException('Kamu tidak bisa melaporkan resep milik sendiri.');
         }
-    } else {
+    } elseif (!$isGeneralSupport) {
         $targetStmt = $pdo->prepare('SELECT nama_pengguna FROM pengguna WHERE pengguna_id = :id LIMIT 1');
         $targetStmt->execute([':id' => $targetId]);
         $target = $targetStmt->fetch();
@@ -375,7 +381,7 @@ function report_create_db(int $reporterId, string $targetType, int $targetId, st
         }
     }
 
-    $summary = report_category_label($category) . ': ' . $note;
+    $summary = ($isGeneralSupport ? 'Customer Support' : report_category_label($category)) . ': ' . $note;
 
     $stmt = $pdo->prepare(
         'INSERT INTO cs (pelapor_id, target_tipe, target_resep_id, target_pengguna_id, kategori_laporan, catatan_laporan, alasan, status)
@@ -385,7 +391,7 @@ function report_create_db(int $reporterId, string $targetType, int $targetId, st
         ':pelapor_id' => $reporterId,
         ':target_tipe' => $targetType,
         ':target_resep_id' => $targetType === 'resep' ? $targetId : null,
-        ':target_pengguna_id' => $targetType === 'pengguna' ? $targetId : null,
+        ':target_pengguna_id' => $targetType === 'pengguna' && $targetId > 0 ? $targetId : null,
         ':kategori_laporan' => $category,
         ':catatan_laporan' => $note,
         ':alasan' => $summary,

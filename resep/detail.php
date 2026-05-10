@@ -231,7 +231,16 @@ if ($recipe === null) {
                     <h2>Langkah Memasak</h2>
                     <ol class="detail-steps">
                         <?php foreach ($recipe['steps'] as $step): ?>
-                            <li><?= e($step) ?></li>
+                            <li class="detail-step">
+                                <?php if (!empty($step['image'])): ?>
+                                    <div class="detail-step__media">
+                                        <img src="<?= e(recipe_asset_path($step['image'])) ?>" alt="Ilustrasi langkah memasak">
+                                    </div>
+                                <?php endif; ?>
+                                <div class="detail-step__content">
+                                    <p><?= e((string) ($step['text'] ?? '')) ?></p>
+                                </div>
+                            </li>
                         <?php endforeach; ?>
                     </ol>
                 </article>

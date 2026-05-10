@@ -90,6 +90,8 @@ admin_header('Kelola Pengaduan', $adminUser, 'laporan');
                     } elseif ($report['target_tipe'] === 'pengguna' && !empty($report['target_pengguna_nama'])) {
                         $targetLabel = $report['target_pengguna_nama'];
                         $targetUrl = '../profil/?id=' . (int) $report['target_pengguna_id'];
+                    } elseif ($report['target_tipe'] === 'pengguna' && empty($report['target_pengguna_id'])) {
+                        $targetLabel = 'Customer Support';
                     }
                     ?>
                     <tr>
