@@ -574,10 +574,6 @@
 .feature-card__body {
     position: relative;
     z-index: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 368px;
     padding: 70px 56px 0 372px;
 }
 
