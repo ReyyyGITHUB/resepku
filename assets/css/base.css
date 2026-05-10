@@ -8,8 +8,8 @@
     --font-brand: "Brush Script MT", "Segoe Script", cursive;
     --recipe-card-min: 210px;
     --recipe-card-max: 244px;
-    --recipe-grid-column-gap: 31px;
-    --recipe-grid-row-gap: 30px;
+    --recipe-grid-column-gap: 18px;
+    --recipe-grid-row-gap: 18px;
 }
 
 * {

@@ -268,11 +268,15 @@ if ($recipes === []) {
 
                 <aside class="side-recipes" aria-label="Resep rekomendasi">
                     <?php foreach ($sideRecipes as $recipe): ?>
-                        <article>
-                            <img src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
-                            <div>
-                                <h3><?= e($recipe['title']) ?></h3>
-                                <a href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">Get the recipe</a>
+                        <article class="side-recipe-card" data-node-id="78:339">
+                            <img class="side-recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                            <div class="side-recipe-card__content">
+                                <h3 class="side-recipe-card__title"><?= e($recipe['title']) ?></h3>
+                                <?php if (!empty($recipe['id'])): ?>
+                                    <a class="side-recipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">Get the recipe</a>
+                                <?php else: ?>
+                                    <span class="side-recipe-card__link side-recipe-card__link--static">Get the recipe</span>
+                                <?php endif; ?>
                             </div>
                         </article>
                     <?php endforeach; ?>

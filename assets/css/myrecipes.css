@@ -110,6 +110,12 @@
 }
 
 .myrecipes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--recipe-grid-row-gap) var(--recipe-grid-column-gap);
+    overflow: visible;
+    padding: 0;
+    scroll-snap-type: none;
     margin-top: 24px;
 }
 

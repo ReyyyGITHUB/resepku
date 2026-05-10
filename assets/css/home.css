@@ -389,14 +389,33 @@
 }
 
 .recipe-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--recipe-card-min), var(--recipe-card-max)));
-    gap: var(--recipe-grid-row-gap) var(--recipe-grid-column-gap);
+    display: flex;
+    gap: var(--recipe-grid-column-gap);
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-inline: -4px;
     margin-top: 22px;
+    padding: 0 4px 12px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(251, 155, 0, 0.55) transparent;
+}
+
+.recipe-grid::-webkit-scrollbar {
+    height: 8px;
+}
+
+.recipe-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.recipe-grid::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(251, 155, 0, 0.55);
 }
 
 .recipe-grid__empty {
-    grid-column: 1 / -1;
+    flex: 1 0 100%;
     padding: 24px;
     border-radius: 20px;
     background: #ffffff;
@@ -420,11 +439,13 @@
 .recipe-card {
     position: relative;
     isolation: isolate;
-    width: 100%;
+    flex: 0 0 var(--recipe-card-max);
+    width: var(--recipe-card-max);
     max-width: var(--recipe-card-max);
     aspect-ratio: 244 / 334;
     height: auto;
     min-height: 288px;
+    scroll-snap-align: start;
 }
 
 .recipe-card__link {
@@ -518,8 +539,8 @@
 
 .home-content-row {
     display: grid;
-    grid-template-columns: minmax(520px, 926px) 240px;
-    gap: 32px;
+    grid-template-columns: minmax(520px, 926px) 260px;
+    gap: 40px;
     align-items: start;
     margin-top: 38px;
 }
@@ -583,10 +604,11 @@
 }
 
 .feature-card__footer a,
-.side-recipes a {
+.side-recipe-card__link {
     color: #d4af37;
     font-size: 16px;
     font-weight: 700;
+    line-height: 1.2;
     text-decoration: none;
 }
 
@@ -596,32 +618,55 @@
 
 .side-recipes {
     display: grid;
+    justify-items: end;
     gap: 39px;
+    padding-top: 10px;
 }
 
-.side-recipes article {
-    display: grid;
-    grid-template-columns: 96px 1fr;
-    align-items: center;
-    gap: 18px;
+.side-recipe-card {
+    position: relative;
+    width: min(100%, 211px);
     min-height: 165px;
-    padding: 18px 18px 18px 0;
+    padding: 19px 18px 19px 116px;
     border-radius: 0 25px 25px 0;
     background: #ffffff;
+    box-sizing: border-box;
+    overflow: visible;
 }
 
-.side-recipes img {
-    width: 112px;
-    height: 112px;
+.side-recipe-card__image {
+    position: absolute;
+    top: 50%;
+    left: -28px;
+    width: 144px;
+    height: 144px;
     object-fit: contain;
-    transform: translateX(-20px);
+    transform: translateY(-50%);
+    filter: drop-shadow(7px 10px 26px rgba(0, 0, 0, 0.16));
 }
 
-.side-recipes h3 {
-    margin: 0 0 38px;
+.side-recipe-card__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 127px;
+}
+
+.side-recipe-card__title {
+    margin: 0;
+    max-width: 86px;
     font-size: 16px;
     font-weight: 400;
-    line-height: 1.25;
+    line-height: 1.3;
+}
+
+.side-recipe-card__link {
+    display: inline-flex;
+    align-self: flex-start;
+}
+
+.side-recipe-card__link--static {
+    cursor: default;
 }
 
 .recipe-grid--bottom {
@@ -1014,6 +1059,13 @@
 
     .side-recipes {
         grid-template-columns: repeat(2, minmax(220px, 1fr));
+        justify-items: stretch;
+        gap: 28px 32px;
+        padding-top: 0;
+    }
+
+    .side-recipe-card {
+        width: 100%;
     }
 }
 
@@ -1120,16 +1172,16 @@
 
     .recipe-grid {
         --recipe-card-min: 190px;
-        --recipe-grid-column-gap: 20px;
-        --recipe-grid-row-gap: 20px;
-        grid-template-columns: repeat(auto-fit, minmax(var(--recipe-card-min), 1fr));
-        margin-top: 42px;
+        --recipe-grid-column-gap: 14px;
+        --recipe-grid-row-gap: 14px;
+        margin-top: 32px;
     }
 
     .recipe-card {
-        width: 100%;
+        flex-basis: var(--recipe-card-max);
+        width: var(--recipe-card-max);
         max-width: 244px;
-        margin: 0 auto;
+        margin: 0;
     }
 
     .feature-card {
@@ -1170,6 +1222,7 @@
 
     .side-recipes {
         grid-template-columns: 1fr;
+        gap: 24px;
     }
 }
 
@@ -1198,7 +1251,6 @@
 
     .recipe-grid {
         --recipe-card-min: 244px;
-        grid-template-columns: 1fr;
     }
 
     .home-sidebar__nav {
