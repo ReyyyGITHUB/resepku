@@ -9,7 +9,7 @@
 
 .myrecipes-main {
     min-height: 100vh;
-    margin-left: 272px;
+    margin-left: var(--sidebar-width);
     padding: 18px 36px 72px;
     overflow: hidden;
 }
@@ -254,7 +254,7 @@
 
 @media (max-width: 1180px) {
     .myrecipes-main {
-        margin-left: 0;
+        margin-left: var(--sidebar-width);
     }
 }
 

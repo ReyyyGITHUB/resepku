@@ -145,6 +145,7 @@ $guestLockText = 'Masuk atau buat akun untuk membuka bahan, alat, langkah memasa
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($recipe['title']) ?> - Resepku</title>
+        <?= sidebarInitialStateScript() ?>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="detail-page<?= $isGuest ? ' detail-page--locked' : '' ?>" data-guest-mode="<?= $isGuest ? '1' : '0' ?>" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="../api/" data-login-url="../auth/login.php">

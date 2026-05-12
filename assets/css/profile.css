@@ -11,7 +11,7 @@
 
 .profile-main {
     min-height: 100vh;
-    margin-left: 272px;
+    margin-left: var(--sidebar-width);
     padding: 18px 24px 56px;
 }
 
@@ -1279,6 +1279,13 @@
     color: #111111;
 }
 
+.home-sidebar__report-link:hover,
+.home-sidebar__report-link:focus-visible {
+    border-color: #fb9b00;
+    background: #fff6e6;
+    color: #111111;
+}
+
 .home-sidebar__report-link svg {
     width: 20px;
     height: 20px;
@@ -1994,7 +2001,7 @@
 
 @media (max-width: 1180px) {
     .profile-main {
-        margin-left: 0;
+        margin-left: var(--sidebar-width);
     }
 
     .profile-bento,
@@ -2253,5 +2260,446 @@
 
     .profile-report-detail {
         padding: 18px;
+    }
+}
+
+.profile-page .profile-cover {
+    position: relative;
+    min-height: 300px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #221913;
+}
+
+.profile-page .profile-cover__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-page .profile-cover__shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.24) 52%, rgba(0, 0, 0, 0.08) 100%);
+}
+
+.profile-page .profile-cover__copy {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    align-content: center;
+    max-width: 560px;
+    min-height: 300px;
+    padding: 34px 36px 72px;
+    color: #ffffff;
+}
+
+.profile-page .profile-cover__copy p {
+    margin: 0 0 7px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.profile-page .profile-cover__copy h1 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(30px, 4vw, 48px);
+    font-weight: 700;
+    line-height: 1.04;
+    overflow-wrap: anywhere;
+}
+
+.profile-page.profile-page--public .profile-summary__card,
+.profile-page.profile-page--own .profile-summary__card {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 104px minmax(0, 1fr);
+    gap: 18px;
+    align-items: center;
+    min-height: 124px;
+    margin: -54px 16px 0;
+    padding: 16px 20px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.10);
+}
+
+.profile-page.profile-page--public .profile-summary__avatar-wrap,
+.profile-page.profile-page--own .profile-summary__avatar-wrap {
+    display: block;
+    width: 104px;
+    height: 104px;
+    margin: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #d9d9d9;
+}
+
+.profile-page.profile-page--public .profile-summary__avatar,
+.profile-page.profile-page--own .profile-summary__avatar {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: none;
+}
+
+.profile-page .profile-summary__content {
+    min-width: 0;
+}
+
+.profile-page .profile-summary__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.profile-page .profile-summary__name {
+    margin: 0;
+    color: #111111;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.profile-page .profile-summary__badge {
+    display: block;
+    min-height: 0;
+    margin: 4px 0 0;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #5d636d;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.profile-page .profile-summary__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.profile-page .profile-summary__edit,
+.profile-page .profile-summary__follow,
+.profile-page .profile-summary__report {
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.profile-page .profile-summary__edit,
+.profile-page .profile-summary__follow {
+    border-color: #ffa501;
+    background: #ffa501;
+    color: #ffffff;
+}
+
+.profile-page .profile-summary__follow.is-active {
+    background: #ffffff;
+    color: #ffa501;
+}
+
+.profile-page .profile-summary__report {
+    border-color: #111111;
+    background: #ffffff;
+    color: #111111;
+}
+
+.profile-page .profile-summary__stats,
+.profile-page.profile-page--public .profile-summary__stats,
+.profile-page.profile-page--own .profile-summary__stats {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin: 12px 0 0;
+    padding: 0;
+    border: 0;
+}
+
+.profile-page .profile-stat,
+.profile-page.profile-page--public .profile-stat,
+.profile-page.profile-page--own .profile-stat {
+    display: grid;
+    gap: 2px;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.profile-page .profile-stat strong,
+.profile-page.profile-page--own .profile-stat strong {
+    color: #111111;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.profile-page .profile-stat span,
+.profile-page.profile-page--own .profile-stat span {
+    color: #5d636d;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.profile-page .profile-bento {
+    margin-top: 18px;
+}
+
+.profile-page .profile-panel {
+    border: 0;
+    border-radius: 8px;
+    background: #fffdfb;
+    box-shadow: none;
+}
+
+.profile-page .profile-panel--recipes,
+.profile-page .profile-panel--recent {
+    padding: 18px 0 0;
+    background: transparent;
+}
+
+.profile-page .profile-public-feature {
+    display: none;
+}
+
+.profile-page .profile-recipe-grid,
+.profile-page.profile-page--public .profile-recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+    align-items: start;
+    padding-bottom: 0;
+}
+
+.profile-page .profile-recipe-card,
+.profile-page.profile-page--public .profile-recipe-card {
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid rgba(17, 17, 17, 0.08);
+    border-radius: 6px;
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+}
+
+.profile-page .profile-recipe-card__bookmark {
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.12);
+}
+
+.profile-page .profile-recipe-card__bookmark img {
+    width: 12px;
+    height: 16px;
+}
+
+.profile-page .profile-recipe-card__media,
+.profile-page.profile-page--public .profile-recipe-card__media {
+    display: block;
+    aspect-ratio: 1 / 1.08;
+    background: #ebe4dd;
+}
+
+.profile-page .profile-recipe-card__image,
+.profile-page.profile-page--public .profile-recipe-card__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: 0;
+    object-fit: cover;
+}
+
+.profile-page .profile-recipe-card__body,
+.profile-page.profile-page--public .profile-recipe-card__body {
+    display: grid;
+    gap: 8px;
+    padding: 10px 10px 11px;
+    border-top: 0;
+}
+
+.profile-page .profile-recipe-card__body h3,
+.profile-page.profile-page--public .profile-recipe-card__body h3 {
+    margin: 0;
+    color: #111111;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-page .profile-recipe-card__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+    color: #111111;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.profile-page .profile-recipe-card__rating-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+}
+
+.profile-page .profile-recipe-card__rating,
+.profile-page.profile-page--public .profile-recipe-card__rating {
+    display: inline-flex;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 10px;
+    line-height: 1;
+    box-shadow: none;
+}
+
+.profile-page .profile-recipe-card__rating .rating-stars__star {
+    width: 10px;
+    height: 10px;
+}
+
+.profile-page .profile-recipe-card__meta > span,
+.profile-page .profile-recipe-card__body > span {
+    color: #111111;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.profile-page .profile-recipe-card__meta > span:last-child::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+    background: url("../img/icon-clock.svg") center / contain no-repeat;
+    vertical-align: -1px;
+}
+
+.profile-page .profile-recipe-grid.is-list-view {
+    grid-template-columns: 1fr;
+}
+
+.profile-page .profile-recipe-grid.is-list-view .profile-recipe-card {
+    display: grid;
+    grid-template-columns: 140px minmax(0, 1fr);
+    margin-top: 0;
+}
+
+.profile-page .profile-recipe-grid.is-list-view .profile-recipe-card__media {
+    aspect-ratio: auto;
+    min-height: 132px;
+}
+
+@media (max-width: 1180px) {
+    .profile-page .profile-recipe-grid,
+    .profile-page.profile-page--public .profile-recipe-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .profile-page .profile-cover,
+    .profile-page .profile-cover__copy {
+        min-height: 250px;
+    }
+
+    .profile-page .profile-cover__copy {
+        padding: 28px 24px 66px;
+    }
+
+    .profile-page.profile-page--public .profile-summary__card,
+    .profile-page.profile-page--own .profile-summary__card {
+        grid-template-columns: 86px minmax(0, 1fr);
+        gap: 14px;
+        margin: -44px 12px 0;
+        padding: 14px;
+    }
+
+    .profile-page.profile-page--public .profile-summary__avatar-wrap,
+    .profile-page.profile-page--own .profile-summary__avatar-wrap {
+        width: 86px;
+        height: 86px;
+    }
+
+    .profile-page .profile-summary__header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .profile-page .profile-summary__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .profile-page .profile-summary__stats {
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+}
+
+@media (max-width: 520px) {
+    .profile-page .profile-cover,
+    .profile-page .profile-cover__copy {
+        min-height: 220px;
+    }
+
+    .profile-page .profile-cover__copy {
+        padding: 24px 18px 58px;
+    }
+
+    .profile-page.profile-page--public .profile-summary__card,
+    .profile-page.profile-page--own .profile-summary__card {
+        grid-template-columns: 72px minmax(0, 1fr);
+        margin: -38px 8px 0;
+        padding: 12px;
+    }
+
+    .profile-page.profile-page--public .profile-summary__avatar-wrap,
+    .profile-page.profile-page--own .profile-summary__avatar-wrap {
+        width: 72px;
+        height: 72px;
+    }
+
+    .profile-page .profile-summary__edit,
+    .profile-page .profile-summary__follow,
+    .profile-page .profile-summary__report {
+        width: auto;
+        min-width: 92px;
+    }
+
+    .profile-page .profile-recipe-grid,
+    .profile-page.profile-page--public .profile-recipe-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
     }
 }

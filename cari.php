@@ -62,6 +62,7 @@ function search_asset_path(string $path): string
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cari Resep - Resepku</title>
+        <?= sidebarInitialStateScript() ?>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="home-page" data-guest-mode="<?= $isGuest ? '1' : '0' ?>" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="api/" data-login-url="auth/login.php">

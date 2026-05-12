@@ -22,6 +22,7 @@ $isDefaultView = $filters['q'] === ''
     && $filters['difficulty'] === ''
     && $filters['max_time'] === ''
     && $filters['sort'] === 'newest';
+$hasActiveFilters = !$isDefaultView;
 
 $recipes = recipe_catalog_filtered_db($filters, 24, $currentUserId > 0 ? $currentUserId : null);
 $defaultRecipes = $isDefaultView ? recipe_catalog_from_db(null, $currentUserId > 0 ? $currentUserId : null) : [];
@@ -61,6 +62,16 @@ $sortOptions = [
     ['label' => 'Terlama', 'value' => 'oldest'],
 ];
 
+$buildHomeFilterQuery = static function (array $overrides) use ($filters): string {
+    return http_build_query(array_filter([
+        'q' => $overrides['q'] ?? $filters['q'],
+        'category' => $overrides['category'] ?? $filters['category'],
+        'difficulty' => $overrides['difficulty'] ?? $filters['difficulty'],
+        'max_time' => $overrides['max_time'] ?? $filters['max_time'],
+        'sort' => $overrides['sort'] ?? $filters['sort'],
+    ], static fn ($value) => $value !== ''));
+};
+
 $featured = [
     'title' => 'Salad Ayam Spesial',
     'image' => '../assets/img/recipe-salad-hero.png',
@@ -99,6 +110,7 @@ if ($recipes === []) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beranda - Resepku</title>
+        <?= sidebarInitialStateScript() ?>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="home-page" data-guest-mode="<?= $isGuest ? '1' : '0' ?>" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="../api/" data-login-url="../auth/login.php">
@@ -183,48 +195,56 @@ if ($recipes === []) {
                         <a class="home-filter<?= $activeCategory === mb_strtolower($pill['value']) ? ' is-active' : '' ?>" href="../home/?<?= e(http_build_query($query)) ?>"><?= e($pill['label']) ?></a>
                     <?php endforeach; ?>
                 </div>
-                <form class="home-controls" aria-label="Filter resep lanjutan" method="get" action="../cari.php">
-                    <input type="hidden" name="q" value="<?= e($filters['q']) ?>">
-                    <input type="hidden" name="category" value="<?= e($filters['category']) ?>">
-
-                    <label class="home-select">
-                        <span>Kesulitan</span>
-                        <select name="difficulty" class="home-select__field" onchange="this.form.submit()">
+                <div class="home-controls" aria-label="Filter resep lanjutan">
+                    <details class="home-dropdown">
+                        <summary class="home-dropdown__trigger">
+                            <span class="home-dropdown__icon">Lv</span>
+                            <span>Level</span>
+                        </summary>
+                        <div class="home-dropdown__menu">
                             <?php foreach ($difficultyOptions as $option): ?>
-                                <option value="<?= e($option['value']) ?>" <?= $filters['difficulty'] === $option['value'] ? 'selected' : '' ?>>
-                                    <?= e($option['label']) ?>
-                                </option>
+                                <?php $difficultyQuery = $buildHomeFilterQuery(['difficulty' => $option['value']]); ?>
+                                <a class="home-dropdown__item<?= $filters['difficulty'] === $option['value'] ? ' is-active' : '' ?>" href="../home/<?= $difficultyQuery !== '' ? '?' . e($difficultyQuery) : '' ?>">
+                                    <?= e($option['value'] === '' ? 'Semua' : $option['label']) ?>
+                                </a>
                             <?php endforeach; ?>
-                        </select>
-                    </label>
+                        </div>
+                    </details>
 
-                    <label class="home-select">
-                        <span>Waktu</span>
-                        <select name="max_time" class="home-select__field" onchange="this.form.submit()">
+                    <details class="home-dropdown">
+                        <summary class="home-dropdown__trigger">
+                            <span class="home-dropdown__icon">Tm</span>
+                            <span>Waktu</span>
+                        </summary>
+                        <div class="home-dropdown__menu">
                             <?php foreach ($timeOptions as $option): ?>
-                                <option value="<?= e($option['value']) ?>" <?= $filters['max_time'] === $option['value'] ? 'selected' : '' ?>>
-                                    <?= e($option['label']) ?>
-                                </option>
+                                <?php $timeQuery = $buildHomeFilterQuery(['max_time' => $option['value']]); ?>
+                                <a class="home-dropdown__item<?= $filters['max_time'] === $option['value'] ? ' is-active' : '' ?>" href="../home/<?= $timeQuery !== '' ? '?' . e($timeQuery) : '' ?>">
+                                    <?= e($option['value'] === '' ? 'Semua' : str_replace('< ', '', $option['label'])) ?>
+                                </a>
                             <?php endforeach; ?>
-                        </select>
-                    </label>
+                        </div>
+                    </details>
 
-                    <label class="home-select">
-                        <span>Urutkan</span>
-                        <select name="sort" class="home-select__field" onchange="this.form.submit()">
+                    <details class="home-dropdown home-dropdown--sort">
+                        <summary class="home-dropdown__trigger">
+                            <span class="home-dropdown__icon">A-Z</span>
+                            <span>Sort</span>
+                        </summary>
+                        <div class="home-dropdown__menu">
                             <?php foreach ($sortOptions as $option): ?>
-                                <option value="<?= e($option['value']) ?>" <?= $filters['sort'] === $option['value'] ? 'selected' : '' ?>>
+                                <?php $sortQuery = $buildHomeFilterQuery(['sort' => $option['value']]); ?>
+                                <a class="home-dropdown__item<?= $filters['sort'] === $option['value'] ? ' is-active' : '' ?>" href="../home/<?= $sortQuery !== '' ? '?' . e($sortQuery) : '' ?>">
                                     <?= e($option['label']) ?>
-                                </option>
+                                </a>
                             <?php endforeach; ?>
-                        </select>
-                    </label>
+                        </div>
+                    </details>
 
-                    <div class="home-controls__actions">
-                        <button class="home-controls__apply" type="submit">Terapkan filter</button>
-                        <a class="home-controls__clear" href="../home/">Hapus filter</a>
-                    </div>
-                </form>
+                    <?php if ($hasActiveFilters): ?>
+                        <a class="home-controls__clear" href="../home/">Reset</a>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <div class="home-stats">

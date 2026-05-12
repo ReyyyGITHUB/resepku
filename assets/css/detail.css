@@ -12,7 +12,7 @@
 
 .detail-main {
     min-height: 100vh;
-    margin-left: 272px;
+    margin-left: var(--sidebar-width);
     padding: 24px 40px 72px;
     background: #ffffff;
 }
@@ -957,7 +957,7 @@ body.modal-open {
 
 @media (max-width: 1180px) {
     .detail-main {
-        margin-left: 0;
+        margin-left: var(--sidebar-width);
         padding: 20px 20px 64px;
     }
 

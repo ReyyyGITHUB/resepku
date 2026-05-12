@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var sidebarToggle = document.querySelector("[data-sidebar-toggle]");
 
     function setSidebarCollapsed(collapsed) {
+        document.documentElement.classList.toggle("sidebar-collapsed", collapsed);
         document.body.classList.toggle("sidebar-collapsed", collapsed);
 
         if (sidebarToggle) {

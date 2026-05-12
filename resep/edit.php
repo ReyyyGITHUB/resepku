@@ -347,6 +347,7 @@ function old(string $key, array $old): string
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Resep - Resepku</title>
+        <?= sidebarInitialStateScript() ?>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="recipe-create-page">
@@ -403,12 +404,18 @@ function old(string $key, array $old): string
 
             <div class="detail-hero recipe-create__hero">
                 <div class="detail-hero__media recipe-create__preview">
-                    <div class="recipe-create__preview-frame">
+                    <div class="recipe-create__preview-frame has-image">
                         <img src="<?= e($recipe['image']) ?>" alt="Pratinjau resep" class="recipe-create__preview-image" data-preview-image>
                         <div class="recipe-create__preview-badge">Pratinjau</div>
                     </div>
                     <label class="recipe-create__upload">
-                        <strong data-preview-upload-label>Ganti foto resep</strong>
+                        <span class="recipe-create__upload-prompt">
+                            <svg class="recipe-create__upload-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path fill="currentColor" d="M11 16V7.85l-2.6 2.6L7 9l5-5 5 5-1.4 1.45-2.6-2.6V16h-2ZM6 20c-.55 0-1.02-.2-1.41-.59C4.2 19.02 4 18.55 4 18v-3h2v3h12v-3h2v3c0 .55-.2 1.02-.59 1.41-.39.39-.86.59-1.41.59H6Z" />
+                            </svg>
+                            <strong data-preview-upload-label>Ganti foto resep</strong>
+                            <span>Drag-and-drop ke sini</span>
+                        </span>
                         <input type="file" name="foto_resep" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
                     </label>
                 </div>
@@ -474,79 +481,101 @@ function old(string $key, array $old): string
 
             <div class="recipe-create__body">
                 <div class="recipe-create__sticky-column">
-                    <section class="detail-panel recipe-create__section">
-                        <div class="recipe-create__section-head">
-                            <h2>Bahan</h2>
-                            <button type="button" class="recipe-create__ghost" data-add-row="ingredient">Tambah bahan</button>
+                    <section class="detail-panel recipe-create__section recipe-create__section--materials" data-materials-group>
+                        <div class="recipe-create__section-head recipe-create__section-head--materials">
+                            <h2>Bahan &amp; Peralatan</h2>
                         </div>
-                        <div class="recipe-create__rows" data-rows="ingredients">
-                            <?php foreach ($ingredients as $index => $ingredient): ?>
-                                <div class="recipe-create__row recipe-create__row--ingredient">
-                                    <span class="recipe-create__drag-handle" aria-hidden="true"><span></span><span></span><span></span></span>
-                                    <input type="text" name="ingredients[<?= $index ?>][nama_bahan]" placeholder="Nama bahan" value="<?= e($ingredient['nama_bahan']) ?>" required>
-                                    <input type="hidden" name="ingredients[<?= $index ?>][jumlah]" value="<?= e($ingredient['jumlah']) ?>">
-                                    <input type="hidden" name="ingredients[<?= $index ?>][satuan]" value="<?= e($ingredient['satuan']) ?>">
-                                    <input type="hidden" name="ingredients[<?= $index ?>][keterangan]" value="<?= e($ingredient['keterangan']) ?>">
-                                    <button type="button" class="recipe-create__ingredient-menu" data-ingredient-menu aria-expanded="false" aria-label="Opsi bahan" title="Opsi bahan">...</button>
-                                    <div class="recipe-create__ingredient-popover" hidden>
-                                        <button type="button" data-remove-row>Hapus</button>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </section>
 
-                    <section class="detail-panel recipe-create__section">
-                        <div class="recipe-create__section-head">
-                            <h2>Peralatan</h2>
-                            <button type="button" class="recipe-create__ghost" data-add-row="tool">Tambah peralatan</button>
+                        <div class="recipe-create__tabs" role="tablist" aria-label="Bahan dan peralatan">
+                            <button type="button" class="recipe-create__tab is-active" data-material-tab="ingredients" aria-selected="true">Bahan <span data-material-count="ingredients">(<?= e((string) count($ingredients)) ?>)</span></button>
+                            <button type="button" class="recipe-create__tab" data-material-tab="tools" aria-selected="false">Peralatan <span data-material-count="tools">(<?= e((string) count($tools)) ?>)</span></button>
                         </div>
-                        <div class="recipe-create__rows" data-rows="tools">
-                            <?php foreach ($tools as $index => $tool): ?>
-                                <div class="recipe-create__row recipe-create__row--tool">
-                                    <input type="text" name="tools[<?= $index ?>][nama_peralatan]" placeholder="Nama peralatan" value="<?= e($tool['nama_peralatan']) ?>" required>
-                                    <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus peralatan">Hapus</button>
+
+                        <div class="recipe-create__tab-panel is-active" data-material-panel="ingredients">
+                            <div class="recipe-create__table recipe-create__table--ingredients">
+                                <div class="recipe-create__table-head" aria-hidden="true">
+                                    <span>No</span>
+                                    <span></span>
+                                    <span>Nama</span>
+                                    <span>Hapus</span>
                                 </div>
-                            <?php endforeach; ?>
+                                <div class="recipe-create__rows recipe-create__rows--table" data-rows="ingredients">
+                                    <?php foreach ($ingredients as $index => $ingredient): ?>
+                                        <div class="recipe-create__row recipe-create__row--ingredient" data-sortable-row>
+                                            <span class="recipe-create__row-number" data-row-number><?= e((string) ($index + 1)) ?></span>
+                                            <span class="recipe-create__drag-handle" draggable="true" data-drag-handle aria-hidden="true">☰</span>
+                                            <input type="text" name="ingredients[<?= $index ?>][nama_bahan]" placeholder="Nama" value="<?= e($ingredient['nama_bahan']) ?>" required>
+                                            <input type="hidden" name="ingredients[<?= $index ?>][jumlah]" value="">
+                                            <input type="hidden" name="ingredients[<?= $index ?>][satuan]" value="">
+                                            <input type="hidden" name="ingredients[<?= $index ?>][keterangan]" value="">
+                                            <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus bahan">Hapus</button>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <button type="button" class="recipe-create__ghost recipe-create__add-under" data-add-row="ingredient">Tambah bahan</button>
+                            </div>
+                        </div>
+
+                        <div class="recipe-create__tab-panel" data-material-panel="tools" hidden>
+                            <div class="recipe-create__table recipe-create__table--tools">
+                                <div class="recipe-create__table-head" aria-hidden="true">
+                                    <span>No</span>
+                                    <span></span>
+                                    <span>Nama Peralatan</span>
+                                    <span>Hapus</span>
+                                </div>
+                                <div class="recipe-create__rows recipe-create__rows--table" data-rows="tools">
+                                    <?php foreach ($tools as $index => $tool): ?>
+                                        <div class="recipe-create__row recipe-create__row--tool" data-sortable-row>
+                                            <span class="recipe-create__row-number" data-row-number><?= e((string) ($index + 1)) ?></span>
+                                            <span class="recipe-create__drag-handle" draggable="true" data-drag-handle aria-hidden="true">☰</span>
+                                            <input type="text" name="tools[<?= $index ?>][nama_peralatan]" placeholder="Nama peralatan" value="<?= e($tool['nama_peralatan']) ?>" required>
+                                            <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus peralatan">Hapus</button>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <button type="button" class="recipe-create__ghost recipe-create__add-under" data-add-row="tool">Tambah peralatan</button>
+                            </div>
                         </div>
                     </section>
                 </div>
 
                 <div class="recipe-create__content-column">
-                    <section class="detail-panel recipe-create__section">
+                    <section class="detail-panel recipe-create__section recipe-create__section--steps">
                         <div class="recipe-create__section-head">
                             <div>
                                 <h2>Langkah memasak</h2>
                                 <p class="recipe-create__steps-note">Setiap langkah bisa punya gambar sendiri dan penjelasan terpisah.</p>
                             </div>
-                            <button type="button" class="recipe-create__ghost" data-add-row="step">Tambah langkah</button>
                         </div>
                         <div class="recipe-create__rows recipe-create__rows--steps" data-rows="steps">
                             <?php foreach ($steps as $index => $step): ?>
-                                <div class="recipe-create__row recipe-create__row--step">
+                                <div class="recipe-create__row recipe-create__row--step" data-sortable-row>
+                                    <div class="recipe-create__step-marker" draggable="true" data-drag-handle aria-hidden="true">
+                                        <span data-step-number><?= e((string) ($index + 1)) ?></span>
+                                    </div>
+                                    <span class="recipe-create__drag-handle recipe-create__drag-handle--step" draggable="true" data-drag-handle aria-hidden="true">☰</span>
                                     <div class="recipe-create__step-media">
-                                        <div class="recipe-create__step-preview<?= $step['existing_image'] !== '' ? ' has-image' : '' ?>">
+                                        <label class="recipe-create__step-preview<?= $step['existing_image'] !== '' ? ' has-image' : '' ?>">
                                             <?php if ($step['existing_image'] !== ''): ?>
                                                 <img src="<?= e(recipe_asset_path($step['existing_image'])) ?>" alt="Pratinjau langkah <?= e((string) ($index + 1)) ?>" data-step-preview>
                                             <?php else: ?>
                                                 <span data-step-empty>Belum ada gambar</span>
                                                 <img src="" alt="" hidden data-step-preview>
                                             <?php endif; ?>
-                                        </div>
-                                        <label class="recipe-create__step-upload">
-                                            <span>Gambar langkah</span>
                                             <input type="hidden" name="steps[<?= $index ?>][existing_image]" value="<?= e($step['existing_image']) ?>">
                                             <input type="file" name="step_images[<?= $index ?>]" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-step-file>
                                         </label>
                                     </div>
                                     <div class="recipe-create__step-body">
-                                        <span class="recipe-create__step-label">Langkah <span data-step-number><?= e((string) ($index + 1)) ?></span></span>
+                                        <span class="recipe-create__step-label">Langkah Persiapan</span>
                                         <textarea name="steps[<?= $index ?>][text]" rows="5" placeholder="Jelaskan apa yang harus dilakukan pada langkah ini..." required><?= e($step['text']) ?></textarea>
                                     </div>
                                     <button type="button" class="recipe-create__remove recipe-create__remove--step" data-remove-row aria-label="Hapus langkah">Hapus</button>
                                 </div>
                             <?php endforeach; ?>
                         </div>
+                        <button type="button" class="recipe-create__ghost recipe-create__add-under" data-add-row="step">Tambah langkah</button>
                     </section>
                 </div>
             </div>
@@ -559,41 +588,42 @@ function old(string $key, array $old): string
     </main>
 
     <template id="ingredient-template">
-        <div class="recipe-create__row recipe-create__row--ingredient">
-            <span class="recipe-create__drag-handle" aria-hidden="true"><span></span><span></span><span></span></span>
-            <input type="text" name="ingredients[__INDEX__][nama_bahan]" placeholder="Nama bahan" required>
+        <div class="recipe-create__row recipe-create__row--ingredient" data-sortable-row>
+            <span class="recipe-create__row-number" data-row-number>__NUMBER__</span>
+            <span class="recipe-create__drag-handle" draggable="true" data-drag-handle aria-hidden="true">☰</span>
+            <input type="text" name="ingredients[__INDEX__][nama_bahan]" placeholder="Nama" required>
             <input type="hidden" name="ingredients[__INDEX__][jumlah]" value="">
             <input type="hidden" name="ingredients[__INDEX__][satuan]" value="">
             <input type="hidden" name="ingredients[__INDEX__][keterangan]" value="">
-            <button type="button" class="recipe-create__ingredient-menu" data-ingredient-menu aria-expanded="false" aria-label="Opsi bahan" title="Opsi bahan">...</button>
-            <div class="recipe-create__ingredient-popover" hidden>
-                <button type="button" data-remove-row>Hapus</button>
-            </div>
+            <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus bahan">Hapus</button>
         </div>
     </template>
 
     <template id="tool-template">
-        <div class="recipe-create__row recipe-create__row--tool">
+        <div class="recipe-create__row recipe-create__row--tool" data-sortable-row>
+            <span class="recipe-create__row-number" data-row-number>__NUMBER__</span>
+            <span class="recipe-create__drag-handle" draggable="true" data-drag-handle aria-hidden="true">☰</span>
             <input type="text" name="tools[__INDEX__][nama_peralatan]" placeholder="Nama peralatan" required>
             <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus peralatan">Hapus</button>
         </div>
     </template>
 
     <template id="step-template">
-        <div class="recipe-create__row recipe-create__row--step">
+        <div class="recipe-create__row recipe-create__row--step" data-sortable-row>
+            <div class="recipe-create__step-marker" draggable="true" data-drag-handle aria-hidden="true">
+                <span data-step-number>__NUMBER__</span>
+            </div>
+            <span class="recipe-create__drag-handle recipe-create__drag-handle--step" draggable="true" data-drag-handle aria-hidden="true">☰</span>
             <div class="recipe-create__step-media">
-                <div class="recipe-create__step-preview">
+                <label class="recipe-create__step-preview">
                     <span data-step-empty>Belum ada gambar</span>
                     <img src="" alt="" hidden data-step-preview>
-                </div>
-                <label class="recipe-create__step-upload">
-                    <span>Gambar langkah</span>
                     <input type="hidden" name="steps[__INDEX__][existing_image]" value="">
                     <input type="file" name="step_images[__INDEX__]" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-step-file>
                 </label>
             </div>
             <div class="recipe-create__step-body">
-                <span class="recipe-create__step-label">Langkah <span data-step-number>__NUMBER__</span></span>
+                <span class="recipe-create__step-label">Langkah Persiapan</span>
                 <textarea name="steps[__INDEX__][text]" rows="5" placeholder="Jelaskan apa yang harus dilakukan pada langkah ini..." required></textarea>
             </div>
             <button type="button" class="recipe-create__remove recipe-create__remove--step" data-remove-row aria-label="Hapus langkah">Hapus</button>
@@ -603,6 +633,8 @@ function old(string $key, array $old): string
     <script>
         (() => {
             const previewImage = document.querySelector('[data-preview-image]');
+            const previewFrame = document.querySelector('.recipe-create__preview-frame');
+            const uploadDrop = document.querySelector('.recipe-create__upload');
             const previewTitle = document.querySelector('[data-preview-title]');
             const previewTime = document.querySelector('[data-preview-time]');
             const previewPorsi = document.querySelector('[data-preview-porsi]');
@@ -675,12 +707,16 @@ function old(string $key, array $old): string
 
                 if (!file) {
                     previewImage.src = originalImageSrc;
+                    previewImage.hidden = false;
+                    previewFrame?.classList.add('has-image');
                     previewUploadLabel.textContent = 'Ganti foto resep';
                     return;
                 }
 
                 currentObjectUrl = URL.createObjectURL(file);
                 previewImage.src = currentObjectUrl;
+                previewImage.hidden = false;
+                previewFrame?.classList.add('has-image');
                 previewUploadLabel.textContent = file.name;
             }
 
@@ -698,21 +734,84 @@ function old(string $key, array $old): string
                 });
             }
 
+            if (uploadDrop && fileInput) {
+                ['dragenter', 'dragover'].forEach((eventName) => {
+                    uploadDrop.addEventListener(eventName, (event) => {
+                        event.preventDefault();
+                        uploadDrop.classList.add('is-dragover');
+                    });
+                });
+                ['dragleave', 'drop'].forEach((eventName) => {
+                    uploadDrop.addEventListener(eventName, () => {
+                        uploadDrop.classList.remove('is-dragover');
+                    });
+                });
+                uploadDrop.addEventListener('drop', (event) => {
+                    event.preventDefault();
+                    const file = event.dataTransfer.files && event.dataTransfer.files[0] ? event.dataTransfer.files[0] : null;
+                    if (!file) {
+                        return;
+                    }
+                    const transfer = new DataTransfer();
+                    transfer.items.add(file);
+                    fileInput.files = transfer.files;
+                    updatePreviewImage(file);
+                });
+            }
+
             syncPreview();
 
+            const materialTabs = document.querySelectorAll('[data-material-tab]');
+            const materialPanels = document.querySelectorAll('[data-material-panel]');
             const rowTargets = {
                 ingredient: 'ingredients',
                 tool: 'tools',
                 step: 'steps',
             };
 
-            function syncStepNumbers() {
-                document.querySelectorAll('[data-rows="steps"] .recipe-create__row--step').forEach((row, index) => {
-                    const numberTarget = row.querySelector('[data-step-number]');
-                    if (numberTarget) {
-                        numberTarget.textContent = String(index + 1);
+            function nextRowIndex(container) {
+                let maxIndex = -1;
+                container.querySelectorAll('[name]').forEach((field) => {
+                    const match = field.name.match(/\[(\d+)\]/);
+                    if (match) {
+                        maxIndex = Math.max(maxIndex, Number(match[1]));
                     }
                 });
+                return maxIndex + 1;
+            }
+
+            function syncContainer(container) {
+                const rows = Array.from(container.querySelectorAll(':scope > .recipe-create__row'));
+                rows.forEach((row, index) => {
+                    row.querySelectorAll('[data-row-number], [data-step-number]').forEach((target) => {
+                        target.textContent = String(index + 1);
+                    });
+                    row.querySelectorAll('[name]').forEach((field) => {
+                        field.name = field.name.replace(/(ingredients|tools|steps|step_images)\[\d+\]/, `$1[${index}]`);
+                    });
+                });
+            }
+
+            function syncAllSortable() {
+                document.querySelectorAll('[data-rows]').forEach(syncContainer);
+                syncMaterialCounts();
+            }
+
+            function syncMaterialCounts() {
+                ['ingredients', 'tools'].forEach((name) => {
+                    const container = document.querySelector(`[data-rows="${name}"]`);
+                    const target = document.querySelector(`[data-material-count="${name}"]`);
+                    if (container && target) {
+                        target.textContent = `(${container.querySelectorAll(':scope > .recipe-create__row').length})`;
+                    }
+                });
+            }
+
+            function syncStepNumbers() {
+                const stepsContainer = document.querySelector('[data-rows="steps"]');
+                if (stepsContainer) {
+                    syncContainer(stepsContainer);
+                }
             }
 
             function bindStepPreview(row) {
@@ -756,67 +855,138 @@ function old(string $key, array $old): string
             }
 
             document.querySelectorAll('[data-rows="steps"] .recipe-create__row--step').forEach(bindStepPreview);
-            syncStepNumbers();
+            syncAllSortable();
 
-            document.querySelectorAll('[data-add-row]').forEach((button) => {
-                button.addEventListener('click', () => {
-                    const type = button.dataset.addRow;
-                    const template = document.getElementById(`${type}-template`);
-                    const container = document.querySelector(`[data-rows="${rowTargets[type] || type}"]`);
+            function addRow(type) {
+                const template = document.getElementById(`${type}-template`);
+                const container = document.querySelector(`[data-rows="${rowTargets[type] || type}"]`);
 
-                    if (!template || !container) {
-                        return;
-                    }
-
-                    const index = container.children.length;
-                    const html = template.innerHTML
-                        .replaceAll('__INDEX__', String(index))
-                        .replaceAll('__NUMBER__', String(index + 1));
-                    container.insertAdjacentHTML('beforeend', html);
-                    const newRow = container.lastElementChild;
-                    if (newRow && type === 'step') {
-                        bindStepPreview(newRow);
-                        syncStepNumbers();
-                    }
-                });
-            });
-
-            function closeIngredientMenus(exceptRow = null) {
-                document.querySelectorAll('.recipe-create__row--ingredient').forEach((row) => {
-                    if (exceptRow && row === exceptRow) {
-                        return;
-                    }
-
-                    const menu = row.querySelector('.recipe-create__ingredient-popover');
-                    const button = row.querySelector('[data-ingredient-menu]');
-                    if (menu) {
-                        menu.hidden = true;
-                    }
-                    if (button) {
-                        button.setAttribute('aria-expanded', 'false');
-                    }
-                });
-            }
-
-            document.addEventListener('click', (event) => {
-                const menuButton = event.target.closest('[data-ingredient-menu]');
-                if (menuButton) {
-                    const row = menuButton.closest('.recipe-create__row--ingredient');
-                    const menu = row ? row.querySelector('.recipe-create__ingredient-popover') : null;
-                    if (!row || !menu) {
-                        return;
-                    }
-
-                    const willOpen = menu.hidden;
-                    closeIngredientMenus(row);
-                    menu.hidden = !willOpen;
-                    menuButton.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+                if (!template || !container) {
                     return;
                 }
 
+                const index = nextRowIndex(container);
+                const number = container.querySelectorAll('.recipe-create__row').length + 1;
+                const html = template.innerHTML
+                    .replaceAll('__INDEX__', String(index))
+                    .replaceAll('__NUMBER__', String(number));
+                container.insertAdjacentHTML('beforeend', html);
+                const newRow = container.lastElementChild;
+
+                if (newRow && type === 'step') {
+                    bindStepPreview(newRow);
+                }
+
+                syncContainer(container);
+                syncMaterialCounts();
+                newRow?.querySelector('input, textarea')?.focus();
+            }
+
+            function setMaterialTab(panelName) {
+                materialTabs.forEach((tab) => {
+                    const selected = tab.dataset.materialTab === panelName;
+                    tab.classList.toggle('is-active', selected);
+                    tab.setAttribute('aria-selected', selected ? 'true' : 'false');
+                });
+
+                materialPanels.forEach((panel) => {
+                    const selected = panel.dataset.materialPanel === panelName;
+                    panel.hidden = !selected;
+                    panel.classList.toggle('is-active', selected);
+                });
+
+            }
+
+            materialTabs.forEach((button) => {
+                button.addEventListener('click', () => {
+                    setMaterialTab(button.dataset.materialTab || 'ingredients');
+                });
+            });
+
+            document.querySelectorAll('[data-add-row]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    addRow(button.dataset.addRow || '');
+                });
+            });
+
+            let draggedRow = null;
+            let dragImage = null;
+
+            function getDragAfterElement(container, y) {
+                return Array.from(container.querySelectorAll(':scope > [data-sortable-row]:not(.is-dragging)')).reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset, element: child };
+                    }
+                    return closest;
+                }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+            }
+
+            document.addEventListener('dragstart', (event) => {
+                const row = event.target.closest('[data-sortable-row]');
+                if (!row) {
+                    return;
+                }
+
+                if (!event.target.closest('[data-drag-handle]')) {
+                    event.preventDefault();
+                    return;
+                }
+
+                draggedRow = row;
+                row.classList.add('is-dragging');
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', '');
+                const field = row.querySelector('input[type="text"], textarea');
+                const value = field?.value || field?.placeholder || '';
+                const image = row.querySelector('[data-step-preview]:not([hidden])');
+                dragImage = document.createElement('div');
+                dragImage.className = image ? 'recipe-create__drag-preview recipe-create__drag-preview--step' : 'recipe-create__drag-preview';
+                const safeValue = value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+                const imageHtml = image ? `<img src="${image.getAttribute('src')}" alt="">` : '';
+                dragImage.innerHTML = `<span class="recipe-create__drag-handle">☰</span>${imageHtml}<span>${safeValue}</span>`;
+                document.body.appendChild(dragImage);
+                event.dataTransfer.setDragImage(dragImage, 14, 18);
+            });
+
+            document.addEventListener('dragover', (event) => {
+                if (!draggedRow) {
+                    return;
+                }
+
+                const container = event.target.closest('[data-rows]');
+                if (!container || draggedRow.parentElement !== container) {
+                    return;
+                }
+
+                event.preventDefault();
+                const afterElement = getDragAfterElement(container, event.clientY);
+                if (afterElement) {
+                    container.insertBefore(draggedRow, afterElement);
+                } else {
+                    container.appendChild(draggedRow);
+                }
+            });
+
+            document.addEventListener('dragend', () => {
+                if (!draggedRow) {
+                    return;
+                }
+
+                const container = draggedRow.parentElement;
+                draggedRow.classList.remove('is-dragging');
+                draggedRow = null;
+                dragImage?.remove();
+                dragImage = null;
+                if (container) {
+                    syncContainer(container);
+                }
+            });
+
+            document.addEventListener('click', (event) => {
                 const removeButton = event.target.closest('[data-remove-row]');
                 if (!removeButton) {
-                    closeIngredientMenus();
                     return;
                 }
 
@@ -825,8 +995,6 @@ function old(string $key, array $old): string
                 if (!row || !container) {
                     return;
                 }
-
-                closeIngredientMenus();
 
                 if (container.children.length <= 1) {
                     row.querySelectorAll('input, textarea').forEach((input) => {
@@ -846,19 +1014,14 @@ function old(string $key, array $old): string
                     row.querySelectorAll('.recipe-create__step-preview').forEach((wrapper) => {
                         wrapper.classList.remove('has-image');
                     });
+                    syncContainer(container);
+                    syncMaterialCounts();
                     return;
                 }
 
                 row.remove();
-                if (container.dataset.rows === 'steps') {
-                    syncStepNumbers();
-                }
-            });
-
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape') {
-                    closeIngredientMenus();
-                }
+                syncContainer(container);
+                syncMaterialCounts();
             });
         })();
     </script>

@@ -75,6 +75,9 @@ $profileRoleLabel = !$isUnavailable
 $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
     ? date('d M Y', strtotime($profile['joined_at']))
     : '-';
+$profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
+    ? ($recentRecipes[0]['image'] ?? '../assets/img/recipe-salad-hero.png')
+    : '../assets/img/recipe-salad-hero.png';
 
 ?>
 <!DOCTYPE html>
@@ -83,6 +86,7 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle) ?></title>
+        <?= sidebarInitialStateScript() ?>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="profile-page <?= $isPublicProfile ? 'profile-page--public' : 'profile-page--own' ?>" data-guest-mode="<?= $currentUserId > 0 ? '0' : '1' ?>" data-csrf-token="<?= e(csrfToken()) ?>">
@@ -194,6 +198,15 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
             <section class="profile-shell" aria-label="Konten profil">
                 <div class="profile-shell__main">
                     <section class="profile-summary" aria-label="Profil pengguna">
+                        <div class="profile-cover">
+                            <img class="profile-cover__image" src="<?= e($profileHeroImage) ?>" alt="">
+                            <div class="profile-cover__shade"></div>
+                            <div class="profile-cover__copy">
+                                <p><?= $isPublicProfile ? 'Profil Chef' : 'Profil Saya' ?></p>
+                                <h1><?= e($profile['name']) ?></h1>
+                            </div>
+                        </div>
+
                         <div class="profile-summary__card">
                             <div class="profile-summary__avatar-wrap">
                                 <img class="profile-summary__avatar" src="<?= e($profile['avatar']) ?>" alt="<?= e($profile['name']) ?>">
@@ -202,91 +215,47 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                             <div class="profile-summary__content">
                                 <div class="profile-summary__header">
                                     <div>
-                                        <h1 class="profile-summary__name"><?= e($profile['name']) ?></h1>
-                                        <div class="profile-summary__badge">
-                                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                                <path d="M16 11a4 4 0 1 0-8 0m8 0a4 4 0 1 1-8 0m8 0c2.8.7 5 2.5 5 5v1H3v-1c0-2.5 2.2-4.3 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-                                            </svg>
-                                            <?= e($profileRoleLabel) ?>
-                                        </div>
+                                        <h2 class="profile-summary__name"><?= e($profile['name']) ?></h2>
+                                        <div class="profile-summary__badge"><?= e($profileRoleLabel) ?></div>
                                     </div>
 
-                                    <?php if ($isPublicProfile): ?>
-                                        <div class="profile-summary__actions">
-                                            <button
-                                                class="profile-summary__follow<?= $isFollowingProfile ? ' is-active' : '' ?>"
-                                                type="button"
-                                                data-guest-gate
-                                                data-social-action="follow"
-                                                data-user-id="<?= e((string) $profileUserId) ?>"
-                                                data-follow-label="Ikuti"
-                                                data-followed-label="Mengikuti"
-                                            >
-                                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                                    <path d="M15 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM3 21c0-3.1 3.6-5 8-5m7-2v6m3-3h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-                                                </svg>
-                                                <?= $isFollowingProfile ? 'Mengikuti' : 'Ikuti' ?>
-                                            </button>
-                                            <button
-                                                class="profile-summary__report"
-                                                type="button"
-                                                data-guest-gate
-                                                data-report-open
-                                                data-report-target-type="pengguna"
-                                                data-report-target-id="<?= e((string) $profileUserId) ?>"
-                                                data-report-target-label="<?= e($profile['name']) ?>"
-                                            >Laporkan</button>
-                                        </div>
-                                    <?php else: ?>
-                                        <button class="profile-summary__edit" type="button" data-profile-edit-open>Edit Profil</button>
-                                    <?php endif; ?>
+                                    <div class="profile-summary__actions">
+                                        <button
+                                            class="profile-summary__follow<?= $isFollowingProfile ? ' is-active' : '' ?>"
+                                            type="button"
+                                            data-guest-gate
+                                            data-social-action="follow"
+                                            data-user-id="<?= e((string) $profileUserId) ?>"
+                                            data-follow-label="Ikuti"
+                                            data-followed-label="Mengikuti"
+                                        >
+                                            <?= $isFollowingProfile ? 'Mengikuti' : 'Ikuti' ?>
+                                        </button>
+                                        <button
+                                            class="profile-summary__report"
+                                            type="button"
+                                            data-guest-gate
+                                            data-report-open
+                                            data-report-target-type="pengguna"
+                                            data-report-target-id="<?= e((string) $profileUserId) ?>"
+                                            data-report-target-label="<?= e($profile['name']) ?>"
+                                        >Laporkan</button>
+                                    </div>
                                 </div>
 
-                                <?php if (trim((string) ($profile['bio'] ?? '')) !== ''): ?>
-                                    <p class="profile-summary__bio"><?= e((string) $profile['bio']) ?></p>
-                                <?php else: ?>
-                                    <p class="profile-summary__bio profile-summary__bio--muted">
-                                        Profil ini belum punya bio. Tambahkan deskripsi singkat untuk memperjelas identitas akun.
-                                    </p>
-                                <?php endif; ?>
-                            </div>
-
-                            <div class="profile-summary__stats" aria-label="Statistik profil">
-                                <div class="profile-stat profile-stat--recipes">
-                                    <span class="profile-stat__icon">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                            <path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H20v16H8.5A3.5 3.5 0 0 0 5 21.5v-16Zm0 0A3.5 3.5 0 0 1 8.5 2M5 5.5v16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-                                        </svg>
-                                    </span>
-                                    <span class="profile-stat__copy">
-                                        <em class="profile-stat__label">Resep</em>
+                                <div class="profile-summary__stats" aria-label="Statistik profil">
+                                    <div class="profile-stat">
                                         <strong><?= e((string) $profile['recipe_count']) ?></strong>
-                                        <span class="profile-stat__unit">resep</span>
-                                    </span>
-                                </div>
-                                <div class="profile-stat profile-stat--followers">
-                                    <span class="profile-stat__icon">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                            <path d="M16 11a4 4 0 1 0-8 0m11 9c0-3.3-3.6-5-7-5s-7 1.7-7 5m14-9a3 3 0 1 0-1.5-5.6m2.5 14.6c0-2.1-1.2-3.6-3.2-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-                                        </svg>
-                                    </span>
-                                    <span class="profile-stat__copy">
-                                        <em class="profile-stat__label">Pengikut</em>
+                                        <span>Resep</span>
+                                    </div>
+                                    <div class="profile-stat">
                                         <strong data-follower-count><?= e((string) $profile['follower_count']) ?></strong>
-                                        <span class="profile-stat__unit">orang</span>
-                                    </span>
-                                </div>
-                                <div class="profile-stat profile-stat--following">
-                                    <span class="profile-stat__icon">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8c0-3.3 3.1-6 7-6s7 2.7 7 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-                                        </svg>
-                                    </span>
-                                    <span class="profile-stat__copy">
-                                        <em class="profile-stat__label">Mengikuti</em>
+                                        <span>Pengikut</span>
+                                    </div>
+                                    <div class="profile-stat">
                                         <strong><?= e((string) $profile['following_count']) ?></strong>
-                                        <span class="profile-stat__unit">orang</span>
-                                    </span>
+                                        <span>Mengikuti</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -337,7 +306,10 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                                         <div class="profile-recipe-card__body">
                                             <h3><?= e($recipe['title']) ?></h3>
                                             <div class="profile-recipe-card__meta">
-                                                <?= ratingStarsHtml($recipe['rating'] ?? 0, 'profile-recipe-card__rating') ?>
+                                                <span class="profile-recipe-card__rating-wrap">
+                                                    <?= ratingStarsHtml($recipe['rating'] ?? 0, 'profile-recipe-card__rating') ?>
+                                                    <span><?= e(number_format((float) ($recipe['rating'] ?? 0), 1)) ?></span>
+                                                </span>
                                                 <span><?= e($recipe['cook_time']) ?></span>
                                             </div>
                                         </div>
@@ -447,6 +419,15 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
             </section>
             <?php else: ?>
                 <section class="profile-summary" aria-label="Profil pengguna">
+                    <div class="profile-cover">
+                        <img class="profile-cover__image" src="<?= e($profileHeroImage) ?>" alt="">
+                        <div class="profile-cover__shade"></div>
+                        <div class="profile-cover__copy">
+                            <p>Profil Saya</p>
+                            <h1><?= e($profile['name']) ?></h1>
+                        </div>
+                    </div>
+
                     <div class="profile-summary__card">
                         <div class="profile-summary__avatar-wrap">
                             <img class="profile-summary__avatar" src="<?= e($profile['avatar']) ?>" alt="<?= e($profile['name']) ?>">
@@ -455,20 +436,12 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                         <div class="profile-summary__content">
                             <div class="profile-summary__header">
                                 <div>
-                                    <h1 class="profile-summary__name"><?= e($profile['name']) ?></h1>
+                                    <h2 class="profile-summary__name"><?= e($profile['name']) ?></h2>
                                     <div class="profile-summary__badge"><?= e($profileRoleLabel) ?></div>
                                 </div>
 
                                 <button class="profile-summary__edit" type="button" data-profile-edit-open>Edit Profil</button>
                             </div>
-
-                            <?php if (trim((string) ($profile['bio'] ?? '')) !== ''): ?>
-                                <p class="profile-summary__bio"><?= e((string) $profile['bio']) ?></p>
-                            <?php else: ?>
-                                <p class="profile-summary__bio profile-summary__bio--muted">
-                                    Profil ini belum punya bio. Tambahkan deskripsi singkat untuk memperjelas identitas akun.
-                                </p>
-                            <?php endif; ?>
 
                             <div class="profile-summary__stats" aria-label="Statistik profil">
                                 <div class="profile-stat">
@@ -512,11 +485,18 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                                             <button class="profile-recipe-card__bookmark<?= !empty($recipe['favorited']) ? ' is-active' : '' ?>" type="button" aria-label="Simpan resep" aria-pressed="<?= !empty($recipe['favorited']) ? 'true' : 'false' ?>" data-card-favorite data-recipe-id="<?= e((string) ($recipe['id'] ?? 0)) ?>">
                                                 <img src="../assets/img/icon-bookmark.svg" alt="">
                                             </button>
-                                            <img class="profile-recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                                            <div class="profile-recipe-card__media">
+                                                <img class="profile-recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                                            </div>
                                             <div class="profile-recipe-card__body">
                                                 <h3><?= e($recipe['title']) ?></h3>
-                                                <?= ratingStarsHtml($recipe['rating'] ?? 0, 'profile-recipe-card__rating') ?>
-                                                <span><?= e($recipe['cook_time']) ?></span>
+                                                <div class="profile-recipe-card__meta">
+                                                    <span class="profile-recipe-card__rating-wrap">
+                                                        <?= ratingStarsHtml($recipe['rating'] ?? 0, 'profile-recipe-card__rating') ?>
+                                                        <span><?= e(number_format((float) ($recipe['rating'] ?? 0), 1)) ?></span>
+                                                    </span>
+                                                    <span><?= e($recipe['cook_time']) ?></span>
+                                                </div>
                                             </div>
                                         </article>
                                     <?php endforeach; ?>

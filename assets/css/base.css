@@ -10,6 +10,13 @@
     --recipe-card-max: 244px;
     --recipe-grid-column-gap: 18px;
     --recipe-grid-row-gap: 18px;
+    --sidebar-width-expanded: 272px;
+    --sidebar-width-collapsed: 76px;
+    --sidebar-width: var(--sidebar-width-expanded);
+}
+
+html.sidebar-collapsed {
+    --sidebar-width: var(--sidebar-width-collapsed);
 }
 
 .rating-stars {

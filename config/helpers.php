@@ -77,6 +77,11 @@ function sidebarToggleButton(): string
     return '<button class="home-sidebar__toggle" type="button" data-sidebar-toggle aria-expanded="true" aria-label="Tutup sidebar">' . sidebarIconSvg('chevron') . '</button>';
 }
 
+function sidebarInitialStateScript(): string
+{
+    return '<script>(function(){try{if(window.localStorage.getItem("resepku.sidebarCollapsed")==="1"){document.documentElement.classList.add("sidebar-collapsed");}}catch(error){}})();</script>';
+}
+
 function sidebarLink(string $href, string $label, string $icon, string $className = '', bool $active = false): string
 {
     $classes = trim($className . ($active ? ' is-active' : ''));
