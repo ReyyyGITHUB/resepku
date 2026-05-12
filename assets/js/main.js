@@ -28,6 +28,36 @@ document.addEventListener("DOMContentLoaded", function () {
     var reportSuccessDuration = 5000;
     var reportSuccessTimer = null;
     var reportSuccessInterval = null;
+    var sidebarStorageKey = "resepku.sidebarCollapsed";
+    var sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+
+    function setSidebarCollapsed(collapsed) {
+        document.body.classList.toggle("sidebar-collapsed", collapsed);
+
+        if (sidebarToggle) {
+            sidebarToggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+            sidebarToggle.setAttribute("aria-label", collapsed ? "Buka sidebar" : "Tutup sidebar");
+        }
+    }
+
+    try {
+        setSidebarCollapsed(window.localStorage.getItem(sidebarStorageKey) === "1");
+    } catch (error) {
+        setSidebarCollapsed(false);
+    }
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener("click", function () {
+            var collapsed = !document.body.classList.contains("sidebar-collapsed");
+            setSidebarCollapsed(collapsed);
+
+            try {
+                window.localStorage.setItem(sidebarStorageKey, collapsed ? "1" : "0");
+            } catch (error) {
+                return;
+            }
+        });
+    }
 
     function openGuestModal() {
         if (!guestModal) {

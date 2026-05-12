@@ -114,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p class="home-sidebar__name">Resepku</p>
                     <p class="home-sidebar__status">Sudah masuk</p>
                 </div>
+                <?= sidebarToggleButton() ?>
             </div>
 
             <div class="home-sidebar__identity">
@@ -125,21 +126,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <?php if ($isAdmin): ?>
-                <a href="../admin/" class="home-sidebar__admin-panel">Panel Admin</a>
+                <?= sidebarLink('../admin/', 'Panel Admin', 'admin', 'home-sidebar__admin-panel') ?>
             <?php endif; ?>
 
-            <a href="../auth/logout.php" class="home-sidebar__logout">Keluar</a>
+            <?= sidebarLink('../auth/logout.php', 'Keluar', 'logout', 'home-sidebar__logout') ?>
         </div>
 
         <div class="home-sidebar__divider"></div>
 
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Profil">
-            <a href="../home/">Beranda</a>
-            <a class="is-active" href="../profil/">Profil</a>
-            <a href="../resep/myresep.php">Resep Saya</a>
-            <a href="../resep/buat.php">Tambah Resep</a>
-            <a href="../resep/favorite.php">Favorit</a>
+            <?= sidebarSearchForm('../cari.php') ?>
+            <?= sidebarLink('../home/', 'Beranda', 'home') ?>
+            <?= sidebarLink('../profil/', 'Profil', 'user', '', true) ?>
+            <?= sidebarLink('../resep/myresep.php', 'Resep Saya', 'book') ?>
+            <?= sidebarLink('../resep/buat.php', 'Tambah Resep', 'plus') ?>
+            <?= sidebarLink('../resep/favorite.php', 'Favorit', 'bookmark') ?>
         </nav>
 
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">

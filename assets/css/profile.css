@@ -606,7 +606,7 @@
 }
 
 .profile-recipe-card__rating {
-    color: #ffa501;
+    color: inherit;
 }
 
 .profile-account-list,
@@ -1109,14 +1109,14 @@
 .profile-recipe-card__rating {
     display: inline-flex;
     width: fit-content;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    color: #f5b04d;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
     font-size: 12px;
     line-height: 1;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
 }
 
 .profile-recipe-card__body span {
@@ -1877,13 +1877,13 @@
 }
 
 .profile-page--public .profile-recipe-card__rating {
-    display: inline;
+    display: inline-flex;
     padding: 0;
     border: 0;
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    color: #ffa501;
+    color: inherit;
 }
 
 .profile-page--public .profile-public-feature {

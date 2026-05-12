@@ -94,6 +94,7 @@ $visibleRecipes = count($recipes);
                     <p class="home-sidebar__name">Resepku</p>
                     <p class="home-sidebar__status">Sudah masuk</p>
                 </div>
+                <?= sidebarToggleButton() ?>
             </div>
 
             <div class="home-sidebar__identity">
@@ -105,23 +106,23 @@ $visibleRecipes = count($recipes);
             </div>
 
             <?php if ($isAdmin): ?>
-                <a href="../admin/" class="home-sidebar__admin-panel">Panel Admin</a>
+                <?= sidebarLink('../admin/', 'Panel Admin', 'admin', 'home-sidebar__admin-panel') ?>
             <?php endif; ?>
 
-            <a href="../auth/logout.php" class="home-sidebar__logout">Keluar</a>
+            <?= sidebarLink('../auth/logout.php', 'Keluar', 'logout', 'home-sidebar__logout') ?>
         </div>
 
         <div class="home-sidebar__divider"></div>
 
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Resep">
-            <a href="../home/">Beranda</a>
-            <a href="../profil/">Profil</a>
-            <a class="is-active" href="../resep/myresep.php">Resep Saya</a>
-            <a href="../resep/buat.php">Tambah Resep</a>
-            <a href="../home/?sort=popular">Favorit</a>
-            <a href="../profil/laporan.php">Pengaduan Saya</a>
-            <a href="../cari.php">Cari</a>
+            <?= sidebarSearchForm('../cari.php') ?>
+            <?= sidebarLink('../home/', 'Beranda', 'home') ?>
+            <?= sidebarLink('../profil/', 'Profil', 'user') ?>
+            <?= sidebarLink('../resep/myresep.php', 'Resep Saya', 'book', '', true) ?>
+            <?= sidebarLink('../resep/buat.php', 'Tambah Resep', 'plus') ?>
+            <?= sidebarLink('../resep/favorite.php', 'Favorit', 'bookmark') ?>
+            <?= sidebarLink('../profil/laporan.php', 'Pengaduan Saya', 'bell') ?>
         </nav>
 
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">

@@ -11,6 +11,10 @@ if (empty($_SESSION["user"])) {
 
 $user = $_SESSION["user"];
 $isAdmin = isAdmin();
+$profile = recipe_user_profile_db((int) ($user["id"] ?? 0)) ?? [
+    "name" => (string) ($user["name"] ?? "Pengguna"),
+    "avatar" => "../assets/img/home-profile.png",
+];
 $errors = [];
 $success = null;
 
@@ -311,6 +315,7 @@ function old(string $key, array $old): string
                     <p class="home-sidebar__name">Resepku</p>
                     <p class="home-sidebar__status">Sudah masuk</p>
                 </div>
+                <?= sidebarToggleButton() ?>
             </div>
 
             <div class="home-sidebar__identity">
@@ -322,22 +327,22 @@ function old(string $key, array $old): string
             </div>
 
             <?php if ($isAdmin): ?>
-                <a href="../admin/" class="home-sidebar__admin-panel">Panel Admin</a>
+                <?= sidebarLink('../admin/', 'Panel Admin', 'admin', 'home-sidebar__admin-panel') ?>
             <?php endif; ?>
 
-            <a href="../auth/logout.php" class="home-sidebar__logout">Keluar</a>
+            <?= sidebarLink('../auth/logout.php', 'Keluar', 'logout', 'home-sidebar__logout') ?>
         </div>
 
         <div class="home-sidebar__divider"></div>
 
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Resep">
-            <a href="../home/">Beranda</a>
-            <a href="../profil/">Profil</a>
-            <a href="../resep/myresep.php">Resep Saya</a>
-            <a class="is-active" href="../resep/buat.php">Tambah Resep</a>
-            <a href="../resep/favorite.php">Favorit</a>
-            <a href="../home/#recipe-search">Cari</a>
+            <?= sidebarSearchForm('../cari.php') ?>
+            <?= sidebarLink('../home/', 'Beranda', 'home') ?>
+            <?= sidebarLink('../profil/', 'Profil', 'user') ?>
+            <?= sidebarLink('../resep/myresep.php', 'Resep Saya', 'book') ?>
+            <?= sidebarLink('../resep/buat.php', 'Tambah Resep', 'plus', '', true) ?>
+            <?= sidebarLink('../resep/favorite.php', 'Favorit', 'bookmark') ?>
         </nav>
 
         <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
@@ -367,7 +372,20 @@ function old(string $key, array $old): string
                 <div class="detail-hero__panel">
                     <p class="detail-hero__eyebrow">Buat Resep</p>
                     <h1 data-preview-title>Buat resep baru</h1>
-                    <p class="recipe-create__lede">Layout ini disusun seperti halaman detail: visual di kiri, informasi inti di kanan, lalu panel isi resep di bawah.</p>
+                    <a class="detail-author-link recipe-create__author" href="../profil/" aria-label="Lihat profil <?= e($profile["name"]) ?>">
+                        <img class="detail-author-link__avatar" src="<?= e($profile["avatar"]) ?>" alt="">
+                        <span>
+                            <span class="detail-author-link__label">Pembuat resep</span>
+                            <strong><?= e($profile["name"]) ?></strong>
+                        </span>
+                    </a>
+                    <label class="recipe-create__full recipe-create__hero-description">
+                        <span>Deskripsi</span>
+                        <textarea name="deskripsi" rows="4" required data-preview-input="description"><?= old(
+                            "deskripsi",
+                            $old,
+                        ) ?></textarea>
+                    </label>
 
                     <?php if ($errors !== []): ?>
                         <div class="recipe-create__alert recipe-create__alert--error">
@@ -451,105 +469,97 @@ function old(string $key, array $old): string
                 </div>
             </div>
 
-                <section class="detail-panel recipe-create__section">
-                    <p class="detail-panel__label">Tentang</p>
-                    <h2>Deskripsi</h2>
-                    <label class="recipe-create__full">
-                        <span>Jelaskan rasa, isi, atau karakter resep</span>
-                        <textarea name="deskripsi" rows="5" required data-preview-input="description"><?= old(
-                            "deskripsi",
-                            $old,
-                        ) ?></textarea>
-                    </label>
-                    <p class="recipe-create__preview-text" data-preview-description>Deskripsi resepmu akan tampil di sini.</p>
-                </section>
-
-            <div class="detail-duo recipe-create__duo">
-                <section class="detail-panel recipe-create__section">
-                    <p class="detail-panel__label">Bahan</p>
-                    <div class="recipe-create__section-head">
-                        <h2>Bahan</h2>
-                        <button type="button" class="recipe-create__ghost" data-add-row="ingredient">Tambah bahan</button>
-                    </div>
-                    <div class="recipe-create__rows" data-rows="ingredients">
-                        <?php foreach (
-                            $ingredients
-                            as $index => $ingredient
-                        ): ?>
-                            <div class="recipe-create__row recipe-create__row--ingredient">
-                                <input type="text" name="ingredients[<?= $index ?>][nama_bahan]" placeholder="Nama bahan" value="<?= e(
+            <div class="recipe-create__body">
+                <div class="recipe-create__sticky-column">
+                    <section class="detail-panel recipe-create__section">
+                        <div class="recipe-create__section-head">
+                            <h2>Bahan</h2>
+                            <button type="button" class="recipe-create__ghost" data-add-row="ingredient">Tambah bahan</button>
+                        </div>
+                        <div class="recipe-create__rows" data-rows="ingredients">
+                            <?php foreach (
+                                $ingredients
+                                as $index => $ingredient
+                            ): ?>
+                                <div class="recipe-create__row recipe-create__row--ingredient">
+                                    <span class="recipe-create__drag-handle" aria-hidden="true"><span></span><span></span><span></span></span>
+                                    <input type="text" name="ingredients[<?= $index ?>][nama_bahan]" placeholder="Nama bahan" value="<?= e(
     $ingredient["nama_bahan"],
 ) ?>" required>
-                                <input type="text" name="ingredients[<?= $index ?>][jumlah]" placeholder="Jumlah" value="<?= e(
+                                    <input type="hidden" name="ingredients[<?= $index ?>][jumlah]" value="<?= e(
     $ingredient["jumlah"],
 ) ?>">
-                                <input type="text" name="ingredients[<?= $index ?>][satuan]" placeholder="Satuan" value="<?= e(
+                                    <input type="hidden" name="ingredients[<?= $index ?>][satuan]" value="<?= e(
     $ingredient["satuan"],
 ) ?>">
-                                <input type="text" name="ingredients[<?= $index ?>][keterangan]" placeholder="Keterangan" value="<?= e(
+                                    <input type="hidden" name="ingredients[<?= $index ?>][keterangan]" value="<?= e(
     $ingredient["keterangan"],
 ) ?>">
-                                <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus bahan">Hapus</button>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </section>
+                                    <button type="button" class="recipe-create__ingredient-menu" data-ingredient-menu aria-expanded="false" aria-label="Opsi bahan" title="Opsi bahan">...</button>
+                                    <div class="recipe-create__ingredient-popover" hidden>
+                                        <button type="button" data-remove-row>Hapus</button>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
 
-                <section class="detail-panel recipe-create__section">
-                    <p class="detail-panel__label">Peralatan</p>
-                    <div class="recipe-create__section-head">
-                        <h2>Peralatan</h2>
-                        <button type="button" class="recipe-create__ghost" data-add-row="tool">Tambah peralatan</button>
-                    </div>
-                    <div class="recipe-create__rows" data-rows="tools">
-                        <?php foreach ($tools as $index => $tool): ?>
-                            <div class="recipe-create__row recipe-create__row--tool">
-                                <input type="text" name="tools[<?= $index ?>][nama_peralatan]" placeholder="Nama peralatan" value="<?= e(
+                    <section class="detail-panel recipe-create__section">
+                        <div class="recipe-create__section-head">
+                            <h2>Peralatan</h2>
+                            <button type="button" class="recipe-create__ghost" data-add-row="tool">Tambah peralatan</button>
+                        </div>
+                        <div class="recipe-create__rows" data-rows="tools">
+                            <?php foreach ($tools as $index => $tool): ?>
+                                <div class="recipe-create__row recipe-create__row--tool">
+                                    <input type="text" name="tools[<?= $index ?>][nama_peralatan]" placeholder="Nama peralatan" value="<?= e(
     $tool["nama_peralatan"],
 ) ?>" required>
-                                <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus peralatan">Hapus</button>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </section>
-            </div>
-
-            <section class="detail-panel recipe-create__section">
-                    <p class="detail-panel__label">Langkah</p>
-                <div class="recipe-create__section-head">
-                    <div>
-                        <h2>Langkah memasak</h2>
-                        <p class="recipe-create__steps-note">Setiap langkah bisa punya gambar sendiri dan penjelasan terpisah.</p>
-                    </div>
-                    <button type="button" class="recipe-create__ghost" data-add-row="step">Tambah langkah</button>
-                </div>
-                <div class="recipe-create__rows recipe-create__rows--steps" data-rows="steps">
-                    <?php foreach ($steps as $index => $step): ?>
-                        <div class="recipe-create__row recipe-create__row--step">
-                            <div class="recipe-create__step-media">
-                                <div class="recipe-create__step-preview<?= $step["existing_image"] !== "" ? " has-image" : "" ?>">
-                                    <?php if ($step["existing_image"] !== ""): ?>
-                                        <img src="<?= e(recipe_asset_path($step["existing_image"])) ?>" alt="Pratinjau langkah <?= e((string) ($index + 1)) ?>" data-step-preview>
-                                    <?php else: ?>
-                                        <span data-step-empty>Belum ada gambar</span>
-                                        <img src="" alt="" hidden data-step-preview>
-                                    <?php endif; ?>
+                                    <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus peralatan">Hapus</button>
                                 </div>
-                                <label class="recipe-create__step-upload">
-                                    <span>Gambar langkah</span>
-                                    <input type="hidden" name="steps[<?= $index ?>][existing_image]" value="<?= e($step["existing_image"]) ?>">
-                                    <input type="file" name="step_images[<?= $index ?>]" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-step-file>
-                                </label>
-                            </div>
-                            <div class="recipe-create__step-body">
-                                <span class="recipe-create__step-label">Langkah <span data-step-number><?= e((string) ($index + 1)) ?></span></span>
-                                <textarea name="steps[<?= $index ?>][text]" rows="5" placeholder="Jelaskan apa yang harus dilakukan pada langkah ini..." required><?= e($step["text"]) ?></textarea>
-                            </div>
-                            <button type="button" class="recipe-create__remove recipe-create__remove--step" data-remove-row aria-label="Hapus langkah">Hapus</button>
+                            <?php endforeach; ?>
                         </div>
-                    <?php endforeach; ?>
+                    </section>
                 </div>
-            </section>
+
+                <div class="recipe-create__content-column">
+                    <section class="detail-panel recipe-create__section">
+                        <div class="recipe-create__section-head">
+                            <div>
+                                <h2>Langkah memasak</h2>
+                                <p class="recipe-create__steps-note">Setiap langkah bisa punya gambar sendiri dan penjelasan terpisah.</p>
+                            </div>
+                            <button type="button" class="recipe-create__ghost" data-add-row="step">Tambah langkah</button>
+                        </div>
+                        <div class="recipe-create__rows recipe-create__rows--steps" data-rows="steps">
+                            <?php foreach ($steps as $index => $step): ?>
+                                <div class="recipe-create__row recipe-create__row--step">
+                                    <div class="recipe-create__step-media">
+                                        <div class="recipe-create__step-preview<?= $step["existing_image"] !== "" ? " has-image" : "" ?>">
+                                            <?php if ($step["existing_image"] !== ""): ?>
+                                                <img src="<?= e(recipe_asset_path($step["existing_image"])) ?>" alt="Pratinjau langkah <?= e((string) ($index + 1)) ?>" data-step-preview>
+                                            <?php else: ?>
+                                                <span data-step-empty>Belum ada gambar</span>
+                                                <img src="" alt="" hidden data-step-preview>
+                                            <?php endif; ?>
+                                        </div>
+                                        <label class="recipe-create__step-upload">
+                                            <span>Gambar langkah</span>
+                                            <input type="hidden" name="steps[<?= $index ?>][existing_image]" value="<?= e($step["existing_image"]) ?>">
+                                            <input type="file" name="step_images[<?= $index ?>]" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-step-file>
+                                        </label>
+                                    </div>
+                                    <div class="recipe-create__step-body">
+                                        <span class="recipe-create__step-label">Langkah <span data-step-number><?= e((string) ($index + 1)) ?></span></span>
+                                        <textarea name="steps[<?= $index ?>][text]" rows="5" placeholder="Jelaskan apa yang harus dilakukan pada langkah ini..." required><?= e($step["text"]) ?></textarea>
+                                    </div>
+                                    <button type="button" class="recipe-create__remove recipe-create__remove--step" data-remove-row aria-label="Hapus langkah">Hapus</button>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                </div>
+            </div>
 
             <div class="recipe-create__actions">
                 <a class="recipe-create__secondary" href="../home/">Batal</a>
@@ -560,11 +570,15 @@ function old(string $key, array $old): string
 
     <template id="ingredient-template">
         <div class="recipe-create__row recipe-create__row--ingredient">
+            <span class="recipe-create__drag-handle" aria-hidden="true"><span></span><span></span><span></span></span>
             <input type="text" name="ingredients[__INDEX__][nama_bahan]" placeholder="Nama bahan" required>
-            <input type="text" name="ingredients[__INDEX__][jumlah]" placeholder="Jumlah">
-            <input type="text" name="ingredients[__INDEX__][satuan]" placeholder="Satuan">
-            <input type="text" name="ingredients[__INDEX__][keterangan]" placeholder="Keterangan">
-            <button type="button" class="recipe-create__remove" data-remove-row aria-label="Hapus bahan">Hapus</button>
+            <input type="hidden" name="ingredients[__INDEX__][jumlah]" value="">
+            <input type="hidden" name="ingredients[__INDEX__][satuan]" value="">
+            <input type="hidden" name="ingredients[__INDEX__][keterangan]" value="">
+            <button type="button" class="recipe-create__ingredient-menu" data-ingredient-menu aria-expanded="false" aria-label="Opsi bahan" title="Opsi bahan">...</button>
+            <div class="recipe-create__ingredient-popover" hidden>
+                <button type="button" data-remove-row>Hapus</button>
+            </div>
         </div>
     </template>
 
@@ -777,9 +791,42 @@ function old(string $key, array $old): string
                 });
             });
 
+            function closeIngredientMenus(exceptRow = null) {
+                document.querySelectorAll('.recipe-create__row--ingredient').forEach((row) => {
+                    if (exceptRow && row === exceptRow) {
+                        return;
+                    }
+
+                    const menu = row.querySelector('.recipe-create__ingredient-popover');
+                    const button = row.querySelector('[data-ingredient-menu]');
+                    if (menu) {
+                        menu.hidden = true;
+                    }
+                    if (button) {
+                        button.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+
             document.addEventListener('click', (event) => {
+                const menuButton = event.target.closest('[data-ingredient-menu]');
+                if (menuButton) {
+                    const row = menuButton.closest('.recipe-create__row--ingredient');
+                    const menu = row ? row.querySelector('.recipe-create__ingredient-popover') : null;
+                    if (!row || !menu) {
+                        return;
+                    }
+
+                    const willOpen = menu.hidden;
+                    closeIngredientMenus(row);
+                    menu.hidden = !willOpen;
+                    menuButton.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+                    return;
+                }
+
                 const removeButton = event.target.closest('[data-remove-row]');
                 if (!removeButton) {
+                    closeIngredientMenus();
                     return;
                 }
 
@@ -788,6 +835,8 @@ function old(string $key, array $old): string
                 if (!row || !container) {
                     return;
                 }
+
+                closeIngredientMenus();
 
                 if (container.children.length <= 1) {
                     row.querySelectorAll('input, textarea').forEach((input) => {
@@ -813,6 +862,12 @@ function old(string $key, array $old): string
                 row.remove();
                 if (container.dataset.rows === 'steps') {
                     syncStepNumbers();
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeIngredientMenus();
                 }
             });
         })();

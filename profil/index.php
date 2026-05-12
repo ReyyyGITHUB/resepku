@@ -94,6 +94,7 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                     <p class="home-sidebar__name">Resepku</p>
                     <p class="home-sidebar__status"><?= $currentUserId > 0 ? 'Sudah masuk' : 'Mode tamu' ?></p>
                 </div>
+                <?= sidebarToggleButton() ?>
             </div>
 
             <div class="home-sidebar__identity">
@@ -105,22 +106,17 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
             </div>
 
             <?php if ($isAdmin): ?>
-                <a href="../admin/" class="home-sidebar__admin-panel">Panel Admin</a>
+                <?= sidebarLink('../admin/', 'Panel Admin', 'admin', 'home-sidebar__admin-panel') ?>
             <?php endif; ?>
 
             <?php if ($currentUserId > 0): ?>
-                <a class="home-sidebar__report-link" href="laporan.php" aria-label="Pengaduan Saya">
-                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                        <path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm8-6V11a8 8 0 1 0-16 0v5L2 18v1h20v-1l-2-2zm-2 1H6v-6a6 6 0 1 1 12 0v6z" fill="currentColor"></path>
-                    </svg>
-                    <span class="sr-only">Pengaduan Saya</span>
-                </a>
+                <?= sidebarLink('laporan.php', 'Pengaduan Saya', 'bell', 'home-sidebar__report-link') ?>
             <?php endif; ?>
 
             <?php if ($currentUserId > 0): ?>
-                <a href="../auth/logout.php" class="home-sidebar__logout">Keluar</a>
+                <?= sidebarLink('../auth/logout.php', 'Keluar', 'logout', 'home-sidebar__logout') ?>
             <?php else: ?>
-                <a href="../auth/login.php" class="home-sidebar__logout">Masuk</a>
+                <?= sidebarLink('../auth/login.php', 'Masuk', 'login', 'home-sidebar__logout') ?>
             <?php endif; ?>
         </div>
 
@@ -128,16 +124,17 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
 
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Profil">
-            <a href="../home/">Beranda</a>
+            <?= sidebarSearchForm('../cari.php') ?>
+            <?= sidebarLink('../home/', 'Beranda', 'home') ?>
             <?php if ($currentUserId > 0): ?>
-                <a class="<?= !$isPublicProfile ? 'is-active' : '' ?>" href="../profil/">Profil</a>
-                <a href="../resep/myresep.php">Resep Saya</a>
-                <a href="../resep/buat.php">Tambah Resep</a>
-                <a href="../resep/favorite.php">Favorit</a>
-                <a href="../profil/laporan.php">Pengaduan Saya</a>
+                <?= sidebarLink('../profil/', 'Profil', 'user', '', !$isPublicProfile) ?>
+                <?= sidebarLink('../resep/myresep.php', 'Resep Saya', 'book') ?>
+                <?= sidebarLink('../resep/buat.php', 'Tambah Resep', 'plus') ?>
+                <?= sidebarLink('../resep/favorite.php', 'Favorit', 'bookmark') ?>
+                <?= sidebarLink('../profil/laporan.php', 'Pengaduan Saya', 'bell') ?>
             <?php else: ?>
-                <a href="../auth/login.php">Masuk</a>
-                <a href="../auth/register.php">Daftar</a>
+                <?= sidebarLink('../auth/login.php', 'Masuk', 'login') ?>
+                <?= sidebarLink('../auth/register.php', 'Daftar', 'user') ?>
             <?php endif; ?>
         </nav>
 
@@ -340,7 +337,7 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                                         <div class="profile-recipe-card__body">
                                             <h3><?= e($recipe['title']) ?></h3>
                                             <div class="profile-recipe-card__meta">
-                                                <span class="profile-recipe-card__rating">★ <?= e(number_format((float) ($recipe['rating'] ?? 0), 1)) ?></span>
+                                                <?= ratingStarsHtml($recipe['rating'] ?? 0, 'profile-recipe-card__rating') ?>
                                                 <span><?= e($recipe['cook_time']) ?></span>
                                             </div>
                                         </div>
@@ -518,7 +515,7 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                                             <img class="profile-recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
                                             <div class="profile-recipe-card__body">
                                                 <h3><?= e($recipe['title']) ?></h3>
-                                                <div class="profile-recipe-card__rating"><?= e(ratingStars($recipe['rating'] ?? 0)) ?></div>
+                                                <?= ratingStarsHtml($recipe['rating'] ?? 0, 'profile-recipe-card__rating') ?>
                                                 <span><?= e($recipe['cook_time']) ?></span>
                                             </div>
                                         </article>

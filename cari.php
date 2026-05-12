@@ -73,6 +73,7 @@ function search_asset_path(string $path): string
                     <p class="home-sidebar__name">Resepku</p>
                     <p class="home-sidebar__status"><?= $isGuest ? 'Mode tamu' : 'Sudah masuk' ?></p>
                 </div>
+                <?= sidebarToggleButton() ?>
             </div>
 
             <div class="home-sidebar__identity">
@@ -84,25 +85,25 @@ function search_asset_path(string $path): string
             </div>
 
             <?php if ($isAdmin): ?>
-                <a href="admin/" class="home-sidebar__admin-panel">Panel Admin</a>
+                <?= sidebarLink('admin/', 'Panel Admin', 'admin', 'home-sidebar__admin-panel') ?>
             <?php endif; ?>
 
-            <a href="auth/logout.php" class="home-sidebar__logout">Keluar</a>
+            <?= sidebarLink('auth/logout.php', 'Keluar', 'logout', 'home-sidebar__logout') ?>
         </div>
 
         <div class="home-sidebar__divider"></div>
 
         <p class="home-sidebar__label">Navigasi utama</p>
         <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi pencarian">
-            <a href="home/">Beranda</a>
-            <a href="profil/">Profil</a>
-            <a href="resep/myresep.php">Resep Saya</a>
-            <a href="resep/buat.php">Tambah Resep</a>
-            <a href="resep/favorite.php">Favorit</a>
+            <?= sidebarSearchForm('cari.php', $filters['q'] ?? '') ?>
+            <?= sidebarLink('home/', 'Beranda', 'home') ?>
+            <?= sidebarLink('profil/', 'Profil', 'user') ?>
+            <?= sidebarLink('resep/myresep.php', 'Resep Saya', 'book') ?>
+            <?= sidebarLink('resep/buat.php', 'Tambah Resep', 'plus') ?>
+            <?= sidebarLink('resep/favorite.php', 'Favorit', 'bookmark') ?>
             <?php if (!$isGuest): ?>
-                <a href="profil/laporan.php">Pengaduan Saya</a>
+                <?= sidebarLink('profil/laporan.php', 'Pengaduan Saya', 'bell') ?>
             <?php endif; ?>
-            <a class="is-active" href="cari.php">Cari</a>
         </nav>
 
         <img src="assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
@@ -212,7 +213,7 @@ function search_asset_path(string $path): string
                         <h2><?= e($recipe['title']) ?></h2>
                         <div class="recipe-card__line"></div>
                         <div class="recipe-card__meta">
-                            <span class="recipe-card__stars"><?= e(ratingStars($recipe['rating'] ?? 0)) ?></span>
+                            <?= ratingStarsHtml($recipe['rating'] ?? 0, 'recipe-card__stars') ?>
                             <span><?= e($recipe['cook_time']) ?></span>
                         </div>
                     </article>

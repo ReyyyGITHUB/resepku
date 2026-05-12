@@ -220,9 +220,15 @@ function recipe_catalog_from_db(?int $limit = null, ?int $viewerUserId = null): 
             r.langkah_resep,
             p.nama_pengguna AS author_name,
             p.foto_profil AS author_avatar,
+            COALESCE(rt.rating_average, 0) AS rating_average,
             $favoritedSelect
         FROM recipes r
         INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
+        LEFT JOIN (
+            SELECT resep_id, AVG(rating_value) AS rating_average
+            FROM ratings
+            GROUP BY resep_id
+        ) rt ON rt.resep_id = r.resep_id
         $priorityJoin
         ORDER BY $priorityOrder
     SQL;
@@ -255,6 +261,7 @@ function recipe_catalog_from_db(?int $limit = null, ?int $viewerUserId = null): 
             'deskripsi' => $row['deskripsi'] ?? '',
             'author' => $row['author_name'] ?? 'Tim ResepKu',
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+            'rating_value' => $row['rating_average'] ?? 0,
             'favorited' => $row['favorited'] ?? false,
             'ingredients' => [],
             'tools' => [],
@@ -626,7 +633,13 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $
 {
     $where = [];
     $params = [];
-    $joins = '';
+    $joins = <<<SQL
+        LEFT JOIN (
+            SELECT resep_id, AVG(rating_value) AS rating_average
+            FROM ratings
+            GROUP BY resep_id
+        ) rt ON rt.resep_id = r.resep_id
+    SQL;
     $priorityJoin = '';
     $priorityOrder = 'r.dibuat_pada DESC, r.resep_id DESC';
     $favoritedSelect = '0 AS favorited';
@@ -677,20 +690,16 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $
     }
 
     if ($sort === 'popular') {
-        $joins = <<<SQL
+        $joins .= <<<SQL
+
             LEFT JOIN (
                 SELECT resep_id, COUNT(*) AS like_count
                 FROM likes
                 GROUP BY resep_id
             ) l ON l.resep_id = r.resep_id
-            LEFT JOIN (
-                SELECT resep_id, AVG(rating_value) AS avg_rating
-                FROM ratings
-                GROUP BY resep_id
-            ) rt ON rt.resep_id = r.resep_id
         SQL;
 
-        $priorityOrder = 'COALESCE(l.like_count, 0) DESC, COALESCE(rt.avg_rating, 0) DESC, r.dibuat_pada DESC, r.resep_id DESC';
+        $priorityOrder = 'COALESCE(l.like_count, 0) DESC, COALESCE(rt.rating_average, 0) DESC, r.dibuat_pada DESC, r.resep_id DESC';
     } elseif ($sort === 'oldest') {
         $priorityOrder = 'r.dibuat_pada ASC, r.resep_id ASC';
     }
@@ -721,6 +730,7 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $
             r.langkah_resep,
             p.nama_pengguna AS author_name,
             p.foto_profil AS author_avatar,
+            COALESCE(rt.rating_average, 0) AS rating_average,
             $favoritedSelect
         FROM recipes r
         INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
@@ -758,6 +768,7 @@ function recipe_catalog_filtered_db(array $filters = [], int $limit = 24, ?int $
             'deskripsi' => $row['deskripsi'] ?? '',
             'author' => $row['author_name'] ?? 'Tim ResepKu',
             'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
+            'rating_value' => $row['rating_average'] ?? 0,
             'favorited' => $row['favorited'] ?? false,
             'ingredients' => [],
             'tools' => [],
