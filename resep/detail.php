@@ -248,29 +248,41 @@ $guestLockText = 'Masuk atau buat akun untuk membuka bahan, alat, langkah memasa
 
                 <div class="detail-actions" aria-label="Aksi resep">
                     <button type="button" class="detail-action<?= $socialState['liked'] ? ' is-active' : '' ?>" data-guest-gate data-social-action="like" data-recipe-id="<?= e((string) $recipe['id']) ?>">
+                        <svg class="detail-action__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 20.1s-6.8-4.2-8.9-8.2C1.6 9 2.5 5.7 5.3 4.5c2-.9 4.2-.3 5.5 1.4L12 7.4l1.2-1.5c1.3-1.7 3.6-2.3 5.5-1.4 2.8 1.2 3.7 4.5 2.2 7.4-2.1 4-8.9 8.2-8.9 8.2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+                        </svg>
                         <span>Suka</span>
-                        <span data-like-count><?= e((string) $socialState['likes_count']) ?></span>
+                        <span class="detail-action__value" data-like-count><?= e((string) $socialState['likes_count']) ?></span>
                     </button>
                     <button type="button" class="detail-action detail-action--primary<?= $socialState['favorited'] ? ' is-active' : '' ?>" data-guest-gate data-social-action="favorite" data-recipe-id="<?= e((string) $recipe['id']) ?>">
-                        <img class="detail-action__icon" src="../assets/img/icon-bookmark.svg" alt="">
+                        <svg class="detail-action__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M7 4.75c0-.97.78-1.75 1.75-1.75h6.5c.97 0 1.75.78 1.75 1.75v15L12 16.8l-5 2.95v-15Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+                        </svg>
                         <span>Favorit</span>
-                        <span data-favorite-count><?= e((string) $socialState['favorites_count']) ?></span>
+                        <span class="detail-action__value" data-favorite-count><?= e((string) $socialState['favorites_count']) ?></span>
                     </button>
-                    <button type="button" class="detail-action" data-guest-gate data-social-action="rate" data-recipe-id="<?= e((string) $recipe['id']) ?>">
+                    <button type="button" class="detail-action<?= $socialState['user_rating'] !== null ? ' is-active' : '' ?>" data-guest-gate data-social-action="rate" data-recipe-id="<?= e((string) $recipe['id']) ?>">
+                        <svg class="detail-action__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="m12 3.5 2.42 4.9 5.4.78-3.91 3.82.92 5.38L12 15.84l-4.83 2.54.92-5.38-3.91-3.82 5.4-.78L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+                        </svg>
                         <span>Nilai</span>
-                        <span data-user-rating><?= $socialState['user_rating'] !== null ? e(number_format((float) $socialState['user_rating'], 1)) : '0.0' ?></span>
+                        <span class="detail-action__value" data-user-rating><?= $socialState['user_rating'] !== null ? e(number_format((float) $socialState['user_rating'], 1)) : '0.0' ?></span>
                     </button>
-                    <button type="button" class="detail-action" data-social-action="share" data-share-url="<?= e($shareUrl) ?>">
-                        <img class="detail-action__icon" src="../assets/img/icon-share.svg" alt="">
+                    <button type="button" class="detail-action detail-action--share" data-social-action="share" data-share-url="<?= e($shareUrl) ?>">
+                        <svg class="detail-action__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M8.5 12.6 15.7 16.8M15.6 7.2 8.5 11.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                            <circle cx="6.5" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+                            <circle cx="17.5" cy="6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+                            <circle cx="17.5" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+                        </svg>
                         <span>Bagikan</span>
                     </button>
                     <?php if ($recipe['id'] > 0): ?>
-                        <button type="button" class="detail-action detail-action--icon detail-action--report" aria-label="Opsi lainnya" data-guest-gate data-report-open data-report-target-type="resep" data-report-target-id="<?= e((string) $recipe['id']) ?>" data-report-target-label="<?= e($recipe['title']) ?>">
-                            <span class="detail-action__dots" aria-hidden="true">
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                            </span>
+                        <button type="button" class="detail-action detail-action--report" data-guest-gate data-report-open data-report-target-type="resep" data-report-target-id="<?= e((string) $recipe['id']) ?>" data-report-target-label="<?= e($recipe['title']) ?>">
+                            <svg class="detail-action__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M6 20V4.75M6 5.25h9.25c1.5 0 2.58 1.42 2.18 2.87l-.38 1.38.38 1.38c.4 1.45-.68 2.87-2.18 2.87H6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                            <span>Laporkan</span>
                         </button>
                     <?php endif; ?>
                 </div>

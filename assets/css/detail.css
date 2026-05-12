@@ -196,7 +196,7 @@
 .detail-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
 }
 
@@ -204,65 +204,71 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    min-height: 35px;
-    padding: 0 18px;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 10px;
-    background: #ffffff;
+    gap: 9px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid rgba(17, 17, 17, 0.1);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.92);
     color: #111111;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: 400;
-    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2);
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: 0 10px 24px rgba(17, 17, 17, 0.08);
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .detail-action:hover {
-    border-color: rgba(251, 155, 0, 0.48);
-    transform: translateY(-1px);
+    border-color: rgba(251, 155, 0, 0.5);
+    box-shadow: 0 14px 30px rgba(251, 155, 0, 0.14);
+    transform: translateY(-2px);
+}
+
+.detail-action.is-active {
+    border-color: rgba(251, 155, 0, 0.58);
+    background: rgba(252, 165, 1, 0.14);
+    color: #111111;
+    box-shadow: 0 12px 28px rgba(252, 165, 1, 0.18);
 }
 
 .detail-action--primary,
-.detail-action.is-active {
+.detail-action--primary.is-active {
     border-color: #f2a000;
     background: #fca501;
     color: #111111;
-    font-weight: 400;
+    box-shadow: 0 14px 28px rgba(252, 165, 1, 0.24);
 }
 
-.detail-actions > .detail-action--primary {
-    min-width: 171px;
-}
-
-.detail-actions > .detail-action:not(.detail-action--primary):not(.detail-action--icon) {
-    min-width: 135px;
+.detail-action:disabled {
+    cursor: wait;
+    opacity: 0.72;
+    transform: none;
 }
 
 .detail-action__icon {
-    width: 18px;
-    height: 18px;
+    width: 19px;
+    height: 19px;
     flex: 0 0 auto;
 }
 
-.detail-action--icon {
-    width: 71px;
-    min-width: 71px;
-    padding: 0;
-}
-
-.detail-action__dots {
+.detail-action__value {
     display: inline-flex;
-    gap: 7px;
     align-items: center;
     justify-content: center;
+    min-width: 28px;
+    min-height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: rgba(17, 17, 17, 0.06);
+    color: #111111;
+    font-size: 12px;
+    font-weight: 700;
 }
 
-.detail-action__dots span {
-    width: 6px;
-    height: 6px;
-    border-radius: 999px;
-    background: #111111;
+.detail-action--primary .detail-action__value {
+    background: rgba(255, 255, 255, 0.42);
 }
 
 .detail-action--full {
@@ -636,32 +642,29 @@
     width: 36px;
     height: 36px;
     border: 0;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.94);
-    box-shadow: 0 10px 24px rgba(17, 17, 17, 0.14);
-    backdrop-filter: blur(10px);
+    border-radius: 0;
+    background: transparent;
     cursor: pointer;
-    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease;
 }
 
 .detail-related-card__bookmark:hover {
     transform: translateY(-1px);
-    box-shadow: 0 14px 28px rgba(17, 17, 17, 0.18);
 }
 
 .detail-related-card__bookmark.is-active {
-    background: #fca501;
-    box-shadow: 0 14px 28px rgba(252, 165, 1, 0.34);
+    background: transparent;
 }
 
 .detail-related-card__bookmark img {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 26px;
     transition: filter 0.2s ease;
 }
 
 .detail-related-card__bookmark.is-active img {
-    filter: brightness(0) invert(1);
+    content: url("../img/icon-bookmark-active.svg");
+    filter: none;
 }
 
 .detail-related-card__body {
@@ -1027,11 +1030,23 @@ body.modal-open {
     }
 
     .detail-action {
-        width: 100%;
+        width: auto;
     }
 
-    .detail-action--icon {
+    .detail-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .detail-actions .detail-action {
         width: 100%;
+        min-width: 0;
+        padding: 0 10px;
+    }
+
+    .detail-action--share,
+    .detail-action--report {
+        grid-column: span 2;
     }
 
     .detail-comment {

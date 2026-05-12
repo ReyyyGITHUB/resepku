@@ -32,6 +32,13 @@ function e(?string $value): string
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
+function ratingStars($rating, int $max = 5): string
+{
+    $active = max(0, min($max, (int) round((float) $rating)));
+
+    return trim(str_repeat('★ ', $active) . str_repeat('☆ ', $max - $active));
+}
+
 function redirectTo(string $path): never
 {
     header('Location: ' . $path);

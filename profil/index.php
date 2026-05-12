@@ -303,16 +303,16 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                         </div>
 
                         <div class="profile-filterbar" aria-label="Filter resep">
-                            <button type="button">Semua Resep</button>
+                            <button class="is-active" type="button" data-profile-filter-action aria-pressed="true">Semua Resep</button>
                             <span class="profile-filterbar__spacer"></span>
-                            <button type="button">Terbaru</button>
+                            <button type="button" data-profile-filter-action aria-pressed="false">Terbaru</button>
                             <div class="profile-view-toggle" aria-label="Mode tampilan">
-                                <button class="is-active" type="button" aria-label="Tampilan grid">
+                                <button class="is-active" type="button" aria-label="Tampilan grid" data-profile-view="grid" aria-pressed="true">
                                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                         <path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z" fill="none" stroke="currentColor" stroke-width="2"></path>
                                     </svg>
                                 </button>
-                                <button type="button" aria-label="Tampilan daftar">
+                                <button type="button" aria-label="Tampilan daftar" data-profile-view="list" aria-pressed="false">
                                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                         <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
                                     </svg>
@@ -323,7 +323,7 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                         <?php if ($recentRecipes === []): ?>
                             <div class="profile-panel__empty">Belum ada resep untuk ditampilkan.</div>
                         <?php else: ?>
-                            <section class="profile-recipe-grid" aria-label="Daftar resep terbaru">
+                            <section class="profile-recipe-grid" data-profile-recipe-grid aria-label="Daftar resep terbaru">
                                 <?php foreach ($recentRecipes as $recipe): ?>
                                     <article class="profile-recipe-card">
                                         <?php if (!empty($recipe['id'])): ?>
@@ -518,7 +518,7 @@ $profileJoined = !$isUnavailable && !empty($profile['joined_at'])
                                             <img class="profile-recipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
                                             <div class="profile-recipe-card__body">
                                                 <h3><?= e($recipe['title']) ?></h3>
-                                                <div class="profile-recipe-card__rating">★★★★☆</div>
+                                                <div class="profile-recipe-card__rating"><?= e(ratingStars($recipe['rating'] ?? 0)) ?></div>
                                                 <span><?= e($recipe['cook_time']) ?></span>
                                             </div>
                                         </article>

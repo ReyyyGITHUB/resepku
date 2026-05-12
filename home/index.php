@@ -249,7 +249,7 @@ if ($recipes === []) {
                         <h2><?= e($recipe['title']) ?></h2>
                         <div class="recipe-card__line"></div>
                         <div class="recipe-card__meta">
-                            <span class="recipe-card__stars">★ ★ ☆ ☆</span>
+                            <span class="recipe-card__stars"><?= e(ratingStars($recipe['rating'] ?? 0)) ?></span>
                             <span><?= e($recipe['cook_time']) ?></span>
                         </div>
                     </article>
@@ -305,7 +305,7 @@ if ($recipes === []) {
                         <h2><?= e($recipe['title']) ?></h2>
                         <div class="recipe-card__line"></div>
                         <div class="recipe-card__meta">
-                            <span class="recipe-card__stars">★ ★ ☆ ☆</span>
+                            <span class="recipe-card__stars"><?= e(ratingStars($recipe['rating'] ?? 0)) ?></span>
                             <span><?= e($recipe['cook_time']) ?></span>
                         </div>
                     </article>
@@ -336,7 +336,7 @@ if ($recipes === []) {
                         <h2><?= e($recipe['title']) ?></h2>
                         <div class="recipe-card__line"></div>
                         <div class="recipe-card__meta">
-                            <span class="recipe-card__stars">★ ★ ☆ ☆</span>
+                            <span class="recipe-card__stars"><?= e(ratingStars($recipe['rating'] ?? 0)) ?></span>
                             <span><?= e($recipe['cook_time']) ?></span>
                         </div>
                     </article>

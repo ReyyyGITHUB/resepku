@@ -217,6 +217,37 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    document.querySelectorAll(".profile-filterbar").forEach(function (filterbar) {
+        var profilePanel = filterbar.closest(".profile-panel");
+        var recipeGrid = profilePanel ? profilePanel.querySelector("[data-profile-recipe-grid]") : null;
+
+        filterbar.querySelectorAll("[data-profile-filter-action]").forEach(function (button) {
+            button.addEventListener("click", function () {
+                filterbar.querySelectorAll("[data-profile-filter-action]").forEach(function (item) {
+                    var active = item === button;
+                    item.classList.toggle("is-active", active);
+                    item.setAttribute("aria-pressed", active ? "true" : "false");
+                });
+            });
+        });
+
+        filterbar.querySelectorAll("[data-profile-view]").forEach(function (button) {
+            button.addEventListener("click", function () {
+                var view = button.dataset.profileView || "grid";
+
+                filterbar.querySelectorAll("[data-profile-view]").forEach(function (item) {
+                    var active = item === button;
+                    item.classList.toggle("is-active", active);
+                    item.setAttribute("aria-pressed", active ? "true" : "false");
+                });
+
+                if (recipeGrid) {
+                    recipeGrid.classList.toggle("is-list-view", view === "list");
+                }
+            });
+        });
+    });
+
     document.querySelectorAll(".home-search-form").forEach(function (form) {
         form.addEventListener("submit", function (event) {
             event.preventDefault();
@@ -331,14 +362,35 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    function updateBookmarkIcon(button, favorited) {
+        var icon = button ? button.querySelector("img") : null;
+
+        if (!icon) {
+            return;
+        }
+
+        if (!icon.dataset.inactiveSrc) {
+            icon.dataset.inactiveSrc = (icon.getAttribute("src") || "").replace("icon-bookmark-active.svg", "icon-bookmark.svg");
+        }
+
+        if (!icon.dataset.activeSrc) {
+            icon.dataset.activeSrc = icon.dataset.inactiveSrc.replace("icon-bookmark.svg", "icon-bookmark-active.svg");
+        }
+
+        icon.setAttribute("src", favorited ? icon.dataset.activeSrc : icon.dataset.inactiveSrc);
+    }
+
     function updateCardFavoriteButtons(recipeId, favorited) {
         document.querySelectorAll('[data-card-favorite][data-recipe-id="' + recipeId + '"]').forEach(function (button) {
             button.classList.toggle("is-active", favorited);
             button.setAttribute("aria-pressed", favorited ? "true" : "false");
+            updateBookmarkIcon(button, favorited);
         });
     }
 
     document.querySelectorAll("[data-card-favorite]").forEach(function (favoriteButton) {
+        updateBookmarkIcon(favoriteButton, favoriteButton.classList.contains("is-active"));
+
         favoriteButton.addEventListener("click", async function (event) {
             event.preventDefault();
             event.stopPropagation();
