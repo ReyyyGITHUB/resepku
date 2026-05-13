@@ -90,60 +90,19 @@ $profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="profile-page <?= $isPublicProfile ? 'profile-page--public' : 'profile-page--own' ?>" data-guest-mode="<?= $currentUserId > 0 ? '0' : '1' ?>" data-csrf-token="<?= e(csrfToken()) ?>">
-    <aside class="home-sidebar profile-sidebar" data-node-id="16:154">
-        <div class="home-sidebar__profile">
-            <div class="home-sidebar__brand">
-                <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
-                <div>
-                    <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status"><?= $currentUserId > 0 ? 'Sudah masuk' : 'Mode tamu' ?></p>
-                </div>
-                <?= sidebarToggleButton() ?>
-            </div>
-
-            <div class="home-sidebar__identity">
-                <img src="<?= e($sidebarAvatar) ?>" alt="<?= e($sidebarName) ?>" class="home-sidebar__avatar">
-                <div class="home-sidebar__welcome">
-                    <strong><?= e($sidebarName) ?></strong>
-                    <span><?= $sidebarBio !== '' ? e($sidebarBio) : ($currentUserId > 0 ? 'Kelola akun dan resep publik kamu dari sini.' : 'Jelajahi profil dan resep komunitas.') ?></span>
-                </div>
-            </div>
-
-            <?php if ($isAdmin): ?>
-                <?= sidebarLink('../admin/', 'Panel Admin', 'admin', 'home-sidebar__admin-panel') ?>
-            <?php endif; ?>
-
-            <?php if ($currentUserId > 0): ?>
-                <?= sidebarLink('laporan.php', 'Pengaduan Saya', 'bell', 'home-sidebar__report-link') ?>
-            <?php endif; ?>
-
-            <?php if ($currentUserId > 0): ?>
-                <?= sidebarLink('../auth/logout.php', 'Keluar', 'logout', 'home-sidebar__logout') ?>
-            <?php else: ?>
-                <?= sidebarLink('../auth/login.php', 'Masuk', 'login', 'home-sidebar__logout') ?>
-            <?php endif; ?>
-        </div>
-
-        <div class="home-sidebar__divider"></div>
-
-        <p class="home-sidebar__label">Navigasi utama</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Profil">
-            <?= sidebarSearchForm('../cari.php') ?>
-            <?= sidebarLink('../home/', 'Beranda', 'home') ?>
-            <?php if ($currentUserId > 0): ?>
-                <?= sidebarLink('../profil/', 'Profil', 'user', '', !$isPublicProfile) ?>
-                <?= sidebarLink('../resep/myresep.php', 'Resep Saya', 'book') ?>
-                <?= sidebarLink('../resep/buat.php', 'Tambah Resep', 'plus') ?>
-                <?= sidebarLink('../resep/favorite.php', 'Favorit', 'bookmark') ?>
-                <?= sidebarLink('../profil/laporan.php', 'Pengaduan Saya', 'bell') ?>
-            <?php else: ?>
-                <?= sidebarLink('../auth/login.php', 'Masuk', 'login') ?>
-                <?= sidebarLink('../auth/register.php', 'Daftar', 'user') ?>
-            <?php endif; ?>
-        </nav>
-
-        <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
-    </aside>
+    <?= renderGeneralSidebar([
+        'basePath' => '../',
+        'asideClass' => 'profile-sidebar',
+        'activeKey' => 'profile',
+        'searchAction' => '../cari.php',
+        'userContext' => [
+            'isLoggedIn' => $currentUserId > 0,
+            'isGuest' => $currentUserId <= 0,
+            'isAdmin' => $isAdmin,
+            'name' => $sidebarName,
+            'avatar' => $sidebarAvatar,
+        ],
+    ]) ?>
 
     <main class="profile-main">
         <?php if ($flashSuccess): ?>
@@ -215,7 +174,10 @@ $profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
                             <div class="profile-summary__content">
                                 <div class="profile-summary__header">
                                     <div>
-                                        <h2 class="profile-summary__name"><?= e($profile['name']) ?></h2>
+                                        <div class="profile-summary__identity">
+                                            <h2 class="profile-summary__name"><?= e($profile['name']) ?></h2>
+                                            <?= userAdminBadge((string) ($profile['role'] ?? 'pengguna'), 'profile-admin-badge') ?>
+                                        </div>
                                         <div class="profile-summary__badge"><?= e($profileRoleLabel) ?></div>
                                     </div>
 
@@ -436,7 +398,10 @@ $profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
                         <div class="profile-summary__content">
                             <div class="profile-summary__header">
                                 <div>
-                                    <h2 class="profile-summary__name"><?= e($profile['name']) ?></h2>
+                                    <div class="profile-summary__identity">
+                                        <h2 class="profile-summary__name"><?= e($profile['name']) ?></h2>
+                                        <?= userAdminBadge((string) ($profile['role'] ?? 'pengguna'), 'profile-admin-badge') ?>
+                                    </div>
                                     <div class="profile-summary__badge"><?= e($profileRoleLabel) ?></div>
                                 </div>
 

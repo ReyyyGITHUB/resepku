@@ -34,7 +34,7 @@ $ingredients = array_fill(0, 3, [
     "keterangan" => "",
 ]);
 $tools = array_fill(0, 3, ["nama_peralatan" => ""]);
-$steps = [["text" => "", "existing_image" => ""]];
+$steps = [["title" => "", "text" => "", "existing_image" => ""]];
 
 function recipe_form_step_rows(array $steps): array
 {
@@ -43,6 +43,7 @@ function recipe_form_step_rows(array $steps): array
     foreach ($steps as $step) {
         if (is_array($step)) {
             $rows[] = [
+                "title" => trim((string) ($step["title"] ?? "")),
                 "text" => trim((string) ($step["text"] ?? "")),
                 "existing_image" => trim((string) ($step["existing_image"] ?? $step["image"] ?? "")),
             ];
@@ -51,11 +52,11 @@ function recipe_form_step_rows(array $steps): array
 
         $text = trim((string) $step);
         if ($text !== "") {
-            $rows[] = ["text" => $text, "existing_image" => ""];
+            $rows[] = ["title" => "", "text" => $text, "existing_image" => ""];
         }
     }
 
-    return $rows !== [] ? $rows : [["text" => "", "existing_image" => ""]];
+    return $rows !== [] ? $rows : [["title" => "", "text" => "", "existing_image" => ""]];
 }
 
 function recipe_uploaded_file_at(?array $files, int $index): ?array
@@ -219,6 +220,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $stepFormIndex = 0;
     foreach ($stepRows as $index => $row) {
         $stepNumber = (int) $index + 1;
+        $title = trim((string) ($row["title"] ?? ""));
         $text = trim((string) ($row["text"] ?? ""));
         $existingImage = trim((string) ($row["existing_image"] ?? ""));
         $stepImage = recipe_uploaded_file_at($_FILES["step_images"] ?? null, (int) $index);
@@ -228,7 +230,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             (($stepImage["error"] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) &&
             trim((string) ($stepImage["name"] ?? "")) !== "";
 
-        if ($text === "" && $existingImage === "" && !$hasUploadedFile) {
+        if ($title === "" && $text === "" && $existingImage === "" && !$hasUploadedFile) {
             continue;
         }
 
@@ -251,6 +253,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         $normalizedSteps[] = [
+            "title" => $title,
             "text" => $text,
             "image" => $existingImage !== "" ? $existingImage : null,
         ];
@@ -308,46 +311,19 @@ function old(string $key, array $old): string
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="recipe-create-page">
-    <aside class="home-sidebar detail-sidebar">
-        <div class="home-sidebar__profile">
-            <div class="home-sidebar__brand">
-                <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
-                <div>
-                    <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status">Sudah masuk</p>
-                </div>
-                <?= sidebarToggleButton() ?>
-            </div>
-
-            <div class="home-sidebar__identity">
-                <img src="../assets/img/home-profile.png" alt="" class="home-sidebar__avatar">
-                <div class="home-sidebar__welcome">
-                    <strong><?= e((string) ($user["name"] ?? "Pengguna")) ?></strong>
-                    <span>Buat resep baru dan simpan ke koleksi publik.</span>
-                </div>
-            </div>
-
-            <?php if ($isAdmin): ?>
-                <?= sidebarLink('../admin/', 'Panel Admin', 'admin', 'home-sidebar__admin-panel') ?>
-            <?php endif; ?>
-
-            <?= sidebarLink('../auth/logout.php', 'Keluar', 'logout', 'home-sidebar__logout') ?>
-        </div>
-
-        <div class="home-sidebar__divider"></div>
-
-        <p class="home-sidebar__label">Navigasi utama</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Resep">
-            <?= sidebarSearchForm('../cari.php') ?>
-            <?= sidebarLink('../home/', 'Beranda', 'home') ?>
-            <?= sidebarLink('../profil/', 'Profil', 'user') ?>
-            <?= sidebarLink('../resep/myresep.php', 'Resep Saya', 'book') ?>
-            <?= sidebarLink('../resep/buat.php', 'Tambah Resep', 'plus', '', true) ?>
-            <?= sidebarLink('../resep/favorite.php', 'Favorit', 'bookmark') ?>
-        </nav>
-
-        <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
-    </aside>
+    <?= renderGeneralSidebar([
+        'basePath' => '../',
+        'asideClass' => 'detail-sidebar',
+        'activeKey' => 'create',
+        'searchAction' => '../cari.php',
+        'userContext' => [
+            'isLoggedIn' => true,
+            'isGuest' => false,
+            'isAdmin' => $isAdmin,
+            'name' => $profile['name'] ?? (string) ($user['name'] ?? 'Pengguna'),
+            'avatar' => $profile['avatar'] ?? '',
+        ],
+    ]) ?>
 
     <main class="detail-main recipe-create-main">
         <a class="detail-back" href="../home/" aria-label="Kembali ke beranda">
@@ -565,7 +541,7 @@ function old(string $key, array $old): string
                                         </label>
                                     </div>
                                     <div class="recipe-create__step-body">
-                                        <span class="recipe-create__step-label">Langkah Persiapan</span>
+                                        <input type="text" name="steps[<?= $index ?>][title]" value="<?= e($step["title"] ?? "") ?>" placeholder="Judul langkah...">
                                         <textarea name="steps[<?= $index ?>][text]" rows="5" placeholder="Jelaskan apa yang harus dilakukan pada langkah ini..." required><?= e($step["text"]) ?></textarea>
                                     </div>
                                     <button type="button" class="recipe-create__remove recipe-create__remove--step" data-remove-row aria-label="Hapus langkah">Hapus</button>
@@ -620,7 +596,7 @@ function old(string $key, array $old): string
                 </label>
             </div>
             <div class="recipe-create__step-body">
-                <span class="recipe-create__step-label">Langkah Persiapan</span>
+                <input type="text" name="steps[__INDEX__][title]" placeholder="Judul langkah...">
                 <textarea name="steps[__INDEX__][text]" rows="5" placeholder="Jelaskan apa yang harus dilakukan pada langkah ini..." required></textarea>
             </div>
             <button type="button" class="recipe-create__remove recipe-create__remove--step" data-remove-row aria-label="Hapus langkah">Hapus</button>

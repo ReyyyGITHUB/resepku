@@ -50,48 +50,19 @@ $totalFavorites = count($recipes);
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="myrecipes-page">
-    <aside class="home-sidebar myrecipes-sidebar">
-        <div class="home-sidebar__profile">
-            <div class="home-sidebar__brand">
-                <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
-                <div>
-                    <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status">Sudah masuk</p>
-                </div>
-                <?= sidebarToggleButton() ?>
-            </div>
-
-            <div class="home-sidebar__identity">
-                <img src="<?= e($profile['avatar']) ?>" alt="<?= e($profile['name']) ?>" class="home-sidebar__avatar">
-                <div class="home-sidebar__welcome">
-                    <strong><?= e($profile['name']) ?></strong>
-                    <span>Daftar resep yang sudah kamu simpan ke favorit.</span>
-                </div>
-            </div>
-
-            <?php if ($isAdmin): ?>
-                <?= sidebarLink('../admin/', 'Panel Admin', 'admin', 'home-sidebar__admin-panel') ?>
-            <?php endif; ?>
-
-            <?= sidebarLink('../auth/logout.php', 'Keluar', 'logout', 'home-sidebar__logout') ?>
-        </div>
-
-        <div class="home-sidebar__divider"></div>
-
-        <p class="home-sidebar__label">Navigasi utama</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Favorit">
-            <?= sidebarSearchForm('../cari.php') ?>
-            <?= sidebarLink('../home/', 'Beranda', 'home') ?>
-            <?= sidebarLink('../profil/', 'Profil', 'user') ?>
-            <?= sidebarLink('../resep/myresep.php', 'Resep Saya', 'book') ?>
-            <?= sidebarLink('../resep/buat.php', 'Tambah Resep', 'plus') ?>
-            <?= sidebarLink('../resep/favorite.php', 'Favorit', 'bookmark', '', true) ?>
-            <?= sidebarLink('../profil/laporan.php', 'Pengaduan Saya', 'bell') ?>
-            <?= sidebarLink('../home/?sort=popular', 'Populer', 'home') ?>
-        </nav>
-
-        <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
-    </aside>
+    <?= renderGeneralSidebar([
+        'basePath' => '../',
+        'asideClass' => 'myrecipes-sidebar',
+        'activeKey' => 'favorite',
+        'searchAction' => '../cari.php',
+        'userContext' => [
+            'isLoggedIn' => true,
+            'isGuest' => false,
+            'isAdmin' => $isAdmin,
+            'name' => $profile['name'] ?? '',
+            'avatar' => $profile['avatar'] ?? '',
+        ],
+    ]) ?>
 
     <main class="myrecipes-main">
         <header class="myrecipes-topbar">

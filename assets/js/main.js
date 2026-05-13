@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var reportSuccessInterval = null;
     var sidebarStorageKey = "resepku.sidebarCollapsed";
     var sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+    var sidebarTooltip = null;
 
     function setSidebarCollapsed(collapsed) {
         document.documentElement.classList.toggle("sidebar-collapsed", collapsed);
@@ -51,6 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
         sidebarToggle.addEventListener("click", function () {
             var collapsed = !document.body.classList.contains("sidebar-collapsed");
             setSidebarCollapsed(collapsed);
+            hideSidebarTooltip();
 
             try {
                 window.localStorage.setItem(sidebarStorageKey, collapsed ? "1" : "0");
@@ -59,6 +61,49 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    function hideSidebarTooltip() {
+        if (sidebarTooltip) {
+            sidebarTooltip.remove();
+            sidebarTooltip = null;
+        }
+    }
+
+    function showSidebarTooltip(trigger) {
+        if (!document.body.classList.contains("sidebar-collapsed")) {
+            hideSidebarTooltip();
+            return;
+        }
+
+        var label = trigger.getAttribute("data-sidebar-tooltip") || "";
+        if (label === "") {
+            return;
+        }
+
+        hideSidebarTooltip();
+        sidebarTooltip = document.createElement("div");
+        sidebarTooltip.className = "home-sidebar-floating-tooltip";
+        sidebarTooltip.textContent = label;
+        document.body.appendChild(sidebarTooltip);
+
+        var rect = trigger.getBoundingClientRect();
+        sidebarTooltip.style.left = Math.round(rect.right + 12) + "px";
+        sidebarTooltip.style.top = Math.round(rect.top + rect.height / 2) + "px";
+    }
+
+    document.querySelectorAll("[data-sidebar-tooltip]").forEach(function (trigger) {
+        trigger.addEventListener("mouseenter", function () {
+            showSidebarTooltip(trigger);
+        });
+        trigger.addEventListener("focus", function () {
+            showSidebarTooltip(trigger);
+        });
+        trigger.addEventListener("mouseleave", hideSidebarTooltip);
+        trigger.addEventListener("blur", hideSidebarTooltip);
+    });
+
+    window.addEventListener("scroll", hideSidebarTooltip, true);
+    window.addEventListener("resize", hideSidebarTooltip);
 
     function openGuestModal() {
         if (!guestModal) {
@@ -509,6 +554,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+    var detailRecipeId = document.body.dataset.recipeId || "";
     var likeButton = document.querySelector('[data-social-action="like"]');
     var favoriteButton = document.querySelector('[data-social-action="favorite"]');
     var rateButton = document.querySelector('[data-social-action="rate"]');
@@ -524,7 +570,18 @@ document.addEventListener("DOMContentLoaded", function () {
     var userRating = document.querySelector("[data-user-rating]");
 
     function recipeId() {
-        return likeButton ? likeButton.dataset.recipeId : "";
+        if (likeButton && likeButton.dataset.recipeId) {
+            return likeButton.dataset.recipeId;
+        }
+
+        if (commentForm) {
+            var recipeField = commentForm.querySelector('input[name="recipe_id"]');
+            if (recipeField && recipeField.value) {
+                return recipeField.value;
+            }
+        }
+
+        return detailRecipeId;
     }
 
     function updateSocialState(state) {
@@ -564,6 +621,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         var avatar = comment.avatar || "../assets/img/home-profile.png";
         var author = comment.author || "User";
+        var authorRole = comment.author_role || "pengguna";
         var createdAt = comment.created_at_label || comment.created_at || "";
         var content = comment.content || "";
 
@@ -572,12 +630,41 @@ document.addEventListener("DOMContentLoaded", function () {
                 '<img class="detail-comment__avatar" src="' + escapeHtml(avatar) + '" alt="' + escapeHtml(author) + '">' +
                 '<div class="detail-comment__body">' +
                     '<div class="detail-comment__meta">' +
-                        '<strong>' + escapeHtml(author) + '</strong>' +
+                        '<span class="detail-comment__author">' +
+                            '<strong>' + escapeHtml(author) + '</strong>' +
+                            renderAdminBadge(authorRole) +
+                        '</span>' +
                         '<span>' + escapeHtml(createdAt) + '</span>' +
                     '</div>' +
                     '<p>' + escapeHtml(content) + '</p>' +
                 '</div>' +
             '</article>';
+    }
+
+    function renderAdminBadge(role) {
+        if (role !== "admin") {
+            return "";
+        }
+
+        return '' +
+            '<span class="detail-admin-badge" aria-label="Admin">' +
+                '<span class="detail-admin-badge__icon" aria-hidden="true">' +
+                    '<svg viewBox="0 0 24 24" focusable="false">' +
+                        '<circle cx="12" cy="12" r="10" fill="currentColor"></circle>' +
+                        '<path d="m8.4 12.3 2.3 2.3 4.9-5" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path>' +
+                    '</svg>' +
+                '</span>' +
+                '<span class="detail-admin-badge__label">admin</span>' +
+            '</span>';
+    }
+
+    function resizeCommentTextarea() {
+        if (!commentTextarea) {
+            return;
+        }
+
+        commentTextarea.style.height = "auto";
+        commentTextarea.style.height = Math.min(commentTextarea.scrollHeight, 72) + "px";
     }
 
     function updateCommentState(comments, count) {
@@ -603,6 +690,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         commentList.innerHTML = list.map(renderComment).join("");
         commentEmpty = null;
+    }
+
+    if (commentTextarea) {
+        resizeCommentTextarea();
+        commentTextarea.addEventListener("input", resizeCommentTextarea);
     }
 
     if (likeButton) {
@@ -720,6 +812,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 updateCommentState(payload.data && payload.data.comments ? payload.data.comments : [], payload.data && payload.data.comments_count);
                 commentTextarea.value = "";
+                resizeCommentTextarea();
             } catch (error) {
                 alert(error.message);
             } finally {

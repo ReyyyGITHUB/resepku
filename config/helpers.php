@@ -53,6 +53,23 @@ function ratingStarsHtml($rating, string $className = 'rating-stars', int $max =
     return '<span class="' . e($className) . ' rating-stars" aria-label="Rating ' . $label . '">' . $stars . '</span>';
 }
 
+function userAdminBadge(?string $role, string $className = 'detail-admin-badge'): string
+{
+    if ((string) $role !== 'admin') {
+        return '';
+    }
+
+    return '<span class="' . e($className) . '" aria-label="Admin">' .
+        '<span class="' . e($className) . '__icon" aria-hidden="true">' .
+        '<svg viewBox="0 0 24 24" focusable="false">' .
+        '<circle cx="12" cy="12" r="10" fill="currentColor"></circle>' .
+        '<path d="m8.4 12.3 2.3 2.3 4.9-5" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path>' .
+        '</svg>' .
+        '</span>' .
+        '<span class="' . e($className) . '__label">admin</span>' .
+        '</span>';
+}
+
 function sidebarIconSvg(string $name): string
 {
     $icons = [
@@ -84,9 +101,9 @@ function sidebarInitialStateScript(): string
 
 function sidebarLink(string $href, string $label, string $icon, string $className = '', bool $active = false): string
 {
-    $classes = trim($className . ($active ? ' is-active' : ''));
+    $classes = trim('home-sidebar__nav-link ' . $className . ($active ? ' is-active' : ''));
 
-    return '<a class="' . e($classes) . '" href="' . e($href) . '" title="' . e($label) . '" aria-label="' . e($label) . '">' .
+    return '<a class="' . e($classes) . '" href="' . e($href) . '" title="' . e($label) . '" aria-label="' . e($label) . '" data-sidebar-tooltip="' . e($label) . '">' .
         '<span class="home-sidebar__nav-icon">' . sidebarIconSvg($icon) . '</span>' .
         '<span class="home-sidebar__nav-text">' . e($label) . '</span>' .
         '</a>';
@@ -100,6 +117,124 @@ function sidebarSearchForm(string $action, string $value = ''): string
         '<input type="search" name="q" value="' . e($value) . '" placeholder="Cari resep" aria-label="Cari resep">' .
         '</label>' .
         '</form>';
+}
+
+function sidebarRoutePath(string $basePath, string $path): string
+{
+    return $basePath . ltrim($path, '/');
+}
+
+function sidebarAssetPath(string $basePath, string $path, string $fallback = 'assets/img/home-profile.png'): string
+{
+    $path = trim($path);
+
+    if ($path === '') {
+        return sidebarRoutePath($basePath, $fallback);
+    }
+
+    if (preg_match('~^(?:https?:)?//~i', $path) === 1 || str_starts_with($path, '/')) {
+        return $path;
+    }
+
+    if ($basePath === '') {
+        return preg_replace('~^(?:\.\./)+~', '', $path) ?: $path;
+    }
+
+    return $path;
+}
+
+function renderGeneralSidebar(array $options): string
+{
+    $basePath = (string) ($options['basePath'] ?? '');
+    $activeKey = (string) ($options['activeKey'] ?? '');
+    $asideClass = trim('home-sidebar ' . (string) ($options['asideClass'] ?? ''));
+    $navLabel = (string) ($options['navLabel'] ?? 'Navigasi utama');
+    $searchAction = (string) ($options['searchAction'] ?? sidebarRoutePath($basePath, 'cari.php'));
+    $searchValue = (string) ($options['searchValue'] ?? '');
+    $userContext = is_array($options['userContext'] ?? null) ? $options['userContext'] : [];
+    $isLoggedIn = (bool) ($userContext['isLoggedIn'] ?? false);
+    $isGuest = (bool) ($userContext['isGuest'] ?? !$isLoggedIn);
+    $isAdmin = (bool) ($userContext['isAdmin'] ?? false);
+    $name = trim((string) ($userContext['name'] ?? ''));
+    $avatar = sidebarAssetPath($basePath, (string) ($userContext['avatar'] ?? ''));
+    $statusLabel = trim((string) ($userContext['statusLabel'] ?? ''));
+    $welcomeText = trim((string) ($userContext['welcomeText'] ?? ''));
+    $profileHref = (string) ($userContext['profileHref'] ?? sidebarRoutePath($basePath, 'profil/'));
+    $logoutHref = (string) ($userContext['logoutHref'] ?? sidebarRoutePath($basePath, 'auth/logout.php'));
+    $loginHref = (string) ($userContext['loginHref'] ?? sidebarRoutePath($basePath, 'auth/login.php'));
+
+    if ($name === '') {
+        $name = $isGuest ? 'Tamu' : 'Pengguna';
+    }
+
+    if ($statusLabel === '') {
+        $statusLabel = $isGuest ? 'Mode tamu' : 'Sudah masuk';
+    }
+
+    if ($welcomeText === '') {
+        $welcomeText = $isGuest
+            ? 'Masuk untuk akses resep pribadi, favorit, dan pengaduan.'
+            : 'Akses resep pribadi, favorit, dan pengaduan dari satu sidebar.';
+    }
+
+    $navItems = [
+        ['key' => 'home', 'href' => sidebarRoutePath($basePath, 'home/'), 'label' => 'Beranda', 'icon' => 'home'],
+        ['key' => 'profile', 'href' => $profileHref, 'label' => 'Profil', 'icon' => 'user'],
+        ['key' => 'myrecipes', 'href' => sidebarRoutePath($basePath, 'resep/myresep.php'), 'label' => 'Resep Saya', 'icon' => 'book'],
+        ['key' => 'create', 'href' => sidebarRoutePath($basePath, 'resep/buat.php'), 'label' => 'Tambah Resep', 'icon' => 'plus'],
+        ['key' => 'favorite', 'href' => sidebarRoutePath($basePath, 'resep/favorite.php'), 'label' => 'Favorit', 'icon' => 'bookmark'],
+        [
+            'key' => 'reports',
+            'href' => reportInboxHref(
+                sidebarRoutePath($basePath, 'profil/laporan.php'),
+                $loginHref
+            ),
+            'label' => 'Pengaduan Saya',
+            'icon' => 'bell',
+        ],
+    ];
+
+    $html = '<aside class="' . e($asideClass) . '">';
+    $html .= '<div class="home-sidebar__profile">';
+    $html .= '<div class="home-sidebar__brand">';
+    $html .= '<img src="' . e(sidebarRoutePath($basePath, 'assets/img/resepku-logo.png')) . '" alt="" class="home-sidebar__logo">';
+    $html .= '<div><p class="home-sidebar__name">Resepku</p><p class="home-sidebar__status">' . e($statusLabel) . '</p></div>';
+    $html .= sidebarToggleButton();
+    $html .= '</div>';
+    $html .= '<div class="home-sidebar__identity">';
+    $html .= '<img src="' . e($avatar) . '" alt="' . e($name) . '" class="home-sidebar__avatar">';
+    $html .= '<div class="home-sidebar__welcome"><strong>' . e($name) . '</strong><span>' . e($welcomeText) . '</span></div>';
+    $html .= '</div>';
+
+    if ($isAdmin) {
+        $html .= sidebarLink(sidebarRoutePath($basePath, 'admin/'), 'Panel Admin', 'admin', 'home-sidebar__admin-panel');
+    }
+
+    $html .= $isLoggedIn
+        ? sidebarLink($logoutHref, 'Keluar', 'logout', 'home-sidebar__logout')
+        : sidebarLink($loginHref, 'Masuk', 'login', 'home-sidebar__logout');
+
+    $html .= '</div>';
+    $html .= '<div class="home-sidebar__divider"></div>';
+    $html .= '<p class="home-sidebar__label">Navigasi utama</p>';
+    $html .= '<nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="' . e($navLabel) . '">';
+    $html .= sidebarSearchForm($searchAction, $searchValue);
+
+    foreach ($navItems as $item) {
+        $html .= sidebarLink(
+            $item['href'],
+            $item['label'],
+            $item['icon'],
+            '',
+            $activeKey === $item['key']
+        );
+    }
+
+    $html .= '</nav>';
+    $html .= '<img src="' . e(sidebarRoutePath($basePath, 'assets/img/chef-illustration.png')) . '" alt="" class="home-sidebar__chef">';
+    $html .= '</aside>';
+
+    return $html;
 }
 
 function redirectTo(string $path): never

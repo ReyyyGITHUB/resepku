@@ -13,6 +13,7 @@ $isAdmin = isAdmin();
 $isGuest = !empty($_SESSION['guest_mode']) && empty($_SESSION['user']);
 $currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
 $userName = $isGuest ? 'Tamu' : ($_SESSION['user']['name'] ?? 'Nayaka');
+$sidebarProfile = $currentUserId > 0 ? recipe_user_profile_db($currentUserId) : null;
 
 $filters = [
     'q' => trim((string) ($_GET['q'] ?? '')),
@@ -66,49 +67,19 @@ function search_asset_path(string $path): string
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="home-page" data-guest-mode="<?= $isGuest ? '1' : '0' ?>" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="api/" data-login-url="auth/login.php">
-    <aside class="home-sidebar">
-        <div class="home-sidebar__profile">
-            <div class="home-sidebar__brand">
-                <img src="assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
-                <div>
-                    <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status"><?= $isGuest ? 'Mode tamu' : 'Sudah masuk' ?></p>
-                </div>
-                <?= sidebarToggleButton() ?>
-            </div>
-
-            <div class="home-sidebar__identity">
-                <img src="assets/img/home-profile.png" alt="" class="home-sidebar__avatar">
-                <div class="home-sidebar__welcome">
-                    <strong><?= e($userName) ?></strong>
-                    <span><?= $isGuest ? 'Masuk untuk simpan resep dan kelola profil.' : 'Akses resep pribadi dan aktivitas akun.' ?></span>
-                </div>
-            </div>
-
-            <?php if ($isAdmin): ?>
-                <?= sidebarLink('admin/', 'Panel Admin', 'admin', 'home-sidebar__admin-panel') ?>
-            <?php endif; ?>
-
-            <?= sidebarLink('auth/logout.php', 'Keluar', 'logout', 'home-sidebar__logout') ?>
-        </div>
-
-        <div class="home-sidebar__divider"></div>
-
-        <p class="home-sidebar__label">Navigasi utama</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi pencarian">
-            <?= sidebarSearchForm('cari.php', $filters['q'] ?? '') ?>
-            <?= sidebarLink('home/', 'Beranda', 'home') ?>
-            <?= sidebarLink('profil/', 'Profil', 'user') ?>
-            <?= sidebarLink('resep/myresep.php', 'Resep Saya', 'book') ?>
-            <?= sidebarLink('resep/buat.php', 'Tambah Resep', 'plus') ?>
-            <?= sidebarLink('resep/favorite.php', 'Favorit', 'bookmark') ?>
-            <?php if (!$isGuest): ?>
-                <?= sidebarLink('profil/laporan.php', 'Pengaduan Saya', 'bell') ?>
-            <?php endif; ?>
-        </nav>
-
-        <img src="assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
-    </aside>
+    <?= renderGeneralSidebar([
+        'basePath' => '',
+        'activeKey' => 'home',
+        'searchAction' => 'cari.php',
+        'searchValue' => $filters['q'] ?? '',
+        'userContext' => [
+            'isLoggedIn' => !$isGuest && $currentUserId > 0,
+            'isGuest' => $isGuest || $currentUserId <= 0,
+            'isAdmin' => $isAdmin,
+            'name' => $sidebarProfile['name'] ?? $userName,
+            'avatar' => $sidebarProfile['avatar'] ?? '',
+        ],
+    ]) ?>
 
     <main class="home-main">
         <header class="home-topbar">

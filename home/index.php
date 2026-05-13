@@ -9,6 +9,7 @@ $isAdmin = isAdmin();
 $isGuest = !empty($_SESSION['guest_mode']) && empty($_SESSION['user']);
 $currentUserId = (int) ($_SESSION['user']['id'] ?? 0);
 $userName = $isGuest ? 'Tamu' : ($_SESSION['user']['name'] ?? 'Nayaka');
+$sidebarProfile = $currentUserId > 0 ? recipe_user_profile_db($currentUserId) : null;
 $filters = [
     'q' => trim((string) ($_GET['q'] ?? '')),
     'category' => trim((string) ($_GET['category'] ?? '')),
@@ -114,47 +115,19 @@ if ($recipes === []) {
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="home-page" data-guest-mode="<?= $isGuest ? '1' : '0' ?>" data-csrf-token="<?= e(csrfToken()) ?>" data-api-base="../api/" data-login-url="../auth/login.php">
-    <aside class="home-sidebar" data-node-id="16:154">
-        <div class="home-sidebar__profile">
-            <div class="home-sidebar__brand">
-                <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
-                <div>
-                    <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status"><?= $isGuest ? 'Mode tamu' : 'Sudah masuk' ?></p>
-                </div>
-                <?= sidebarToggleButton() ?>
-            </div>
-
-            <div class="home-sidebar__identity">
-                <img src="../assets/img/home-profile.png" alt="" class="home-sidebar__avatar">
-                <div class="home-sidebar__welcome">
-                    <strong><?= e($userName) ?></strong>
-                    <span><?= $isGuest ? 'Masuk untuk simpan resep dan kelola profil.' : 'Akses resep pribadi dan aktivitas akun.' ?></span>
-                </div>
-            </div>
-
-            <?php if ($isAdmin): ?>
-                <?= sidebarLink('../admin/', 'Panel Admin', 'admin', 'home-sidebar__admin-panel') ?>
-            <?php endif; ?>
-
-            <?= sidebarLink('../auth/logout.php', 'Keluar', 'logout', 'home-sidebar__logout') ?>
-        </div>
-
-        <div class="home-sidebar__divider"></div>
-
-        <p class="home-sidebar__label">Navigasi utama</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Home">
-            <?= sidebarSearchForm('../cari.php', $filters['q'] ?? '') ?>
-            <?= sidebarLink('../home/', 'Beranda', 'home', '', true) ?>
-            <?= sidebarLink('../profil/', 'Profil', 'user') ?>
-            <?= sidebarLink('../resep/myresep.php', 'Resep Saya', 'book') ?>
-            <?= sidebarLink('../resep/buat.php', 'Tambah Resep', 'plus') ?>
-            <?= sidebarLink('../resep/favorite.php', 'Favorit', 'bookmark') ?>
-            <?= sidebarLink('../profil/laporan.php', 'Pengaduan Saya', 'bell') ?>
-        </nav>
-
-        <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
-    </aside>
+    <?= renderGeneralSidebar([
+        'basePath' => '../',
+        'activeKey' => 'home',
+        'searchAction' => '../cari.php',
+        'searchValue' => $filters['q'] ?? '',
+        'userContext' => [
+            'isLoggedIn' => !$isGuest && $currentUserId > 0,
+            'isGuest' => $isGuest || $currentUserId <= 0,
+            'isAdmin' => $isAdmin,
+            'name' => $sidebarProfile['name'] ?? $userName,
+            'avatar' => $sidebarProfile['avatar'] ?? '',
+        ],
+    ]) ?>
 
     <main class="home-main" data-node-id="1:312">
         <header class="home-topbar">
@@ -196,60 +169,62 @@ if ($recipes === []) {
                     <?php endforeach; ?>
                 </div>
                 <div class="home-controls" aria-label="Filter resep lanjutan">
-                    <details class="home-dropdown">
-                        <summary class="home-dropdown__trigger">
-                            <span class="home-dropdown__icon">Lv</span>
-                            <span>Level</span>
-                        </summary>
-                        <div class="home-dropdown__menu">
-                            <?php foreach ($difficultyOptions as $option): ?>
-                                <?php $difficultyQuery = $buildHomeFilterQuery(['difficulty' => $option['value']]); ?>
-                                <a class="home-dropdown__item<?= $filters['difficulty'] === $option['value'] ? ' is-active' : '' ?>" href="../home/<?= $difficultyQuery !== '' ? '?' . e($difficultyQuery) : '' ?>">
-                                    <?= e($option['value'] === '' ? 'Semua' : $option['label']) ?>
-                                </a>
-                            <?php endforeach; ?>
-                        </div>
-                    </details>
+                    <div class="home-controls__filters">
+                        <details class="home-dropdown">
+                            <summary class="home-dropdown__trigger">
+                                <span class="home-dropdown__icon">Lv</span>
+                                <span>Level</span>
+                            </summary>
+                            <div class="home-dropdown__menu">
+                                <?php foreach ($difficultyOptions as $option): ?>
+                                    <?php $difficultyQuery = $buildHomeFilterQuery(['difficulty' => $option['value']]); ?>
+                                    <a class="home-dropdown__item<?= $filters['difficulty'] === $option['value'] ? ' is-active' : '' ?>" href="../home/<?= $difficultyQuery !== '' ? '?' . e($difficultyQuery) : '' ?>">
+                                        <?= e($option['value'] === '' ? 'Semua' : $option['label']) ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </details>
 
-                    <details class="home-dropdown">
-                        <summary class="home-dropdown__trigger">
-                            <span class="home-dropdown__icon">Tm</span>
-                            <span>Waktu</span>
-                        </summary>
-                        <div class="home-dropdown__menu">
-                            <?php foreach ($timeOptions as $option): ?>
-                                <?php $timeQuery = $buildHomeFilterQuery(['max_time' => $option['value']]); ?>
-                                <a class="home-dropdown__item<?= $filters['max_time'] === $option['value'] ? ' is-active' : '' ?>" href="../home/<?= $timeQuery !== '' ? '?' . e($timeQuery) : '' ?>">
-                                    <?= e($option['value'] === '' ? 'Semua' : str_replace('< ', '', $option['label'])) ?>
-                                </a>
-                            <?php endforeach; ?>
-                        </div>
-                    </details>
+                        <details class="home-dropdown">
+                            <summary class="home-dropdown__trigger">
+                                <span class="home-dropdown__icon">Tm</span>
+                                <span>Waktu</span>
+                            </summary>
+                            <div class="home-dropdown__menu">
+                                <?php foreach ($timeOptions as $option): ?>
+                                    <?php $timeQuery = $buildHomeFilterQuery(['max_time' => $option['value']]); ?>
+                                    <a class="home-dropdown__item<?= $filters['max_time'] === $option['value'] ? ' is-active' : '' ?>" href="../home/<?= $timeQuery !== '' ? '?' . e($timeQuery) : '' ?>">
+                                        <?= e($option['value'] === '' ? 'Semua' : str_replace('< ', '', $option['label'])) ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </details>
 
-                    <details class="home-dropdown home-dropdown--sort">
-                        <summary class="home-dropdown__trigger">
-                            <span class="home-dropdown__icon">A-Z</span>
-                            <span>Sort</span>
-                        </summary>
-                        <div class="home-dropdown__menu">
-                            <?php foreach ($sortOptions as $option): ?>
-                                <?php $sortQuery = $buildHomeFilterQuery(['sort' => $option['value']]); ?>
-                                <a class="home-dropdown__item<?= $filters['sort'] === $option['value'] ? ' is-active' : '' ?>" href="../home/<?= $sortQuery !== '' ? '?' . e($sortQuery) : '' ?>">
-                                    <?= e($option['label']) ?>
-                                </a>
-                            <?php endforeach; ?>
-                        </div>
-                    </details>
+                        <details class="home-dropdown home-dropdown--sort">
+                            <summary class="home-dropdown__trigger">
+                                <span class="home-dropdown__icon">A-Z</span>
+                                <span>Sort</span>
+                            </summary>
+                            <div class="home-dropdown__menu">
+                                <?php foreach ($sortOptions as $option): ?>
+                                    <?php $sortQuery = $buildHomeFilterQuery(['sort' => $option['value']]); ?>
+                                    <a class="home-dropdown__item<?= $filters['sort'] === $option['value'] ? ' is-active' : '' ?>" href="../home/<?= $sortQuery !== '' ? '?' . e($sortQuery) : '' ?>">
+                                        <?= e($option['label']) ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </details>
 
-                    <?php if ($hasActiveFilters): ?>
-                        <a class="home-controls__clear" href="../home/">Reset</a>
-                    <?php endif; ?>
+                        <?php if ($hasActiveFilters): ?>
+                            <a class="home-controls__clear" href="../home/">Reset</a>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="home-stats">
+                        <strong>+19</strong>
+                        <span>resep baru</span>
+                    </div>
                 </div>
-            </div>
-
-            <div class="home-stats">
-                <strong>+19</strong>
-                <span>resep baru</span>
             </div>
         </section>
 

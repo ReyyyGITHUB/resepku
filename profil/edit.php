@@ -107,46 +107,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="profile-page" data-guest-mode="0" data-csrf-token="<?= e(csrfToken()) ?>">
-    <aside class="home-sidebar profile-sidebar" data-node-id="16:154">
-        <div class="home-sidebar__profile">
-            <div class="home-sidebar__brand">
-                <img src="../assets/img/resepku-logo.png" alt="" class="home-sidebar__logo">
-                <div>
-                    <p class="home-sidebar__name">Resepku</p>
-                    <p class="home-sidebar__status">Sudah masuk</p>
-                </div>
-                <?= sidebarToggleButton() ?>
-            </div>
-
-            <div class="home-sidebar__identity">
-                <img src="<?= e($profile['avatar']) ?>" alt="<?= e($profile['name']) ?>" class="home-sidebar__avatar">
-                <div class="home-sidebar__welcome">
-                    <strong><?= e($profile['name']) ?></strong>
-                    <span><?= $profile['bio'] !== '' ? e($profile['bio']) : 'Kelola akun dan resep publik kamu dari sini.' ?></span>
-                </div>
-            </div>
-
-            <?php if ($isAdmin): ?>
-                <?= sidebarLink('../admin/', 'Panel Admin', 'admin', 'home-sidebar__admin-panel') ?>
-            <?php endif; ?>
-
-            <?= sidebarLink('../auth/logout.php', 'Keluar', 'logout', 'home-sidebar__logout') ?>
-        </div>
-
-        <div class="home-sidebar__divider"></div>
-
-        <p class="home-sidebar__label">Navigasi utama</p>
-        <nav class="home-sidebar__nav home-sidebar__nav--primary" aria-label="Navigasi Profil">
-            <?= sidebarSearchForm('../cari.php') ?>
-            <?= sidebarLink('../home/', 'Beranda', 'home') ?>
-            <?= sidebarLink('../profil/', 'Profil', 'user', '', true) ?>
-            <?= sidebarLink('../resep/myresep.php', 'Resep Saya', 'book') ?>
-            <?= sidebarLink('../resep/buat.php', 'Tambah Resep', 'plus') ?>
-            <?= sidebarLink('../resep/favorite.php', 'Favorit', 'bookmark') ?>
-        </nav>
-
-        <img src="../assets/img/chef-illustration.png" alt="" class="home-sidebar__chef">
-    </aside>
+    <?= renderGeneralSidebar([
+        'basePath' => '../',
+        'asideClass' => 'profile-sidebar',
+        'activeKey' => 'profile',
+        'searchAction' => '../cari.php',
+        'userContext' => [
+            'isLoggedIn' => true,
+            'isGuest' => false,
+            'isAdmin' => $isAdmin,
+            'name' => $profile['name'] ?? '',
+            'avatar' => $profile['avatar'] ?? '',
+        ],
+    ]) ?>
 
     <main class="profile-main">
         <?php if ($flashSuccess): ?>

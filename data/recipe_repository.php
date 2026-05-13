@@ -38,6 +38,7 @@ function recipe_row_to_card(array $row): array
         'slug' => $row['slug'] ?? ($id > 0 ? 'recipe-' . $id : 'recipe-preview'),
         'image' => $image,
         'author' => $row['author'] ?? 'Tim ResepKu',
+        'author_role' => (string) ($row['author_role'] ?? 'pengguna'),
         'author_avatar' => recipe_asset_path($row['author_avatar'] ?? '../assets/img/home-profile.png'),
         'cook_time' => recipe_format_cook_time($row['waktu_memasak'] ?? null),
         'servings' => recipe_format_servings($row['porsi'] ?? null),
@@ -109,9 +110,11 @@ function recipe_parse_list(?string $value): array
 function recipe_normalize_step_item(mixed $step): ?array
 {
     if (is_array($step)) {
+        $title = trim((string) ($step['title'] ?? ''));
         $text = trim((string) ($step['text'] ?? $step['description'] ?? ''));
         $image = trim((string) ($step['image'] ?? ''));
     } else {
+        $title = '';
         $text = trim((string) $step);
         $image = '';
     }
@@ -121,6 +124,7 @@ function recipe_normalize_step_item(mixed $step): ?array
     }
 
     return [
+        'title' => $title !== '' ? $title : null,
         'text' => $text,
         'image' => $image !== '' ? $image : null,
     ];
@@ -794,7 +798,8 @@ function recipe_find_db(int $id): ?array
             r.kategori,
             r.tingkat_kesulitan,
             p.nama_pengguna AS author_name,
-            p.foto_profil AS author_avatar
+            p.foto_profil AS author_avatar,
+            p.role AS author_role
         FROM recipes r
         INNER JOIN pengguna p ON p.pengguna_id = r.pengguna_id
         WHERE r.resep_id = :id
@@ -862,6 +867,7 @@ function recipe_find_db(int $id): ?array
         'summary' => $summary,
         'deskripsi' => $row['deskripsi'] ?? '',
         'author' => $row['author_name'] ?? 'Tim ResepKu',
+        'author_role' => $row['author_role'] ?? 'pengguna',
         'author_avatar' => $row['author_avatar'] ?? '../assets/img/home-profile.png',
         'ingredients' => $ingredients,
         'tools' => $tools,
@@ -880,7 +886,8 @@ function recipe_comments_db(int $recipeId, int $limit = 50): array
             k.isi_komentar,
             k.dibuat_pada,
             p.nama_pengguna,
-            p.foto_profil
+            p.foto_profil,
+            p.role
         FROM komentar k
         INNER JOIN pengguna p ON p.pengguna_id = k.pengguna_id
         WHERE k.resep_id = :recipe_id
@@ -903,6 +910,7 @@ function recipe_comments_db(int $recipeId, int $limit = 50): array
             'created_at' => (string) $row['dibuat_pada'],
             'created_at_label' => recipe_format_datetime_label($row['dibuat_pada'] ?? ''),
             'author' => (string) $row['nama_pengguna'],
+            'author_role' => (string) ($row['role'] ?? 'pengguna'),
             'avatar' => recipe_asset_path($row['foto_profil'] ?? '../assets/img/home-profile.png'),
         ];
     }
@@ -942,6 +950,7 @@ function recipe_add_comment_db(int $recipeId, int $userId, string $content): arr
         'created_at' => date('Y-m-d H:i:s'),
         'created_at_label' => date('d M Y, H:i'),
         'author' => 'Pengguna',
+        'author_role' => 'pengguna',
         'avatar' => '../assets/img/home-profile.png',
     ];
 }

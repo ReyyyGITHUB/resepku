@@ -217,6 +217,41 @@
     line-height: 1.15;
 }
 
+.profile-summary__identity {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.profile-admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #2d83f7;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.profile-admin-badge__icon {
+    display: inline-flex;
+    width: 14px;
+    height: 14px;
+}
+
+.profile-admin-badge__icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.profile-admin-badge__label {
+    font-weight: 500;
+    text-transform: lowercase;
+}
+
 .profile-summary__badge {
     display: inline-flex;
     align-items: center;
