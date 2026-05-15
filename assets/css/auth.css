@@ -162,6 +162,15 @@
     line-height: normal;
 }
 
+.login-form__input::-ms-reveal,
+.login-form__input::-ms-clear,
+.auth-form__input::-ms-reveal,
+.auth-form__input::-ms-clear {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
 .auth-form__input::placeholder,
 .login-form__input::placeholder {
     color: var(--color-white);
@@ -173,13 +182,63 @@
     border-color: var(--color-white);
 }
 
+.login-form__password {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.login-form__password .login-form__input {
+    margin-bottom: 0;
+    padding-right: 54px;
+}
+
+.login-form__password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-white);
+    cursor: pointer;
+}
+
+.login-form__password-toggle:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+    border-radius: 50%;
+}
+
+.login-form__password-icon {
+    width: 25px;
+    height: 25px;
+}
+
+.login-form__password-icon--show {
+    display: none;
+}
+
+.login-form__password-toggle[aria-pressed="true"] .login-form__password-icon--show {
+    display: block;
+}
+
+.login-form__password-toggle[aria-pressed="true"] .login-form__password-icon--hide {
+    display: none;
+}
+
 .login-form__button {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     min-height: 50px;
-    margin-top: 22px;
+    margin-top: 0;
     padding: 10px;
     border: 0;
     border-radius: 16px;
@@ -197,8 +256,8 @@
 }
 
 .login-form__forgot {
-    margin: 14px 0 0;
-    text-align: center;
+    margin: 0 0 23px;
+    text-align: right;
     font-size: 15px;
     line-height: 1.3;
 }
@@ -208,13 +267,31 @@
     text-decoration: underline;
 }
 
+.login-form__separator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 13px 0 12px;
+    color: var(--color-white);
+    font-size: 15px;
+    line-height: 1;
+}
+
+.login-form__separator::before,
+.login-form__separator::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.65);
+}
+
 .login-form__guest {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     min-height: 44px;
-    margin-top: 14px;
+    margin-top: 0;
     padding: 10px;
     border: 1px solid var(--color-white);
     border-radius: 16px;

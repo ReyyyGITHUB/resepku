@@ -111,13 +111,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input class="login-form__input auth-form__input" id="email" name="email" type="email" placeholder="Email" autocomplete="email" value="<?= e($old['email']) ?>" required data-node-id="1:2066">
 
                 <label class="sr-only" for="password">Kata sandi</label>
-                <input class="login-form__input auth-form__input" id="password" name="password" type="password" placeholder="Kata sandi" autocomplete="current-password" required data-node-id="1:2065">
-
-                <button class="login-form__button" type="submit" data-node-id="1:2061">Masuk</button>
+                <div class="login-form__password">
+                    <input class="login-form__input auth-form__input" id="password" name="password" type="password" placeholder="Kata sandi" autocomplete="current-password" required data-node-id="1:2065">
+                    <button class="login-form__password-toggle" type="button" aria-label="Tampilkan kata sandi" aria-pressed="false" data-password-toggle>
+                        <svg class="login-form__password-icon login-form__password-icon--show" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+                        </svg>
+                        <svg class="login-form__password-icon login-form__password-icon--hide" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
+                            <path d="M10.7 5.2A10.7 10.7 0 0 1 12 5c6 0 9.5 7 9.5 7a16.6 16.6 0 0 1-3.1 4.1M6.3 6.7A16.7 16.7 0 0 0 2.5 12S6 19 12 19a9.6 9.6 0 0 0 3.8-.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M9.9 9.9A3 3 0 0 0 14.1 14.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                        </svg>
+                    </button>
+                </div>
 
                 <p class="login-form__forgot">
                     <a href="lupa-sandi.php">Lupa kata sandi?</a>
                 </p>
+
+                <button class="login-form__button" type="submit" data-node-id="1:2061">Masuk</button>
+
+                <div class="login-form__separator" aria-hidden="true"><span>atau</span></div>
 
                 <button class="login-form__guest" type="submit" name="guest_login" value="1" formnovalidate>Masuk sebagai Tamu</button>
 
@@ -129,6 +144,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </section>
     </main>
 
+    <script>
+        document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var field = button.closest('.login-form__password').querySelector('input');
+                var visible = field.type === 'text';
+
+                field.type = visible ? 'password' : 'text';
+                button.setAttribute('aria-pressed', visible ? 'false' : 'true');
+                button.setAttribute('aria-label', visible ? 'Tampilkan kata sandi' : 'Sembunyikan kata sandi');
+            });
+        });
+    </script>
     <script src="../assets/js/main.js"></script>
 </body>
 </html>

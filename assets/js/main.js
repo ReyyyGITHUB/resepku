@@ -31,6 +31,12 @@ document.addEventListener("DOMContentLoaded", function () {
     var sidebarStorageKey = "resepku.sidebarCollapsed";
     var sidebarToggle = document.querySelector("[data-sidebar-toggle]");
     var sidebarTooltip = null;
+    var detailImageOpeners = document.querySelectorAll("[data-detail-image-open]");
+    var detailImageLightbox = document.querySelector("[data-detail-image-lightbox]");
+    var detailImagePreview = detailImageLightbox ? detailImageLightbox.querySelector("[data-detail-image-preview]") : null;
+    var detailImageCaption = detailImageLightbox ? detailImageLightbox.querySelector("[data-detail-image-caption]") : null;
+    var detailImageClosers = detailImageLightbox ? detailImageLightbox.querySelectorAll("[data-detail-image-close]") : [];
+    var activeDetailImageTrigger = null;
 
     function setSidebarCollapsed(collapsed) {
         document.documentElement.classList.toggle("sidebar-collapsed", collapsed);
@@ -171,6 +177,46 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.classList.remove("modal-open");
     }
 
+    function openDetailImageLightbox(trigger) {
+        if (!detailImageLightbox || !detailImagePreview || !trigger) {
+            return;
+        }
+
+        activeDetailImageTrigger = trigger;
+        detailImagePreview.setAttribute("src", trigger.dataset.detailImageSrc || "");
+        detailImagePreview.setAttribute("alt", trigger.dataset.detailImageAlt || "");
+
+        if (detailImageCaption) {
+            detailImageCaption.textContent = trigger.dataset.detailImageCaption || "";
+        }
+
+        detailImageLightbox.classList.add("is-open");
+        detailImageLightbox.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+    }
+
+    function closeDetailImageLightbox() {
+        if (!detailImageLightbox || !detailImagePreview) {
+            return;
+        }
+
+        detailImageLightbox.classList.remove("is-open");
+        detailImageLightbox.setAttribute("aria-hidden", "true");
+        detailImagePreview.setAttribute("src", "");
+        detailImagePreview.setAttribute("alt", "");
+
+        if (detailImageCaption) {
+            detailImageCaption.textContent = "";
+        }
+
+        document.body.classList.remove("modal-open");
+
+        if (activeDetailImageTrigger) {
+            activeDetailImageTrigger.focus();
+            activeDetailImageTrigger = null;
+        }
+    }
+
     function openReportModal(button) {
         if (!reportModal || !reportForm) {
             return;
@@ -261,6 +307,24 @@ document.addEventListener("DOMContentLoaded", function () {
         document.addEventListener("keydown", function (event) {
             if (event.key === "Escape") {
                 closeProfileEditModal();
+            }
+        });
+    }
+
+    detailImageOpeners.forEach(function (trigger) {
+        trigger.addEventListener("click", function () {
+            openDetailImageLightbox(trigger);
+        });
+    });
+
+    detailImageClosers.forEach(function (button) {
+        button.addEventListener("click", closeDetailImageLightbox);
+    });
+
+    if (detailImageLightbox) {
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && detailImageLightbox.classList.contains("is-open")) {
+                closeDetailImageLightbox();
             }
         });
     }
@@ -409,8 +473,13 @@ document.addEventListener("DOMContentLoaded", function () {
         var following = !!state.following;
         var followLabel = button.dataset.followLabel || "Follow";
         var followedLabel = button.dataset.followedLabel || "Followed";
+        var labelNode = button.querySelector("[data-follow-text]") || button.querySelector(".profile-account-item__follow-label");
         button.classList.toggle("is-active", following);
-        button.textContent = following ? followedLabel : followLabel;
+        if (labelNode) {
+            labelNode.textContent = following ? followedLabel : followLabel;
+        } else {
+            button.textContent = following ? followedLabel : followLabel;
+        }
 
         if (followerCount && typeof state.follower_count !== "undefined") {
             followerCount.textContent = String(state.follower_count);
@@ -559,6 +628,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var favoriteButton = document.querySelector('[data-social-action="favorite"]');
     var rateButton = document.querySelector('[data-social-action="rate"]');
     var shareButton = document.querySelector('[data-social-action="share"]');
+    var printButton = document.querySelector('[data-social-action="print"]');
     var commentForm = document.querySelector("[data-comment-form]");
     var commentList = document.querySelector("[data-comment-list]");
     var commentCount = document.querySelector("[data-comment-count]");
@@ -629,14 +699,20 @@ document.addEventListener("DOMContentLoaded", function () {
             '<article class="detail-comment">' +
                 '<img class="detail-comment__avatar" src="' + escapeHtml(avatar) + '" alt="' + escapeHtml(author) + '">' +
                 '<div class="detail-comment__body">' +
-                    '<div class="detail-comment__meta">' +
-                        '<span class="detail-comment__author">' +
-                            '<strong>' + escapeHtml(author) + '</strong>' +
-                            renderAdminBadge(authorRole) +
-                        '</span>' +
-                        '<span>' + escapeHtml(createdAt) + '</span>' +
+                    '<div class="detail-comment__bubble">' +
+                        '<div class="detail-comment__meta">' +
+                            '<span class="detail-comment__author">' +
+                                '<strong>' + escapeHtml(author) + '</strong>' +
+                                renderAdminBadge(authorRole) +
+                            '</span>' +
+                            '<span class="detail-comment__time">' + escapeHtml(createdAt) + '</span>' +
+                        '</div>' +
+                        '<p>' + escapeHtml(content) + '</p>' +
                     '</div>' +
-                    '<p>' + escapeHtml(content) + '</p>' +
+                    '<div class="detail-comment__actions" aria-label="Aksi komentar">' +
+                        '<button type="button" class="detail-comment__action" disabled>Suka</button>' +
+                        '<button type="button" class="detail-comment__action" disabled>Balas</button>' +
+                    '</div>' +
                 '</div>' +
             '</article>';
     }
@@ -770,6 +846,12 @@ document.addEventListener("DOMContentLoaded", function () {
             } catch (error) {
                 window.prompt("Salin link resep ini:", url);
             }
+        });
+    }
+
+    if (printButton) {
+        printButton.addEventListener("click", function () {
+            window.print();
         });
     }
 

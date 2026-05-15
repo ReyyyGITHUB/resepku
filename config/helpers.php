@@ -171,12 +171,6 @@ function renderGeneralSidebar(array $options): string
         $statusLabel = $isGuest ? 'Mode tamu' : 'Sudah masuk';
     }
 
-    if ($welcomeText === '') {
-        $welcomeText = $isGuest
-            ? 'Masuk untuk akses resep pribadi, favorit, dan pengaduan.'
-            : 'Akses resep pribadi, favorit, dan pengaduan dari satu sidebar.';
-    }
-
     $navItems = [
         ['key' => 'home', 'href' => sidebarRoutePath($basePath, 'home/'), 'label' => 'Beranda', 'icon' => 'home'],
         ['key' => 'profile', 'href' => $profileHref, 'label' => 'Profil', 'icon' => 'user'],
@@ -203,7 +197,11 @@ function renderGeneralSidebar(array $options): string
     $html .= '</div>';
     $html .= '<div class="home-sidebar__identity">';
     $html .= '<img src="' . e($avatar) . '" alt="' . e($name) . '" class="home-sidebar__avatar">';
-    $html .= '<div class="home-sidebar__welcome"><strong>' . e($name) . '</strong><span>' . e($welcomeText) . '</span></div>';
+    $html .= '<div class="home-sidebar__welcome"><strong>' . e($name) . '</strong>';
+    if ($welcomeText !== '') {
+        $html .= '<span>' . e($welcomeText) . '</span>';
+    }
+    $html .= '</div>';
     $html .= '</div>';
 
     if ($isAdmin) {

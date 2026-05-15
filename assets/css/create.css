@@ -5,12 +5,14 @@
 
 .recipe-create-main {
     background: #fffaf5;
+    width: auto;
 }
 
 .recipe-create {
     display: grid;
     gap: 22px;
-    max-width: 1180px;
+    width: 100%;
+    max-width: none;
 }
 
 .recipe-create .detail-hero,

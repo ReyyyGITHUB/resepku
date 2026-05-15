@@ -99,6 +99,9 @@
 }
 
 .home-sidebar__welcome {
+    display: grid;
+    align-content: center;
+    gap: 4px;
     min-width: 0;
 }
 
@@ -118,7 +121,6 @@
 
 .home-sidebar__welcome span {
     display: block;
-    margin-top: 4px;
     color: #464646;
     font-size: 12px;
     line-height: 1.4;
@@ -139,13 +141,11 @@
     font-weight: 800;
     text-align: center;
     text-decoration: none;
-    box-shadow: 0 8px 18px rgba(251, 155, 0, 0.2);
 }
 
 .home-sidebar__admin-panel:hover,
 .home-sidebar__admin-panel:focus-visible {
     background: #ffad18;
-    box-shadow: 0 10px 22px rgba(251, 155, 0, 0.28);
 }
 
 .home-sidebar__logout {
@@ -223,7 +223,6 @@
 
 .home-sidebar__search:focus-within label {
     border-color: rgba(251, 155, 0, 0.56);
-    box-shadow: 0 0 0 3px rgba(251, 155, 0, 0.14);
 }
 
 .home-sidebar__nav a {
@@ -246,7 +245,6 @@
 .home-sidebar__nav a:focus-visible {
     border-color: rgba(251, 155, 0, 0.62);
     background: #fff6e6;
-    box-shadow: 0 8px 18px rgba(251, 155, 0, 0.14);
 }
 
 .home-sidebar__nav-icon {
@@ -290,7 +288,6 @@
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
     transition: opacity 0.18s ease, visibility 0.18s ease;
 }
 
@@ -306,14 +303,12 @@
     line-height: 1.2;
     white-space: nowrap;
     pointer-events: none;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
     transform: translateY(-50%);
 }
 
 .home-sidebar__nav a.is-active {
     border-color: #000000;
     background: #fb9b00;
-    box-shadow: 0 8px 18px rgba(251, 155, 0, 0.2);
 }
 
 .home-sidebar__nav a.is-active:hover,

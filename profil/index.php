@@ -191,7 +191,16 @@ $profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
                                             data-follow-label="Ikuti"
                                             data-followed-label="Mengikuti"
                                         >
-                                            <?= $isFollowingProfile ? 'Mengikuti' : 'Ikuti' ?>
+                                            <svg class="profile-summary__follow-icon profile-summary__follow-icon--idle" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                <path d="M15 19a6 6 0 0 0-12 0"></path>
+                                                <circle cx="9" cy="7" r="4"></circle>
+                                                <path d="M19 8v6"></path>
+                                                <path d="M22 11h-6"></path>
+                                            </svg>
+                                            <svg class="profile-summary__follow-icon profile-summary__follow-icon--active" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                <path d="M20 6 9 17l-5-5"></path>
+                                            </svg>
+                                            <span data-follow-text><?= $isFollowingProfile ? 'Mengikuti' : 'Ikuti' ?></span>
                                         </button>
                                         <button
                                             class="profile-summary__report"
@@ -201,7 +210,13 @@ $profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
                                             data-report-target-type="pengguna"
                                             data-report-target-id="<?= e((string) $profileUserId) ?>"
                                             data-report-target-label="<?= e($profile['name']) ?>"
-                                        >Laporkan</button>
+                                        >
+                                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                <path d="M4 21V5"></path>
+                                                <path d="M4 5h12l-1 4 1 4H4"></path>
+                                            </svg>
+                                            <span>Laporkan</span>
+                                        </button>
                                     </div>
                                 </div>
 
@@ -224,12 +239,6 @@ $profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
                     </section>
 
                     <section class="profile-panel profile-panel--recipes" aria-label="Daftar resep profil">
-                        <div class="profile-tabs" aria-label="Bagian profil">
-                            <button class="is-active" type="button">Resep</button>
-                            <button type="button">Tentang</button>
-                            <button type="button">Aktivitas</button>
-                        </div>
-
                         <div class="profile-filterbar" aria-label="Filter resep">
                             <button class="is-active" type="button" data-profile-filter-action aria-pressed="true">Semua Resep</button>
                             <span class="profile-filterbar__spacer"></span>
@@ -313,7 +322,14 @@ $profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
                                             data-user-id="<?= e((string) $accountId) ?>"
                                             data-follow-label="Ikuti"
                                             data-followed-label="Diikuti"
-                                        >Ikuti</button>
+                                        >
+                                            <span class="profile-account-item__follow-icon" aria-hidden="true">
+                                                <svg viewBox="0 0 24 24" focusable="false">
+                                                    <path d="M16 19v-1.5A3.5 3.5 0 0 0 12.5 14h-5A3.5 3.5 0 0 0 4 17.5V19m11-11a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm3 4v6m3-3h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                </svg>
+                                            </span>
+                                            <span class="profile-account-item__follow-label">Ikuti</span>
+                                        </button>
                                     </article>
                                 <?php endforeach; ?>
                             </div>
@@ -405,7 +421,13 @@ $profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
                                     <div class="profile-summary__badge"><?= e($profileRoleLabel) ?></div>
                                 </div>
 
-                                <button class="profile-summary__edit" type="button" data-profile-edit-open>Edit Profil</button>
+                                <button class="profile-summary__edit" type="button" data-profile-edit-open>
+                                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                        <path d="M12 20h9"></path>
+                                        <path d="m16.5 3.5 4 4L7 21H3v-4L16.5 3.5z"></path>
+                                    </svg>
+                                    <span>Edit Profil</span>
+                                </button>
                             </div>
 
                             <div class="profile-summary__stats" aria-label="Statistik profil">
@@ -516,11 +538,13 @@ $profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
                                     <?php foreach ($suggestedAccounts as $account): ?>
                                         <?php $accountId = (int) ($account['user_id'] ?? 0); ?>
                                         <article class="profile-account-item">
-                                            <img class="profile-account-item__avatar" src="<?= e(recipe_asset_path($account['avatar'] ?? null)) ?>" alt="<?= e($account['name'] ?? 'Pengguna') ?>">
-                                            <div class="profile-account-item__copy">
-                                                <strong><?= e($account['name'] ?? 'Pengguna') ?></strong>
-                                                <span><?= e((string) ($account['follower_count'] ?? 0)) ?> pengikut</span>
-                                            </div>
+                                            <a class="profile-account-item__profile" href="../profil/?id=<?= e((string) $accountId) ?>">
+                                                <img class="profile-account-item__avatar" src="<?= e(recipe_asset_path($account['avatar'] ?? null)) ?>" alt="<?= e($account['name'] ?? 'Pengguna') ?>">
+                                                <span class="profile-account-item__copy">
+                                                    <strong><?= e($account['name'] ?? 'Pengguna') ?></strong>
+                                                    <span><?= e((string) ($account['follower_count'] ?? 0)) ?> pengikut</span>
+                                                </span>
+                                            </a>
                                             <button
                                                 class="profile-account-item__follow"
                                                 type="button"
@@ -529,7 +553,14 @@ $profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
                                                 data-user-id="<?= e((string) $accountId) ?>"
                                                 data-follow-label="Ikuti"
                                                 data-followed-label="Diikuti"
-                                            >Ikuti</button>
+                                            >
+                                                <span class="profile-account-item__follow-icon" aria-hidden="true">
+                                                    <svg viewBox="0 0 24 24" focusable="false">
+                                                        <path d="M16 19v-1.5A3.5 3.5 0 0 0 12.5 14h-5A3.5 3.5 0 0 0 4 17.5V19m11-11a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm3 4v6m3-3h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                    </svg>
+                                                </span>
+                                                <span class="profile-account-item__follow-label">Ikuti</span>
+                                            </button>
                                         </article>
                                     <?php endforeach; ?>
                                 </div>
@@ -542,14 +573,8 @@ $profileHeroImage = (!$isUnavailable && $recentRecipes !== [])
             <?php if (!$isPublicProfile): ?>
                 <div class="profile-modal" data-profile-edit-modal aria-hidden="true">
                     <div class="profile-modal__backdrop" data-profile-edit-close></div>
-                    <section class="profile-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title">
+                    <section class="profile-modal__dialog" role="dialog" aria-modal="true" aria-label="Edit profil">
                         <button class="profile-modal__close" type="button" aria-label="Tutup" data-profile-edit-close>×</button>
-
-                        <div class="profile-modal__header">
-                            <p class="profile-modal__eyebrow">Edit profil</p>
-                            <h2 id="profile-edit-title">Edit Profil</h2>
-                            <p>Ubah nama, bio, dan kata sandi dari jendela ini.</p>
-                        </div>
 
                         <form class="profile-edit-form" action="../profil/edit.php" method="post">
                             <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">

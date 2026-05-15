@@ -86,7 +86,7 @@ $visibleRecipes = count($recipes);
         <?= sidebarInitialStateScript() ?>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="myrecipes-page">
+<body class="myrecipes-page myrecipes-page--manage">
     <?= renderGeneralSidebar([
         'basePath' => '../',
         'asideClass' => 'myrecipes-sidebar',
@@ -125,6 +125,16 @@ $visibleRecipes = count($recipes);
                 <p class="myrecipes-hero__eyebrow">Kelola resep</p>
                 <h1>Resep Saya</h1>
                 <p class="myrecipes-hero__copy">Edit, perbarui gambar sampul, dan hapus resep yang kamu miliki.</p>
+                <div class="myrecipes-stats myrecipes-stats--inline">
+                    <div>
+                        <strong><?= e((string) $totalRecipes) ?></strong>
+                        <span>Total resep</span>
+                    </div>
+                    <div>
+                        <strong><?= e((string) $visibleRecipes) ?></strong>
+                        <span>Hasil tampil</span>
+                    </div>
+                </div>
                 <div class="home-filters myrecipes-filters" aria-label="Kategori resep">
                     <?php foreach ($categoryPills as $pill): ?>
                         <?php
@@ -135,17 +145,6 @@ $visibleRecipes = count($recipes);
                         ?>
                         <a class="home-filter<?= mb_strtolower($filters['category']) === mb_strtolower($pill['value']) ? ' is-active' : '' ?>" href="../resep/myresep.php?<?= e(http_build_query($query)) ?>"><?= e($pill['label']) ?></a>
                     <?php endforeach; ?>
-                </div>
-            </div>
-
-            <div class="myrecipes-stats">
-                <div>
-                    <strong><?= e((string) $totalRecipes) ?></strong>
-                    <span>Total resep</span>
-                </div>
-                <div>
-                    <strong><?= e((string) $visibleRecipes) ?></strong>
-                    <span>Hasil tampil</span>
                 </div>
             </div>
         </section>
@@ -167,16 +166,25 @@ $visibleRecipes = count($recipes);
                 </article>
             <?php else: ?>
                 <?php foreach ($recipes as $recipe): ?>
+                    <?php
+                    $recipeId = (int) $recipe['id'];
+                    $detailHref = '../resep/detail.php?id=' . $recipeId;
+                    $editHref = '../resep/edit.php?id=' . $recipeId;
+                    $categoryLabel = $recipe['category'] !== '' ? ucfirst((string) $recipe['category']) : 'Belum berkategori';
+                    $summary = $recipe['summary'] !== '' ? $recipe['summary'] : 'Belum ada deskripsi singkat.';
+                    ?>
                     <article class="myrecipe-card">
-                        <a class="myrecipe-card__link" href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">
+                        <a class="myrecipe-card__link" href="<?= e($detailHref) ?>">
                             <span class="sr-only">Buka resep <?= e($recipe['title']) ?></span>
                         </a>
-                        <img class="myrecipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                        <div class="myrecipe-card__thumb">
+                            <img class="myrecipe-card__image" src="<?= e($recipe['image']) ?>" alt="<?= e($recipe['title']) ?>">
+                        </div>
                         <div class="myrecipe-card__body">
                             <div class="myrecipe-card__head">
                                 <div>
                                     <h2><?= e($recipe['title']) ?></h2>
-                                    <p><?= e($recipe['category'] !== '' ? ucfirst((string) $recipe['category']) : 'Belum berkategori') ?></p>
+                                    <p><?= e($categoryLabel) ?></p>
                                 </div>
                                 <span class="myrecipe-card__badge"><?= e($recipe['difficulty']) ?></span>
                             </div>
@@ -186,19 +194,26 @@ $visibleRecipes = count($recipes);
                                 <span><?= e($recipe['servings']) ?></span>
                             </div>
 
-                            <p class="myrecipe-card__summary"><?= e($recipe['summary'] !== '' ? $recipe['summary'] : 'Belum ada deskripsi singkat.') ?></p>
+                            <p class="myrecipe-card__summary"><?= e($summary) ?></p>
+                        </div>
 
-                            <div class="myrecipe-card__actions">
-                                <a href="../resep/edit.php?id=<?= e((string) $recipe['id']) ?>">Edit</a>
-                                <a href="../resep/detail.php?id=<?= e((string) $recipe['id']) ?>">Lihat</a>
+                        <details class="myrecipe-card__actions">
+                            <summary aria-label="Aksi resep <?= e($recipe['title']) ?>">
+                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M4 17.5V21h3.5L18.1 10.4l-3.5-3.5L4 17.5Zm12-12 3.5 3.5 1.2-1.2a1.8 1.8 0 0 0 0-2.6l-1.9-1.9a1.8 1.8 0 0 0-2.6 0L16 5.5Z" />
+                                </svg>
+                            </summary>
+                            <div class="myrecipe-card__menu">
+                                <a href="<?= e($detailHref) ?>">Lihat</a>
+                                <a href="<?= e($editHref) ?>">Edit</a>
                                 <form method="post" onsubmit="return confirm('Hapus resep ini?');">
                                     <input type="hidden" name="_token" value="<?= e(csrfToken()) ?>">
                                     <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="recipe_id" value="<?= e((string) $recipe['id']) ?>">
+                                    <input type="hidden" name="recipe_id" value="<?= e((string) $recipeId) ?>">
                                     <button type="submit">Hapus</button>
                                 </form>
                             </div>
-                        </div>
+                        </details>
                     </article>
                 <?php endforeach; ?>
             <?php endif; ?>

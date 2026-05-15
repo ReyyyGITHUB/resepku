@@ -1,7 +1,7 @@
 .profile-page {
     min-height: 100vh;
     margin: 0;
-    background: #fff0f0;
+    background: #fffaf5;
     color: #111111;
 }
 
@@ -95,11 +95,24 @@
 .profile-search__button svg,
 .profile-topbar__notice svg,
 .profile-summary__badge svg,
+.profile-summary__edit svg,
 .profile-summary__follow svg,
+.profile-summary__report svg,
 .profile-stat__icon svg,
 .profile-view-toggle svg {
     width: 18px;
     height: 18px;
+}
+
+.profile-summary__edit svg,
+.profile-summary__follow svg,
+.profile-summary__report svg {
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .profile-topbar__account {
@@ -292,15 +305,17 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    min-height: 43px;
-    padding: 0 14px;
-    border-radius: 10px;
+    gap: 8px;
+    min-height: 42px;
+    min-width: 116px;
+    padding: 0 16px;
+    border-radius: 999px;
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .profile-summary__edit,
@@ -308,17 +323,60 @@
     border: 1px solid #ffa501;
     background: #ffa501;
     color: #ffffff;
+    box-shadow: 0 12px 24px rgba(255, 165, 1, 0.22);
 }
 
 .profile-summary__report {
-    border: 1px solid #777777;
-    background: #ffffff;
-    color: #111111;
+    border: 1px solid rgba(214, 57, 57, 0.22);
+    background: #fff7f7;
+    color: #b42318;
 }
 
 .profile-summary__follow.is-active {
     background: #ffffff;
     color: #ffa501;
+    box-shadow: inset 0 0 0 1px rgba(255, 165, 1, 0.24);
+}
+
+.profile-summary__follow-icon--active {
+    display: none;
+}
+
+.profile-summary__follow.is-active .profile-summary__follow-icon--idle {
+    display: none;
+}
+
+.profile-summary__follow.is-active .profile-summary__follow-icon--active {
+    display: block;
+}
+
+.profile-summary__edit:hover,
+.profile-summary__follow:hover,
+.profile-summary__report:hover {
+    transform: translateY(-1px);
+}
+
+.profile-summary__edit:hover,
+.profile-summary__follow:hover {
+    background: #f39a00;
+    border-color: #f39a00;
+}
+
+.profile-summary__follow.is-active:hover {
+    background: #fff7e8;
+    border-color: #ffa501;
+}
+
+.profile-summary__report:hover {
+    border-color: rgba(180, 35, 24, 0.36);
+    background: #fff1f1;
+}
+
+.profile-summary__edit:focus-visible,
+.profile-summary__follow:focus-visible,
+.profile-summary__report:focus-visible {
+    outline: 3px solid rgba(255, 165, 1, 0.28);
+    outline-offset: 2px;
 }
 
 .profile-summary__stats {
@@ -437,55 +495,44 @@
     line-height: 1.5;
 }
 
-.profile-tabs {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin-bottom: 12px;
-}
-
-.profile-tabs button {
-    min-height: 30px;
-    border: 0;
-    background: transparent;
-    color: #4c4c4c;
-    font: inherit;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.profile-tabs button.is-active {
-    color: #111111;
-}
-
 .profile-filterbar {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 38px;
+    gap: 8px;
+    margin-bottom: 26px;
+    padding: 0 0 10px;
+    border-bottom: 1px solid #ead9c7;
 }
 
 .profile-filterbar button,
 .profile-view-toggle {
-    min-height: 30px;
-    border: 1px solid #777777;
-    border-radius: 15px;
-    background: #ffffff;
+    min-height: 34px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
     color: #111111;
 }
 
-.profile-filterbar button {
-    padding: 0 12px;
+.profile-filterbar > button {
+    padding: 0 10px;
     font: inherit;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
 }
 
-.profile-filterbar button.is-active,
-.profile-view-toggle button.is-active {
-    border-color: #fb9b00;
-    background: #fb9b00;
+.profile-filterbar > button:hover,
+.profile-filterbar > button:focus-visible {
+    background: #fff3e3;
     color: #111111;
+}
+
+.profile-filterbar > button.is-active {
+    border-color: #ead9c7;
+    background: #fff7ef;
+    color: #111111;
+    font-weight: 600;
 }
 
 .profile-filterbar__spacer {
@@ -496,22 +543,34 @@
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    padding: 0 8px;
+    padding: 2px;
+    border-color: #ead9c7;
+    background: #ffffff;
 }
 
 .profile-view-toggle button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    min-height: 26px;
+    width: 30px;
+    min-height: 30px;
     padding: 0;
     border: 0;
-    border-radius: 9px;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.profile-view-toggle button:hover,
+.profile-view-toggle button:focus-visible {
+    background: #fff3e3;
 }
 
 .profile-view-toggle button.is-active {
+    border-color: transparent;
     background: #fb9b00;
+    color: #111111;
+    box-shadow: none;
 }
 
 .profile-recipe-grid.is-list-view {
@@ -551,6 +610,13 @@
     border: 1px solid #111111;
     border-radius: 15px;
     background: #ffffff;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.profile-recipe-card:hover {
+    border-color: #fb9b00;
+    box-shadow: 0 12px 24px rgba(65, 45, 24, 0.12);
+    transform: translateY(-2px);
 }
 
 .profile-recipe-card__link {
@@ -610,6 +676,11 @@
     height: 86%;
     border-radius: 50%;
     object-fit: cover;
+    transition: transform 0.22s ease;
+}
+
+.profile-recipe-card:hover .profile-recipe-card__image {
+    transform: scale(1.035);
 }
 
 .profile-recipe-card__body {
@@ -813,20 +884,39 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 42px;
-    padding: 0 16px;
+    min-height: 40px;
+    padding: 0 15px;
     border-radius: 8px;
     border: 1px solid #111111;
     background: #ffffff;
     color: #111111;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 800;
     text-decoration: none;
     cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.profile-actions__primary {
+    border-color: #fb9b00;
+    background: #fb9b00;
+    color: #ffffff;
 }
 
 .profile-actions__secondary {
     border-color: rgba(17, 17, 17, 0.2);
+}
+
+.profile-actions__primary:hover {
+    border-color: #b84d00;
+    background: #b84d00;
+    color: #ffffff;
+}
+
+.profile-actions__secondary:hover {
+    border-color: #111111;
+    background: #111111;
+    color: #ffffff;
 }
 
 .profile-modal {
@@ -846,19 +936,20 @@
 .profile-modal__backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(17, 17, 17, 0.55);
+    background: rgba(17, 17, 17, 0.48);
 }
 
 .profile-modal__dialog {
     position: relative;
     z-index: 1;
-    width: min(100%, 720px);
+    width: min(100%, 680px);
     max-height: calc(100vh - 48px);
     overflow: auto;
-    padding: 24px;
-    border-radius: 22px;
-    background: #ffffff;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.22);
+    padding: 28px;
+    border: 1px solid #ead9c7;
+    border-radius: 10px;
+    background: #fffdfa;
+    box-shadow: 0 24px 54px rgba(42, 30, 20, 0.24);
 }
 
 .profile-modal .profile-edit-form,
@@ -869,7 +960,7 @@
 
 .profile-modal .profile-field {
     display: grid;
-    gap: 8px;
+    gap: 7px;
     min-width: 0;
 }
 
@@ -877,14 +968,18 @@
     display: block;
 }
 
+.profile-modal .profile-field--full {
+    grid-column: 1 / -1;
+}
+
 .profile-modal .profile-input {
     display: block;
     width: 100%;
     box-sizing: border-box;
-    min-height: 48px;
-    padding: 12px 14px;
-    border: 1px solid rgba(0, 0, 0, 0.16);
-    border-radius: 14px;
+    min-height: 44px;
+    padding: 11px 12px;
+    border: 1px solid #dcc9b8;
+    border-radius: 8px;
     background: #ffffff;
     color: #111111;
     font: inherit;
@@ -896,7 +991,7 @@
 
 .profile-modal .profile-textarea {
     width: 100%;
-    min-height: 120px;
+    min-height: 112px;
     resize: vertical;
 }
 
@@ -906,8 +1001,8 @@
 }
 
 .profile-modal .profile-input[readonly] {
-    background: #f7f7f7;
-    color: #666666;
+    background: #f6efe8;
+    color: #6d5b4b;
     cursor: not-allowed;
 }
 
@@ -919,64 +1014,49 @@
 
 .profile-modal__close {
     position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 36px;
-    height: 36px;
-    border: 0;
-    border-radius: 50%;
-    background: #f4f1ec;
+    top: 16px;
+    right: 16px;
+    width: 34px;
+    height: 34px;
+    border: 1px solid #e4d4c6;
+    border-radius: 8px;
+    background: #ffffff;
     color: #111111;
-    font-size: 22px;
+    font-size: 20px;
     line-height: 1;
     cursor: pointer;
 }
 
-.profile-modal__header {
-    padding-right: 48px;
-    margin-bottom: 18px;
-}
-
-.profile-modal__eyebrow {
-    margin: 0 0 4px;
-    color: #fb9b00;
-    font-size: 12px;
-    font-weight: 800;
-    text-transform: uppercase;
-}
-
-.profile-modal__header h2 {
-    margin: 0;
-    font-size: 24px;
-    line-height: 1.15;
-}
-
-.profile-modal__header p {
-    margin: 6px 0 0;
-    color: #5d636d;
-    font-size: 14px;
-    line-height: 1.55;
+.profile-modal__close:hover {
+    border-color: #111111;
+    background: #111111;
+    color: #ffffff;
 }
 
 .profile-edit-form {
     display: grid;
-    gap: 18px;
+    gap: 16px;
+    padding-top: 28px;
 }
 
 .profile-edit-form__grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    gap: 14px;
 }
 
 .profile-edit-form__actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 8px;
+    padding-top: 2px;
 }
 
 .profile-modal details.profile-accordion {
     margin-top: 2px;
+    border: 1px solid #ead9c7;
+    border-radius: 8px;
+    background: #fff7ef;
 }
 
 .profile-modal .profile-accordion__summary {
@@ -984,10 +1064,31 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    padding: 14px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.profile-modal .profile-accordion__summary::-webkit-details-marker {
+    display: none;
+}
+
+.profile-modal .profile-accordion__summary h3 {
+    margin: 0;
+    color: #111111;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.profile-modal .profile-accordion__summary p {
+    margin: 4px 0 0;
+    color: #6d5b4b;
+    font-size: 12px;
+    line-height: 1.35;
 }
 
 .profile-modal .profile-accordion__body {
-    padding-bottom: 20px;
+    padding: 0 14px 14px;
 }
 
 .profile-accordion__icon {
@@ -2233,6 +2334,27 @@
         padding: 16px 14px 48px;
     }
 
+    .profile-filterbar {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding-bottom: 10px;
+        margin-bottom: 22px;
+    }
+
+    .profile-filterbar > button {
+        flex: 1 1 calc(50% - 10px);
+        padding: 0 8px;
+    }
+
+    .profile-filterbar__spacer {
+        display: none;
+    }
+
+    .profile-view-toggle {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
     .profile-summary__card,
     .profile-empty-state__card {
         padding: 18px;
@@ -2272,10 +2394,6 @@
     .profile-page--public .profile-public-feature {
         min-height: 160px;
         margin-top: 22px;
-    }
-
-    .profile-modal__header {
-        padding-right: 0;
     }
 
     .profile-report-page {
@@ -2430,8 +2548,9 @@
 .profile-page .profile-summary__follow,
 .profile-page .profile-summary__report {
     min-height: 36px;
+    min-width: 106px;
     padding: 0 14px;
-    border-radius: 8px;
+    border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
 }
@@ -2449,9 +2568,9 @@
 }
 
 .profile-page .profile-summary__report {
-    border-color: #111111;
-    background: #ffffff;
-    color: #111111;
+    border-color: rgba(214, 57, 57, 0.22);
+    background: #fff7f7;
+    color: #b42318;
 }
 
 .profile-page .profile-summary__stats,
@@ -2638,6 +2757,97 @@
     margin-right: 5px;
     background: url("../img/icon-clock.svg") center / contain no-repeat;
     vertical-align: -1px;
+}
+
+.profile-page .profile-topbar__account strong,
+.profile-page .profile-account-item__copy strong,
+.profile-page .profile-activity-item__copy strong,
+.profile-page .profile-recipe-card__body h3,
+.profile-page.profile-page--public .profile-recipe-card__body h3,
+.profile-page .profile-stat strong,
+.profile-page.profile-page--own .profile-stat strong {
+    font-weight: 500;
+}
+
+.profile-page .profile-summary__edit,
+.profile-page .profile-summary__follow,
+.profile-page .profile-summary__report,
+.profile-page .profile-account-item__follow {
+    font-weight: 400;
+}
+
+.profile-page .profile-account-list {
+    gap: 8px;
+}
+
+.profile-page .profile-account-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 8px;
+    border: 1px solid rgba(17, 17, 17, 0.08);
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.profile-page .profile-account-item__profile {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 10px;
+}
+
+.profile-page .profile-account-item__avatar {
+    width: 40px;
+    height: 40px;
+}
+
+.profile-page .profile-account-item__copy strong {
+    color: #111111;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.profile-page .profile-account-item__copy span {
+    margin-top: 3px;
+    color: #6b7280;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.profile-page .profile-account-item__follow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 82px;
+    min-height: 34px;
+    padding: 0 11px;
+    border: 1px solid rgba(251, 155, 0, 0.34);
+    border-radius: 999px;
+    background: rgba(251, 155, 0, 0.10);
+    color: #b86b00;
+    font-size: 12px;
+    line-height: 1;
+    box-shadow: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.profile-page .profile-account-item__follow:hover,
+.profile-page .profile-account-item__follow:focus-visible {
+    border-color: rgba(251, 155, 0, 0.7);
+    background: rgba(251, 155, 0, 0.16);
+    color: #8f5200;
+}
+
+.profile-page .profile-account-item__follow.is-active {
+    border-color: rgba(0, 167, 132, 0.32);
+    background: rgba(0, 167, 132, 0.10);
+    color: #007a62;
+}
+
+.profile-page .profile-account-item__follow-icon,
+.profile-page .profile-account-item__follow-icon svg {
+    display: inline-flex;
+    width: 15px;
+    height: 15px;
 }
 
 .profile-page .profile-recipe-grid.is-list-view {

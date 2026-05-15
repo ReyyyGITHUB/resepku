@@ -240,21 +240,19 @@ $previewNoteText = $summaryText !== ''
                                 <span>Edit Resep</span>
                             </a>
                         <?php elseif ($canUseRecipeActions): ?>
-                            <button type="button" class="detail-action<?= $socialState['liked'] ? ' is-active' : '' ?>" data-guest-gate data-social-action="like" data-recipe-id="<?= e((string) $recipe['id']) ?>">
-                                <svg class="detail-action__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M12 20.1s-6.8-4.2-8.9-8.2C1.6 9 2.5 5.7 5.3 4.5c2-.9 4.2-.3 5.5 1.4L12 7.4l1.2-1.5c1.3-1.7 3.6-2.3 5.5-1.4 2.8 1.2 3.7 4.5 2.2 7.4-2.1 4-8.9 8.2-8.9 8.2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
-                                </svg>
-                                <span>Suka</span>
-                                <span class="detail-action__value" data-like-count><?= e((string) $socialState['likes_count']) ?></span>
-                            </button>
-                            <button type="button" class="detail-action detail-action--primary<?= $socialState['favorited'] ? ' is-active' : '' ?>" data-guest-gate data-social-action="favorite" data-recipe-id="<?= e((string) $recipe['id']) ?>">
+                            <button type="button" class="detail-action detail-action--favorite<?= $socialState['favorited'] ? ' is-active' : '' ?>" data-guest-gate data-social-action="favorite" data-recipe-id="<?= e((string) $recipe['id']) ?>" aria-label="Simpan resep">
                                 <svg class="detail-action__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                     <path d="M7 4.75c0-.97.78-1.75 1.75-1.75h6.5c.97 0 1.75.78 1.75 1.75v15L12 16.8l-5 2.95v-15Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
                                 </svg>
                                 <span>Favorit</span>
-                                <span class="detail-action__value" data-favorite-count><?= e((string) $socialState['favorites_count']) ?></span>
                             </button>
-                            <button type="button" class="detail-action<?= $socialState['user_rating'] !== null ? ' is-active' : '' ?>" data-guest-gate data-social-action="rate" data-recipe-id="<?= e((string) $recipe['id']) ?>">
+                            <button type="button" class="detail-action detail-action--metric<?= $socialState['liked'] ? ' is-active' : '' ?>" data-guest-gate data-social-action="like" data-recipe-id="<?= e((string) $recipe['id']) ?>" aria-label="Suka">
+                                <svg class="detail-action__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M12 20.1s-6.8-4.2-8.9-8.2C1.6 9 2.5 5.7 5.3 4.5c2-.9 4.2-.3 5.5 1.4L12 7.4l1.2-1.5c1.3-1.7 3.6-2.3 5.5-1.4 2.8 1.2 3.7 4.5 2.2 7.4-2.1 4-8.9 8.2-8.9 8.2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+                                </svg>
+                                <span class="detail-action__value" data-like-count><?= e((string) $socialState['likes_count']) ?></span>
+                            </button>
+                            <button type="button" class="detail-action detail-action--rate<?= $socialState['user_rating'] !== null ? ' is-active' : '' ?>" data-guest-gate data-social-action="rate" data-recipe-id="<?= e((string) $recipe['id']) ?>">
                                 <svg class="detail-action__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                     <path d="m12 3.5 2.42 4.9 5.4.78-3.91 3.82.92 5.38L12 15.84l-4.83 2.54.92-5.38-3.91-3.82 5.4-.78L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
                                 </svg>
@@ -273,12 +271,20 @@ $previewNoteText = $summaryText !== ''
                             <span>Bagikan</span>
                         </button>
 
+                        <button type="button" class="detail-action detail-action--print" data-social-action="print">
+                            <svg class="detail-action__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 9V3h12v6"></path>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                <path d="M6 14h12v7H6z"></path>
+                            </svg>
+                            <span>Cetak</span>
+                        </button>
+
                         <?php if (!$isOwner && $canUseRecipeActions): ?>
-                            <button type="button" class="detail-action detail-action--report" data-guest-gate data-report-open data-report-target-type="resep" data-report-target-id="<?= e((string) $recipe['id']) ?>" data-report-target-label="<?= e($recipe['title']) ?>">
+                            <button type="button" class="detail-action detail-action--report" aria-label="Laporkan" data-guest-gate data-report-open data-report-target-type="resep" data-report-target-id="<?= e((string) $recipe['id']) ?>" data-report-target-label="<?= e($recipe['title']) ?>">
                                 <svg class="detail-action__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M6 20V4.75M6 5.25h9.25c1.5 0 2.58 1.42 2.18 2.87l-.38 1.38.38 1.38c.4 1.45-.68 2.87-2.18 2.87H6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    <path d="M5 12h.01M12 12h.01M19 12h.01" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"></path>
                                 </svg>
-                                <span>Laporkan</span>
                             </button>
                         <?php endif; ?>
                     </div>
@@ -383,7 +389,6 @@ $previewNoteText = $summaryText !== ''
                                                 aria-haspopup="dialog"
                                                 aria-label="<?= e('Lihat gambar langkah ' . (string) ($index + 1) . ' lebih detail') ?>"
                                             >
-                                                <span class="detail-step__zoom-badge">Lihat detail</span>
                                                 <div class="recipe-create__step-preview has-image detail-step__preview">
                                                     <img src="<?= e(recipe_asset_path($stepImage)) ?>" alt="Ilustrasi langkah memasak <?= e((string) ($index + 1)) ?>">
                                                 </div>
@@ -479,14 +484,20 @@ $previewNoteText = $summaryText !== ''
                             <article class="detail-comment">
                                 <img class="detail-comment__avatar" src="<?= e($comment['avatar']) ?>" alt="<?= e($comment['author']) ?>">
                                 <div class="detail-comment__body">
-                                    <div class="detail-comment__meta">
-                                        <span class="detail-comment__author">
-                                            <strong><?= e($comment['author']) ?></strong>
-                                            <?= userAdminBadge((string) ($comment['author_role'] ?? 'pengguna')) ?>
-                                        </span>
-                                        <span><?= e($comment['created_at_label']) ?></span>
+                                    <div class="detail-comment__bubble">
+                                        <div class="detail-comment__meta">
+                                            <span class="detail-comment__author">
+                                                <strong><?= e($comment['author']) ?></strong>
+                                                <?= userAdminBadge((string) ($comment['author_role'] ?? 'pengguna')) ?>
+                                            </span>
+                                            <span class="detail-comment__time"><?= e($comment['created_at_label']) ?></span>
+                                        </div>
+                                        <p><?= e($comment['content']) ?></p>
                                     </div>
-                                    <p><?= e($comment['content']) ?></p>
+                                    <div class="detail-comment__actions" aria-label="Aksi komentar">
+                                        <button type="button" class="detail-comment__action" disabled>Suka</button>
+                                        <button type="button" class="detail-comment__action" disabled>Balas</button>
+                                    </div>
                                 </div>
                             </article>
                         <?php endforeach; ?>
